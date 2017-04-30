@@ -13,7 +13,7 @@ elif [ "$2" = "-bb" ]; then
 	echo "Communicating with Bboard.."
 	remAdd="root@192.168.0.202:~"
 else
-	echo "Wrong destination: Use '-s' for server and '-b' for Bboard"
+	echo "Wrong destination: Use '-ser' for server and '-bb' for Bboard"
 	exit 1
 fi
 
