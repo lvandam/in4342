@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   helloDSP_config.h
  *
- *  @path   
+ *  @path
  *
  *  @desc   Header file for MSGQ and POOL configurations for helloDSP.
  *
@@ -50,12 +50,16 @@ extern "C" {
 
 /* Control message data structure. */
 /* Must contain a reserved space for the header */
-typedef struct ControlMsg 
+typedef struct ControlMsg
 {
     MSGQ_MsgHeader header;
     Uint16 command;
     Char arg1[ARG_SIZE];
+<<<<<<< HEAD
 	Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
+=======
+	  Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
+>>>>>>> 0c054e1db5570125764db4b4d08ab968b9d91d76
 } ControlMsg;
 
 
