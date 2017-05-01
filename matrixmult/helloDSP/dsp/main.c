@@ -15,7 +15,7 @@
 #include "matrixmult_dsp.h"
 
 /*  ----------------------------------- BSL Headers                 */
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,6 +26,7 @@ extern "C" {
 
 /* Number of iterations message transfers to be done by the application. */
 Uint16 numTransfers;
+Uint8 matrixSize;
 
 /** ----------------------------------------------------------------------------
  *  @func   tskMessage

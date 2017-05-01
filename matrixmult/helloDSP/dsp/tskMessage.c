@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   tskMessage.c
  *
- *  @path   
+ *  @path
  *
  *  @desc   This is simple TSK based application that uses MSGQ. It receives
  *          and transmits messages from/to the GPP and runs the DSP
@@ -44,6 +44,7 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
+extern Uint8 matrixSize;
 
 
 /** ============================================================================
@@ -74,7 +75,7 @@ Int TSKMESSAGE_create(TSKMESSAGE_TransferInfo** infoPtr)
     else
     {
         info = *infoPtr;
-        info->numTransfers = numTransfers; 
+        info->numTransfers = numTransfers;
         info->localMsgq = MSGQ_INVALIDMSGQ;
         info->locatedMsgq = MSGQ_INVALIDMSGQ;
     }
