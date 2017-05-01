@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 
+Uint8 matrixSize;
 
 /* FILEID is used by SET_FAILURE_REASON macro. */
 #define FILEID  FID_APP_C

@@ -55,7 +55,7 @@ typedef struct ControlMsg
     MSGQ_MsgHeader header;
     Uint16 command;
     Char arg1[ARG_SIZE];
-	int mat[MAX_MATSIZE][MAX_MATSIZE];
+	Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
 } ControlMsg;
 
 

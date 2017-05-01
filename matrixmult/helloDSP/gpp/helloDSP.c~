@@ -57,7 +57,7 @@ extern "C"
         MSGQ_MsgHeader header;
         Uint16 command;
         Char8 arg1[ARG_SIZE];
-		int mat[SIZE][SIZE]; /*TODO*/
+		Uint16 mat[MAX_MATSIZE][MAX_MATSIZE]; /*TODO*/
     } ControlMsg;
 
     /* Messaging buffer used by the application.
@@ -277,6 +277,7 @@ extern "C"
 		//if (DSP_SUCCEEDED (status))
         //{
             /* Receive the message. */
+			SYSTEM_0Print("test ()\n");
             status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
             if (DSP_FAILED(status))
             {
@@ -293,11 +294,22 @@ extern "C"
                 }
             }
 #endif
+
+		   int x, y;
+
+		   for(x = 0 ; x < matrixSize ; x++) {
+				for(y = 0 ; y < matrixSize ; y++){
+				    SYSTEM_1Print(" %u ", (Uint16) msg->mat[x][y]);
+					
+				}
+				SYSTEM_0Print(" \n");
+			}
+
 			SYSTEM_0Print("hallo1. Status\n");
-            //if (msg->command == 0x01)
-            //    SYSTEM_1Print("Message received: %s\n", (Uint32) msg->arg1);
-            //else if (msg->command == 0x02)
-            //    SYSTEM_1Print("Message received: %s\n", (Uint32) msg->arg1);
+            if (msg->command == 0x01)
+                SYSTEM_1Print("Message received: %s\n", (Uint32) msg->arg1);
+            else if (msg->command == 0x02)
+                SYSTEM_1Print("Message received: %s\n", (Uint32) msg->arg1);
 
             /* If the message received is the final one, free it. */
 			/*TODO free message queue if done multiplying */            
@@ -313,6 +325,7 @@ extern "C"
                     msgId = MSGQ_getMsgId(msg);
                     MSGQ_setMsgId(msg, msgId);
 					
+					memcpy(msg->mat,mat1,matrixSize*matrixSize*sizeof(Uint16));
 					SYSTEM_0Print("hallo2. Status\n");
                     status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
 					SYSTEM_0Print("hallo3. Status \n");
@@ -461,23 +474,31 @@ extern "C"
 		Timer totalTime;
 		initTimer(&totalTime, "Total Time");
 
-	
-		for (i = 0;i < SIZE; i++)
+		for (i = 0;i < matrixSize; i++)
 		{
-			for (j = 0; j < SIZE; j++)
+			for (j = 0; j < matrixSize; j++)
 			{
 				mat1[i][j] = i+j*2;
 			}
 		}
 	
-		for(i = 0; i < SIZE; i++)
+		for(i = 0; i < matrixSize; i++)
 		{
-			for (j = 0; j < SIZE; j++)
+			for (j = 0; j < matrixSize; j++)
 			{
 				mat2[i][j] = i+j*3;
 			}
 		}
 
+			int x, y;
+		   for(x = 0 ; x < matrixSize ; x++) {
+				for(y = 0 ; y < matrixSize ; y++){
+				    SYSTEM_1Print(" %u ", (Uint16) mat1[x][y]);
+					
+				}
+				SYSTEM_0Print(" \n");
+			}
+			SYSTEM_1Print("%d \n\n\n\n", matrixSize);
 
 
         SYSTEM_0Print ("========== Sample Application : matrixmult ==========\n");

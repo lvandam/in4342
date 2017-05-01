@@ -1,6 +1,5 @@
 	/*TODO Matrix size */
-#define SIZE 128
+#define MAX_MATSIZE 128
 
-int mat1[SIZE][SIZE], mat2[SIZE][SIZE], prod[SIZE][SIZE];
+Uint16 mat1[MAX_MATSIZE][MAX_MATSIZE], mat2[MAX_MATSIZE][MAX_MATSIZE], prod[MAX_MATSIZE][MAX_MATSIZE];
 	
-
