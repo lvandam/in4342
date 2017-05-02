@@ -1,0 +1,8 @@
+digraph {
+graph [];
+edge [fontsize=18, arrowhead=vee, arrowsize=0.5];
+"1" [label=" main \n84%, 1" fontcolor=black, style=filled, fontsize=22];
+"2" [label=" matMult \n15%, 1" fontcolor=black, style=filled, fontsize=22];
+"1"->"1"[ label="34.1 KiB" color = "#fe0200"]
+"1"->"2"[ label="32.0 KiB" color = "#f80800"]
+}

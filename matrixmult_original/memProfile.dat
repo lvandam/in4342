@@ -1,0 +1,16 @@
+ This table can be sorted by Total Accesses (-k2) by using bash command:
+    tail -n +7 memProfile.dat | sort -k2 -gr
+
+ Per Function Flat Memory Profile 
+                               Function Name 	 ================= Accesses  =========    Allocation
+                                                      Total         Reads       Writes       Path
+                         ==========================================================================
+                                   UnknownFtn        105416         80372         25044  NA:0
+                                         main        103383         82282         21101  NA:0
+                                      matMult         50176         32768         17408  matrixmult.c:33
+
+
+ Per Object Flat Memory Profile 
+                                 Object Name 	 =============== Accesses  ============        ==== Efficiency ====  ==== Allocation
+                                                      Total         Reads       Writes        Alloc %        Prod %      Path
+                         ============================================================================================================
