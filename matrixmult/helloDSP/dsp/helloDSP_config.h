@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   helloDSP_config.h
  *
- *  @path
+ *  @path   
  *
  *  @desc   Header file for MSGQ and POOL configurations for helloDSP.
  *
@@ -29,13 +29,16 @@ extern "C" {
 
 /*  ----------------------------------- DSP/BIOS LINK Headers       */
 #include <dsplink.h>
-#include "matrixmult_dsp.h"
 
 #if defined (MSGQ_ZCPY_LINK)
 #include <zcpy_mqt.h>
 #include <sma_pool.h>
 #endif /* if defined (MSGQ_ZCPY_LINK) */
+    
+/*------------------------------------ Application Headers */
 
+#include "matrix_config.h"
+    
 /* Name of the MSGQ on the GPP and on the DSP. */
 #define GPP_MSGQNAME        "GPPMSGQ1"
 #define DSP_MSGQNAME        "DSPMSGQ"
@@ -46,18 +49,15 @@ extern "C" {
 /* Argument size passed to the control message queue */
 #define ARG_SIZE 256
 
-
-
 /* Control message data structure. */
 /* Must contain a reserved space for the header */
-typedef struct ControlMsg
+typedef struct ControlMsg 
 {
     MSGQ_MsgHeader header;
     Uint16 command;
-    Char arg1[ARG_SIZE];
-	  Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
+    Char text[ARG_SIZE];
+	Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
 } ControlMsg;
-
 
 /* Messaging buffer used by the application.
  * Note: This buffer must be aligned according to the alignment expected

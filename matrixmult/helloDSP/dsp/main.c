@@ -12,22 +12,18 @@
 /*  ----------------------------------- Sample Headers              */
 #include <tskMessage.h>
 
-#include "matrixmult_dsp.h"
-
 /*  ----------------------------------- BSL Headers                 */
-
+ 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-Uint8 matrixSize;
 
 /* FILEID is used by SET_FAILURE_REASON macro. */
 #define FILEID  FID_APP_C
 
 /* Number of iterations message transfers to be done by the application. */
 Uint16 numTransfers;
-Uint8 matrixSize;
 
 /** ----------------------------------------------------------------------------
  *  @func   tskMessage
@@ -60,9 +56,7 @@ Void main(Int argc, Char* argv [])
 
 #if !defined (DSP_BOOTMODE_NOBOOT)
     /* Get the number of transfers to be done by the application */
-    //numTransfers = atoi(argv [0]);
-	numTransfers = 1; /*TODO*/
-	matrixSize = atoi(argv [0]);
+    numTransfers = atoi(argv [0]);
     /* Initialize DSP/BIOS LINK. */
     DSPLINK_init();
 #endif
