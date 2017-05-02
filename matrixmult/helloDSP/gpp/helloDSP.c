@@ -111,7 +111,7 @@ extern "C"
 
     /* Extern declaration to the default DSP/BIOS LINK configuration structure. */
     extern LINKCFG_Object LINKCFG_config;
-    
+
     Uint16 mat1 [MAX_MATSIZE][MAX_MATSIZE];
     Uint16 mat2 [MAX_MATSIZE][MAX_MATSIZE];
 
@@ -144,13 +144,13 @@ extern "C"
         Uint8 i,j;
 
         SYSTEM_0Print("Entered helloDSP_Create ()\n");
-        
+
         status = matrix_fill(1,mat1);
         if (DSP_FAILED(status))
         {
             SYSTEM_1Print("Matrix1 filling failed. Status = [0x%x]\n", status);
         }
-        
+
         for(i=0;i<MAX_MATSIZE;i++)
             {
                 for(j=0;j<MAX_MATSIZE;j++)
@@ -160,7 +160,7 @@ extern "C"
                 SYSTEM_0Print("\n");
             }
             SYSTEM_0Print("\n");
-        
+
         if (DSP_SUCCEEDED(status))
         {
             status = matrix_fill(2,mat2);
@@ -321,22 +321,34 @@ extern "C"
 
             if (msg->command == 0x01)
                 SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
-            else if (msg->command == 0x02)
-                SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
-        
+
             if (DSP_SUCCEEDED(status))
             {
-                msgId = MSGQ_getMsgId(msg);
-                memcpy(msg->mat,mat1,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
-                MSGQ_setMsgId(msg, msgId);
-                status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
-                if (DSP_FAILED(status))
-                {
-                    MSGQ_free((MsgqMsg) msg);
-                    SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
-                }
+              // Send matrix 1
+              msgId = MSGQ_getMsgId(msg);
+              msg->command = 0x02;
+              memcpy(msg->mat, mat1, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+              MSGQ_setMsgId(msg, msgId);
+              status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
+              if (DSP_FAILED(status))
+              {
+                  MSGQ_free((MsgqMsg) msg);
+                  SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
+              }
+
+              // Send matrix 2
+              msgId = MSGQ_getMsgId(msg);
+              msg->command = 0x03;
+              memcpy(msg->mat, mat2, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+              MSGQ_setMsgId(msg, msgId);
+              status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
+              if (DSP_FAILED(status))
+              {
+                  MSGQ_free((MsgqMsg) msg);
+                  SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
+              }
             }
-        
+
             status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
             if (DSP_FAILED(status))
             {

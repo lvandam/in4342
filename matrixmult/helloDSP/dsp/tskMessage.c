@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   tskMessage.c
  *
- *  @path   
+ *  @path
  *
  *  @desc   This is simple TSK based application that uses MSGQ. It receives
  *          and transmits messages from/to the GPP and runs the DSP
@@ -140,7 +140,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     Int status = SYS_OK;
     ControlMsg* msg;
     Uint32 i,j;
-    Uint16 recmat[MAX_MATSIZE][MAX_MATSIZE];
+    Uint16 mat1[MAX_MATSIZE][MAX_MATSIZE], mat2[MAX_MATSIZE][MAX_MATSIZE];
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -196,18 +196,26 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
             }
             else
             {
-                memcpy(recmat,msg->mat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
-                
-                for(i=0;i<MAX_MATSIZE;i++)
+                if(msg->command == 0x02) // Received matrix is mat1
                 {
-                    for(j=0;j<MAX_MATSIZE;j++) recmat[i][j]+=2;
+                  memcpy(mat1, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
                 }
-                
-                memcpy(msg->mat,recmat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
-                
-		  /* Include your control flag or processing code here */
-                msg->command = 0x02;
-                //SYS_sprintf(msg->text, "Iteration %d is complete.", i);
+                else if(msg->command == 0x03) // Received matrix is mat2
+                {
+                  memcpy(mat2, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+                  // Got both matrices, start multiplication!!
+                  memcpy(msg->mat, mat2, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+                }
+
+
+                // for(i = 0; i < MAX_MATSIZE; i++)
+                // {
+                //     for(j=0; j < MAX_MATSIZE; j++) mat1[i][j] += 2;
+                // }
+
+
+
+		             /* Include your control flag or processing code here */
 
                 /* Increment the sequenceNumber for next received message */
                 info->sequenceNumber++;
