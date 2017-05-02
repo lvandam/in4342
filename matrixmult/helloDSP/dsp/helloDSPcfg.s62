@@ -5,7 +5,7 @@
 ;; INPUT helloDSP.cdb
 
 ;; CONFIGURATION/VERSION INFORMATION
-	.asg "Tue May  2 13:25:17 2017", VERS$DATE
+	.asg "Tue May  2 13:34:21 2017", VERS$DATE
 
 ;; PROLOGUE
 	.include helloDSPcfg.h62

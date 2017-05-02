@@ -216,7 +216,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                 msg->command = 0x01;
                 SYS_sprintf(msg->text, "Received matrix 2, multiplying!");
               }
-              
+
               if(i == 1)
               {
                 // Start multiplication
@@ -229,36 +229,27 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                       prod[k][l] = prod[k][l] + mat1[k][m] * mat2[m][l];
                   }
                 }
-                memcpy(msg->mat,prod,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
+                memcpy(msg->mat, prod, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
               }
               else
-                memcpy(msg->mat,recmat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
+                memcpy(msg->mat, recmat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
 
-                // for(k=0;k<MAX_MATSIZE;k++)
-                // {
-                //     for(l=0;l<MAX_MATSIZE;l++) recmat[k][l]+=2;
-                // }
+              /* Increment the sequenceNumber for next received message */
+              info->sequenceNumber++;
+              /* Make sure that sequenceNumber stays within the range of iterations */
+              if (info->sequenceNumber == MSGQ_INTERNALIDSSTART)
+              {
+                  info->sequenceNumber = 0;
+              }
+              MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
+              MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
 
-
-
-		  /* Include your control flag or processing code here */
-
-                /* Increment the sequenceNumber for next received message */
-                info->sequenceNumber++;
-                /* Make sure that sequenceNumber stays within the range of iterations */
-                if (info->sequenceNumber == MSGQ_INTERNALIDSSTART)
-                {
-                    info->sequenceNumber = 0;
-                }
-                MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
-                MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
-
-                /* Send the message back to the GPP */
-                status = MSGQ_put(info->locatedMsgq,(MSGQ_Msg) msg);
-                if (status != SYS_OK)
-                {
-                    SET_FAILURE_REASON(status);
-                }
+              /* Send the message back to the GPP */
+              status = MSGQ_put(info->locatedMsgq,(MSGQ_Msg) msg);
+              if (status != SYS_OK)
+              {
+                  SET_FAILURE_REASON(status);
+              }
             }
         }
         else
