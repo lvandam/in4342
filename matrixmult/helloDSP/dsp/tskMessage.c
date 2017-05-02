@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   tskMessage.c
  *
- *  @path
+ *  @path   
  *
  *  @desc   This is simple TSK based application that uses MSGQ. It receives
  *          and transmits messages from/to the GPP and runs the DSP
@@ -25,15 +25,13 @@
 #include <failure.h>
 
 /*  ----------------------------------- Sample Headers              */
-#include "matrixmult_dsp.h"
 #include <helloDSP_config.h>
 #include <tskMessage.h>
-
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /* FILEID is used by SET_FAILURE_REASON macro. */
 #define FILEID  FID_APP_C
@@ -43,9 +41,7 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
-extern Uint8 matrixSize;
 
-extern Uint8 matrixSize;
 
 /** ============================================================================
  *  @func   TSKMESSAGE_create
@@ -143,8 +139,9 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 {
     Int status = SYS_OK;
     ControlMsg* msg;
-    Uint32 i;
-	
+    Uint32 i,j;
+    Uint16 recmat[MAX_MATSIZE][MAX_MATSIZE];
+
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
 
@@ -153,8 +150,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
         MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
         MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
         msg->command = 0x01;
-        SYS_sprintf(msg->arg1, "DSP is awake!");
-		
+        SYS_sprintf(msg->text, "DSP is awake!");
+
         status = MSGQ_put(info->locatedMsgq, (MSGQ_Msg) msg);
         if (status != SYS_OK)
         {
@@ -170,8 +167,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 
     /* Execute the loop for the configured number of transfers  */
     /* A value of 0 in numTransfers implies infinite iterations */
-    for (i = 0; (((info->numTransfers == 0) || (i < info->numTransfers)) && (status == SYS_OK)); i++)
-    {
+    /*for (i = 0; (((info->numTransfers == 0) || (i < info->numTransfers)) && (status == SYS_OK)); i++)
+    {*/
         /* Receive a message from the GPP */
         status = MSGQ_get(info->localMsgq,(MSGQ_Msg*) &msg, SYS_FOREVER);
         if (status == SYS_OK)
@@ -199,9 +196,18 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
             }
             else
             {
-		/* Include your control flag or processing code here */
+                memcpy(recmat,msg->mat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
+                
+                for(i=0;i<MAX_MATSIZE;i++)
+                {
+                    for(j=0;j<MAX_MATSIZE;j++) recmat[i][j]+=2;
+                }
+                
+                memcpy(msg->mat,recmat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
+                
+		  /* Include your control flag or processing code here */
                 msg->command = 0x02;
-                SYS_sprintf(msg->arg1, "Iteration %d is complete.", i);
+                //SYS_sprintf(msg->text, "Iteration %d is complete.", i);
 
                 /* Increment the sequenceNumber for next received message */
                 info->sequenceNumber++;
@@ -225,7 +231,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
         {
             SET_FAILURE_REASON (status);
         }
-    }
+    //}
     return status;
 }
 

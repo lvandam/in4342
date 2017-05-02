@@ -20,24 +20,28 @@ SHELL = /bin/sh
 #   ----------------------------------------------------------------------------
 #BASE_TOOLCHAIN := /opt/mv_pro_5.0/montavista/pro/devkit/arm/v5t_le
 #BASE_TOOLCHAIN := /opt/arm/arm-2007q3       # Codesourcery tools
-BASE_TOOLCHAIN := /data/bbToolChain/usr/local/share/codesourcery/
+#BASE_TOOLCHAIN := /usr/local/share/codesourcery/
+BASE_TOOLCHAIN := /opt/bbToolChain/usr/local/share/codesourcery
 #   ----------------------------------------------------------------------------
 #   Name of the Linux compiler
 #   This may change depending if you are using Montavista or Codesourcery
 #   ----------------------------------------------------------------------------
+#CC := arm_v5t_le-gcc
 CC := arm-none-linux-gnueabi-gcc
+#CC := arm-none-linux-gnueabi-gcc
 
 #   ----------------------------------------------------------------------------
 #   Base for DSPLink
 #   This may have to be changed depending on
 #   your installation and DSPLink version
 #   ----------------------------------------------------------------------------
-DSPLINK := /data/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/tools/dsplink_linux_1_65_00_03
+#DSPLINK := /home/user/OMAPL137_arm_1_00_00_10/dsplink-1_61_03-prebuilt/packages/dsplink
+DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/tools/dsplink_linux_1_65_00_03
 
 #   ----------------------------------------------------------------------------
 #   General options, sources and libraries
 #   ----------------------------------------------------------------------------
-SRCS := helloDSP.c system_os.c main.c Timer.c
+SRCS := matrix_config.c helloDSP.c system_os.c main.c
 OBJS :=
 DEBUG :=
 LDFLAGS := -lpthread
@@ -159,10 +163,10 @@ $(OBJDIR_R)/%.o : %.c
 	@$(BASE_TOOLCHAIN)/bin/$(CC) $(DEFS) $(ALL_CFLAGS) -o$@ $<
 
 send:
-	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/helloDSP/.
+	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/kostas/helloDSP/.
 
 .PHONY: clean
 clean:
-	@rm -f $(OBJDIR_D)/* *~
-	@rm -f $(OBJDIR_R)/* *~
+	@rm -f $(OBJDIR_D)/*
+	@rm -f $(OBJDIR_R)/*
 

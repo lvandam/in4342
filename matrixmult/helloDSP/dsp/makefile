@@ -23,7 +23,7 @@ SHELL = /bin/sh
 #BASE_SABIOS := $(BASE_TOOLCHAIN)/bios_5_33_05
 #BASE_BSL := $(BASE_TOOLCHAIN)/boards/evmomapl137_v1
 
-BASE_TOOLCHAIN := /data/bbToolChain/usr/local/share
+BASE_TOOLCHAIN := /opt/bbToolChain/usr/local/share
 BASE_COMPILER := $(BASE_TOOLCHAIN)/c6000
 BASE_SABIOS := $(BASE_TOOLCHAIN)/tidspbios/bios_5_41_00_06
 BASE_BSL := $(BASE_COMPILER)
@@ -40,7 +40,9 @@ TCONF := tconf
 #   This may have to be changed depending on your installation paths 
 #   and DSPLink version
 #   ----------------------------------------------------------------------------
-DSPLINK := $(BASE_TOOLCHAIN)/bbframework/platform/beagle-linux/tools/dsplink_linux_1_65_00_03
+#DSPLINK := /home/user/OMAPL137_arm_1_00_00_10/dsplink-1_61_03-prebuilt/packages/dsplink
+DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/tools/dsplink_linux_1_65_00_03
+# DSPLINK := /data/ESLab/DSPLink/dsplink_linux_1_63/dsplink
 
 #   ----------------------------------------------------------------------------
 #   Project name. 
@@ -238,7 +240,7 @@ $(OBJDIR_R)/%.obj : %.s62
 	@$(BASE_COMPILER)/bin/$(CC) $(DEFS) $(CFLAGS_R) $(CINCLUDES) -fr$(OBJDIR_R) $<
 
 send:
-	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/helloDSP/.
+	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/kostas/helloDSP/.
 
 .PHONY: clean
 clean:
