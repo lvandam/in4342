@@ -142,7 +142,7 @@ extern "C"
         Uint32 numArgs = NUM_ARGS;
         MSGQ_LocateAttrs syncLocateAttrs;
         Char8* args[NUM_ARGS];
-        Uint8 i,j;
+        //Uint8 i,j;
 
         SYSTEM_0Print("Entered helloDSP_Create ()\n");
 
@@ -151,16 +151,6 @@ extern "C"
         {
             SYSTEM_1Print("Matrix1 filling failed. Status = [0x%x]\n", status);
         }
-
-        for(i=0;i<MAX_MATSIZE;i++)
-            {
-                for(j=0;j<MAX_MATSIZE;j++)
-                {
-                    SYSTEM_1Print("%d\t", mat1[i][j]);
-                }
-                SYSTEM_0Print("\n");
-            }
-            SYSTEM_0Print("\n");
 
         if (DSP_SUCCEEDED(status))
         {
@@ -300,81 +290,77 @@ extern "C"
         SYSTEM_GetStartTime();
 #endif
 
+        /* Receive the message. */
+        status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
+        if (DSP_FAILED(status))
+        {
+            SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
+        }
+
         /*for (i = 1 ; ((numIterations == 0) || (i <= (numIterations + 1))) && (DSP_SUCCEEDED (status)); i++)
         {*/
-
-        for(i = 0; (i < 4 && DSP_SUCCEEDED(status)); i++)
+        for(i = 0; (i < 2 && DSP_SUCCEEDED(status)); i++)
         {
-          /* Receive the message. */
-          status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
-          if (DSP_FAILED(status))
+          // Send matrices
+          if(DSP_SUCCEEDED(status))
           {
-              SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
-          }
-          #if defined (VERIFY_DATA)
-          /* Verify correctness of data received. */
-          if (DSP_SUCCEEDED(status))
-          {
-              status = helloDSP_VerifyData(msg, sequenceNumber);
-              if (DSP_FAILED(status))
-              {
-                  MSGQ_free((MsgqMsg) msg);
-              }
-          }
-          #endif
+            msgId = MSGQ_getMsgId(msg);
+            MSGQ_setMsgId(msg, msgId);
 
-          if (msg->command == 0x01)
-              SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
-
-          if(i < 3)
-          {
-            // Send matrices
-            if(DSP_SUCCEEDED(status))
+            if(i == 0)
             {
-              msgId = MSGQ_getMsgId(msg);
-              MSGQ_setMsgId(msg, msgId);
-
-              if(i == 1)
-              {
-                // Matrix 1
-                memcpy(msg->mat, mat1, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
-              }
-              else if(i == 2)
-              {
-                // Matrix 1
-                memcpy(msg->mat, mat2, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
-              }
-
-              status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
-              if (DSP_FAILED(status))
-              {
-                  MSGQ_free((MsgqMsg) msg);
-                  SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
-              }
+              // Matrix 1
+              SYSTEM_0Print("Sending matrix 1...\n");
+              memcpy(msg->mat, mat1, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+            }
+            else if(i == 1)
+            {
+              // Matrix 2
+              SYSTEM_0Print("Sending matrix 2...\n");
+              memcpy(msg->mat, mat2, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
             }
 
-            sequenceNumber++;
-            /* Make sure that the sequenceNumber stays within the permitted
-             * range for applications. */
-            if (sequenceNumber == MSGQ_INTERNALIDSSTART)
+            status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
+            if (DSP_FAILED(status))
             {
-                sequenceNumber = 0;
+                MSGQ_free((MsgqMsg) msg);
+                SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
+            }
+
+            /* Receive the message. */
+            status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
+            if (DSP_FAILED(status))
+            {
+                SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
+            }
+
+            if (msg->command == 0x01)
+                SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
+
+            if(i == 1)
+            {
+              // Print the received matrix
+              Uint8 k, l;
+              for(k = 0; k < MAX_MATSIZE; k++)
+              {
+                  for(l = 0; l < MAX_MATSIZE; l++)
+                  {
+                      SYSTEM_1Print("%d\t", msg->mat[k][l]);
+                  }
+                  SYSTEM_0Print("\n");
+              }
+              SYSTEM_0Print("\n");
             }
           }
-          else if(i == 3) // get product
+
+          sequenceNumber++;
+          /* Make sure that the sequenceNumber stays within the permitted
+           * range for applications. */
+          if (sequenceNumber == MSGQ_INTERNALIDSSTART)
           {
-            // Print the received matrix
-            Uint8 k,l;
-            for(k=0;k<MAX_MATSIZE;k++)
-            {
-                for(l=0;l<MAX_MATSIZE;l++)
-                {
-                    SYSTEM_1Print("%d\t", msg->mat[k][l]);
-                }
-                SYSTEM_0Print("\n");
-            }
-            SYSTEM_1Print("%d\n", i);
+              sequenceNumber = 0;
           }
+        }
 
 //           // Receive back (the resulting matrix)
 //           status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
@@ -409,8 +395,6 @@ extern "C"
 //           if(i == 1)
 //             MSGQ_free((MsgqMsg) msg);
 //
-
-        }
 
 
 
@@ -560,7 +544,7 @@ extern "C"
         Uint32 numIterations = 0;
         Uint8 processorId = 0;
 
-        SYSTEM_0Print ("========== Sample Application : helloDSP ==========\n");
+        SYSTEM_0Print ("========== Sample Application : matrix multiplication ==========\n");
 
         if ((dspExecutable != NULL) && (strNumIterations != NULL))
         {

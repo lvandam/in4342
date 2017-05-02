@@ -204,19 +204,20 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
             {
               if(i == 0) // Received matrix 1
               {
-                memcpy(recmat, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+                memcpy(mat1, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
 
                 msg->command = 0x01;
                 SYS_sprintf(msg->text, "Received matrix 1..");
               }
               else if(i == 1) // Received matrix 2
               {
-                memcpy(recmat, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+                memcpy(mat2, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
 
                 msg->command = 0x01;
-                SYS_sprintf(msg->text, "Received matrix 2..");
+                SYS_sprintf(msg->text, "Received matrix 2, multiplying!");
               }
-              if(i == 2)
+              
+              if(i == 1)
               {
                 // Start multiplication
                 for (k = 0; k < MAX_MATSIZE; k++)
@@ -230,6 +231,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                 }
                 memcpy(msg->mat,prod,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
               }
+              else
+                memcpy(msg->mat,recmat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
 
                 // for(k=0;k<MAX_MATSIZE;k++)
                 // {
