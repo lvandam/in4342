@@ -1,7 +1,7 @@
 #   ----------------------------------------------------------------------------
 #  @file   Makefile
 #
-#  @path   
+#  @path
 #
 #  @desc   Makefile for helloDSPgpp (Debug and Release versions)
 #
@@ -56,7 +56,7 @@ OBJDIR_D := Debug
 BINDIR_D := $(OBJDIR_D)
 #LIBS_D := $(DSPLINK)/gpp/export/BIN/Linux/OMAPL1XX/DEBUG/dsplink.lib $(LIBS)
 LIBS_D := $(DSPLINK)/gpp/BUILD/EXPORT/DEBUG/dsplink.lib $(LIBS)
-# If the DSP/Link was rebuilt by the user, replace the line above 
+# If the DSP/Link was rebuilt by the user, replace the line above
 # with the one below to use the updated libraries
 #LIBS_D := $(DSPLINK)/gpp/BUILD/EXPORT/DEBUG/dsplink.lib $(LIBS)
 OBJS_D := $(SRCS:%.c=$(OBJDIR_D)/%.o)
@@ -68,13 +68,13 @@ ALL_DEBUG := -g -DDDSP_DEBUG $(DEBUG) -D__DEBUG
 OBJDIR_R := Release
 BINDIR_R := $(OBJDIR_R)
 #LIBS_R := $(DSPLINK)/gpp/export/BIN/Linux/OMAPL1XX/RELEASE/dsplink.lib $(LIBS)
-# If the DSP/Link was rebuilt by the user, replace the line above 
+# If the DSP/Link was rebuilt by the user, replace the line above
 # with the one below to use the updated libraries
 LIBS_R := $(DSPLINK)/gpp/BUILD/EXPORT/RELEASE/dsplink.lib $(LIBS)
 OBJS_R := $(SRCS:%.c=$(OBJDIR_R)/%.o)
 
 #   ----------------------------------------------------------------------------
-#   Compiler include directories 
+#   Compiler include directories
 #   ----------------------------------------------------------------------------
 INCLUDES := -I$(DSPLINK)/gpp/inc                   \
             -I$(DSPLINK)/gpp/inc/usr               \
@@ -106,7 +106,7 @@ ALL_CFLAGS := $(INCLUDES)                   \
               $(CFLAGS)
 
 #   ----------------------------------------------------------------------------
-#   Compiler symbol definitions 
+#   Compiler symbol definitions
 #   ----------------------------------------------------------------------------
 
 DEFS :=        -DOS_LINUX            \
@@ -137,7 +137,7 @@ DEFS :=        -DOS_LINUX            \
 all: Debug Release
 
 #   ----------------------------------------------------------------------------
-#   Building Debug... 
+#   Building Debug...
 #   ----------------------------------------------------------------------------
 .PHONY: Debug
 Debug: $(BINDIR_D)/$(BIN)
@@ -150,7 +150,7 @@ $(OBJDIR_D)/%.o : %.c
 	@$(BASE_TOOLCHAIN)/bin/$(CC) $(ALL_DEBUG) $(DEFS) $(ALL_CFLAGS) -o$@ $<
 
 #   ----------------------------------------------------------------------------
-#   Building Release... 
+#   Building Release...
 #   ----------------------------------------------------------------------------
 .PHONY: Release
 Release: $(BINDIR_R)/$(BIN)
@@ -163,10 +163,9 @@ $(OBJDIR_R)/%.o : %.c
 	@$(BASE_TOOLCHAIN)/bin/$(CC) $(DEFS) $(ALL_CFLAGS) -o$@ $<
 
 send:
-	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/helloDSP/.
+	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/laurens/helloDSP/.
 
 .PHONY: clean
 clean:
 	@rm -f $(OBJDIR_D)/*
 	@rm -f $(OBJDIR_R)/*
-

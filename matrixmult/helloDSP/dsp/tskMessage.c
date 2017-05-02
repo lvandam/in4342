@@ -1,7 +1,7 @@
 /** ============================================================================
  *  @file   tskMessage.c
  *
- *  @path   
+ *  @path
  *
  *  @desc   This is simple TSK based application that uses MSGQ. It receives
  *          and transmits messages from/to the GPP and runs the DSP
@@ -139,8 +139,11 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 {
     Int status = SYS_OK;
     ControlMsg* msg;
-    Uint32 i,j;
+    Uint32 k,l,m,i,j;
     Uint16 recmat[MAX_MATSIZE][MAX_MATSIZE];
+    Uint16 mat1[MAX_MATSIZE][MAX_MATSIZE];
+    Uint16 mat2[MAX_MATSIZE][MAX_MATSIZE];
+    Uint16 prod[MAX_MATSIZE][MAX_MATSIZE];
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -169,6 +172,9 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     /* A value of 0 in numTransfers implies infinite iterations */
     /*for (i = 0; (((info->numTransfers == 0) || (i < info->numTransfers)) && (status == SYS_OK)); i++)
     {*/
+
+    for(i = 0; (i < 3 && status == SYS_OK); i++)
+    {
         /* Receive a message from the GPP */
         status = MSGQ_get(info->localMsgq,(MSGQ_Msg*) &msg, SYS_FOREVER);
         if (status == SYS_OK)
@@ -196,18 +202,43 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
             }
             else
             {
-                memcpy(recmat,msg->mat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
-                
-                for(i=0;i<MAX_MATSIZE;i++)
+              if(i == 0) // Received matrix 1
+              {
+                memcpy(recmat, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+
+                msg->command = 0x01;
+                SYS_sprintf(msg->text, "Received matrix 1..");
+              }
+              else if(i == 1) // Received matrix 2
+              {
+                memcpy(recmat, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+
+                msg->command = 0x01;
+                SYS_sprintf(msg->text, "Received matrix 2..");
+              }
+              if(i == 2)
+              {
+                // Start multiplication
+                for (k = 0; k < MAX_MATSIZE; k++)
                 {
-                    for(j=0;j<MAX_MATSIZE;j++) recmat[i][j]+=2;
+                  for (l = 0; l < MAX_MATSIZE; l++)
+                  {
+                    prod[k][l]=0;
+                    for(m = 0; m < MAX_MATSIZE; m++)
+                      prod[k][l] = prod[k][l] + mat1[k][m] * mat2[m][l];
+                  }
                 }
-                
-                memcpy(msg->mat,recmat,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
-                
+                memcpy(msg->mat,prod,MAX_MATSIZE*MAX_MATSIZE*sizeof(Uint16));
+              }
+
+                // for(k=0;k<MAX_MATSIZE;k++)
+                // {
+                //     for(l=0;l<MAX_MATSIZE;l++) recmat[k][l]+=2;
+                // }
+
+
+
 		  /* Include your control flag or processing code here */
-                msg->command = 0x02;
-                //SYS_sprintf(msg->text, "Iteration %d is complete.", i);
 
                 /* Increment the sequenceNumber for next received message */
                 info->sequenceNumber++;
@@ -231,7 +262,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
         {
             SET_FAILURE_REASON (status);
         }
-    //}
+    }
     return status;
 }
 

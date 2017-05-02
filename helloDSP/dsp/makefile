@@ -1,7 +1,7 @@
 #   ----------------------------------------------------------------------------
 #  @file   Makefile
 #
-#  @path   
+#  @path
 #
 #  @desc   Makefile for helloDSP (Debug and Release versions)
 #
@@ -37,7 +37,7 @@ TCONF := tconf
 
 #   ----------------------------------------------------------------------------
 #   Base for DSPLink
-#   This may have to be changed depending on your installation paths 
+#   This may have to be changed depending on your installation paths
 #   and DSPLink version
 #   ----------------------------------------------------------------------------
 #DSPLINK := /home/user/OMAPL137_arm_1_00_00_10/dsplink-1_61_03-prebuilt/packages/dsplink
@@ -45,7 +45,7 @@ DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/to
 # DSPLINK := /data/ESLab/DSPLink/dsplink_linux_1_63/dsplink
 
 #   ----------------------------------------------------------------------------
-#   Project name. 
+#   Project name.
 #   This variable can be used to set all source/BIOS/object filenames
 #   For clarity, in this example it sets only the .OUT .CMD and .MAP filenames
 #   ----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ DEBUG :=
 CFLAGS := -I$(BASE_BSL)/dsp/include
 LDFLAGS := -i$(BASE_BSL)/dsp/lib
 #CSRCS := tskMessage.c helloDSP_config.c main.c led_test.c
-CSRCS := tskMessage.c helloDSP_config.c main.c 
+CSRCS := tskMessage.c helloDSP_config.c main.c
 ASRCS :=
 BIOSTCF := helloDSP.tcf
 OBJS :=
@@ -110,8 +110,8 @@ LIBS_D := $(LIBS)
 MAPFILE_D := $(OBJDIR_D)/$(MAPFILE)
 
 
-#--gcc -pr -os -on=2 -s -op=3 -al -mw --stack=0x3000 
-#-I${COMPILER_PATH}/../include -I${SYSROOT}/include -I${SYSROOT}/platform/${PLATFORM}/include 
+#--gcc -pr -os -on=2 -s -op=3 -al -mw --stack=0x3000
+#-I${COMPILER_PATH}/../include -I${SYSROOT}/include -I${SYSROOT}/platform/${PLATFORM}/include
 
 
 #   ----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ LIBS_R := $(LIBS)
 MAPFILE_R := $(OBJDIR_R)/$(MAPFILE)
 
 #   ----------------------------------------------------------------------------
-#   Compiler common include directories 
+#   Compiler common include directories
 #   ----------------------------------------------------------------------------
 CINCLUDES := -I$(DSPLINK)/dsp/inc                             \
              -I$(DSPLINK)/dsp/inc/DspBios                     \
@@ -141,7 +141,7 @@ CINCLUDES := -I$(DSPLINK)/dsp/inc                             \
 #             -I$(DSPLINK)/dsp/export/INCLUDE/DspBios/OMAPL1XX \
 #             -I$(DSPLINK)/dsp/inc/DspBios/6.XX/OMAPL1XXGEM    \
 #   ----------------------------------------------------------------------------
-#   Compiler common symbol definitions 
+#   Compiler common symbol definitions
 #   ----------------------------------------------------------------------------
 
 DEFS := 	-DHOSTED_IO 				\
@@ -164,7 +164,7 @@ DEFS := 	-DHOSTED_IO 				\
 		-DPROCID=0                              \
 		-dPHYINTERFACE=SHMEM_INTERFACE          \
 		-DDSP_SWI_MODE                          \
-		-DARCH_OMAP                             
+		-DARCH_OMAP
 
 
 
@@ -181,7 +181,7 @@ LDINCLUDES := -i$(BASE_COMPILER)/lib                      \
 #   Linker library search path for Debug
 #   ----------------------------------------------------------------------------
 #LDINCLUDES_D := $(LDINCLUDES) -i$(DSPLINK)/dsp/export/BIN/DspBios/OMAPL1XX/OMAPL1XXGEM_0/DEBUG/
-# If the DSP/Link was rebuilt by the user, replace the line above 
+# If the DSP/Link was rebuilt by the user, replace the line above
 # with the one below to use the updated libraries
 LDINCLUDES_D := $(LDINCLUDES) -i$(DSPLINK)/dsp/BUILD/OMAP3530_0/EXPORT/DEBUG/
 
@@ -189,7 +189,7 @@ LDINCLUDES_D := $(LDINCLUDES) -i$(DSPLINK)/dsp/BUILD/OMAP3530_0/EXPORT/DEBUG/
 #   Linker library search path for Release
 #   ----------------------------------------------------------------------------
 #LDINCLUDES_R := $(LDINCLUDES) -i$(DSPLINK)/dsp/export/BIN/DspBios/OMAPL1XX/OMAPL1XXGEM_0/RELEASE/
-# If the DSP/Link was rebuilt by the user, replace the line above 
+# If the DSP/Link was rebuilt by the user, replace the line above
 # with the one below to use the updated libraries
 LDINCLUDES_R := $(LDINCLUDES) -i$(DSPLINK)/dsp/BUILD/OMAP3530_0/EXPORT/RELEASE/
 
@@ -208,7 +208,7 @@ $(BIOSSRC): $(BIOSTCF)
 	@$(BASE_TOOLCHAIN)/xcdtools/xdctools_3_16_01_27/$(TCONF) $(BFLAGS) $< 0
 
 #   ----------------------------------------------------------------------------
-#   Building Debug... 
+#   Building Debug...
 #   ----------------------------------------------------------------------------
 .PHONY: Debug
 Debug: $(BINDIR_D)/$(BIN)
@@ -224,7 +224,7 @@ $(OBJDIR_D)/%.obj : %.s62
 	@$(BASE_COMPILER)/bin/$(CC) $(ALL_DEBUG) $(DEFS) $(CFLAGS_D) $(CINCLUDES) -fr$(OBJDIR_D) $<
 
 #   ----------------------------------------------------------------------------
-#   Building Release... 
+#   Building Release...
 #   ----------------------------------------------------------------------------
 .PHONY: Release
 Release: $(BINDIR_R)/$(BIN)
@@ -250,6 +250,3 @@ clean:
 	@rm -f ./$(OBJDIR_D)/*
 	@rm -f ./$(OBJDIR_R)/*
 	@rm -f *~
-
-
-
