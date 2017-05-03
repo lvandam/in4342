@@ -381,7 +381,7 @@ Timer gppTime;
             if(i == 1)
             {
               // Print the received matrix
-              Uint8 k, l;
+              /*Uint8 k, l;
               for(k = 0; k < MAX_MATSIZE; k++)
               {
                   for(l = 0; l < MAX_MATSIZE; l++)
@@ -391,7 +391,7 @@ Timer gppTime;
                   SYSTEM_0Print("\n");
               }
               SYSTEM_0Print("\n");
-				
+				*/
               // Print timers
               printTimer(&execTime);
               printTimer(&firstreceiveTime);
@@ -556,13 +556,13 @@ Timer gppTime;
                     status = helloDSP_Create(dspExecutable, strNumIterations, processorId);
                     
                     /* Timer initialization */
-                    initTimer(&execTime, "Total exec Time");
+                    initTimer(&execTime, "Total exec Time"); // Total exec time for gpp+dsp combo 
                     initTimer(&createTime, "Create Time");
                     initTimer(&deleteTime, "Delete Time");
-                    initTimer(&firstreceiveTime, "Receive first message Time");
-                    initTimer(&receiveTime, "Receive Time");
+                    initTimer(&firstreceiveTime, "Receive hello message Time");
+                    initTimer(&receiveTime, "Receive matrix Time");
                     initTimer(&sendTime, "Send Time");
-                    initTimer(&gppTime, "Gpp multiplication Time");
+                    initTimer(&gppTime, "Gpp multiplication Time"); // Total exec time for multiplication on only gpp
                     
                     /* Time matrix multiplication on only gpp, 
                     include filling of matrices */

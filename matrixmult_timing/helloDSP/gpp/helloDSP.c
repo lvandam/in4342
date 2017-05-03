@@ -53,8 +53,8 @@ extern "C"
 Timer execTime;
 Timer createTime;
 Timer deleteTime;
-Timer firstreceiveTime;
-Timer receiveTime;
+Timer receivehelloTime;
+Timer receivematrixTime;
 Timer sendTime;
 Timer gppTime;
 
@@ -316,13 +316,13 @@ Timer gppTime;
 #endif
 
         /* Receive the message. */
-        startTimer(&firstreceiveTime); // Time how long receiving first msg takes
+        startTimer(&receivehelloTime); // Time how long receiving first msg takes
         status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
         if (DSP_FAILED(status))
         {
             SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
         }
-		stopTimer(&firstreceiveTime);
+		stopTimer(&receivehelloTime);
 		
         for(i = 0; (i < 2 && DSP_SUCCEEDED(status)); i++)
         {
@@ -364,7 +364,7 @@ Timer gppTime;
             }
 
             /* Receive the message. */
-            startTimer(&receiveTime); // Time how long receiving the result takes
+            startTimer(&receivematrixTime); // Time how long receiving the result takes
             status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
             if (DSP_FAILED(status))
             {
@@ -375,7 +375,7 @@ Timer gppTime;
                 //SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
 			
 			// Stop timers
-			stopTimer(&receiveTime);
+			stopTimer(&receivematrixTime);
 			stopTimer(&execTime);
 			
             if(i == 1)
@@ -394,8 +394,8 @@ Timer gppTime;
 				*/
               // Print timers
               printTimer(&execTime);
-              printTimer(&firstreceiveTime);
-              printTimer(&receiveTime);
+              printTimer(&receivehelloTime);
+              printTimer(&receivematrixTime);
               printTimer(&sendTime);
             }
           }
@@ -556,13 +556,13 @@ Timer gppTime;
                     status = helloDSP_Create(dspExecutable, strNumIterations, processorId);
                     
                     /* Timer initialization */
-                    initTimer(&execTime, "Total exec Time");
+                    initTimer(&execTime, "Total exec Time (gpp+dsp)"); // Total exec time for gpp+dsp combo 
                     initTimer(&createTime, "Create Time");
                     initTimer(&deleteTime, "Delete Time");
-                    initTimer(&firstreceiveTime, "Receive first message Time");
-                    initTimer(&receiveTime, "Receive Time");
-                    initTimer(&sendTime, "Send Time");
-                    initTimer(&gppTime, "Gpp multiplication Time");
+                    initTimer(&receivehelloTime, "Receive hello message Time");
+                    initTimer(&receivematrixTime, "Receive matrix Time");
+                    initTimer(&sendTime, "Send matrix Time");
+                    initTimer(&gppTime, "Gpp multiplication Time"); // Total exec time for multiplication on only gpp
                     
                     /* Time matrix multiplication on only gpp, 
                     include filling of matrices */
