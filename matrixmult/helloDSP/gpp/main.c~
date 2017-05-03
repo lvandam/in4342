@@ -1,0 +1,151 @@
+/*  ----------------------------------- OS Specific Headers           */
+#include <stdio.h>
+#include <stdlib.h>
+
+/*  ----------------------------------- DSP/BIOS Link                 */
+#include <gpptypes.h>
+#include <dsplink.h>
+#include <errbase.h>
+
+/*  ----------------------------------- Application Header            */
+#include <system_os.h>
+#include <helloDSP.h>
+
+#include "Timer.h"
+#include "matrix_config.h"
+
+#if defined (__cplusplus)
+extern "C"
+{
+#endif /* defined (__cplusplus) */
+
+
+    /** ============================================================================
+     *  @func   main
+     *
+     *  @desc   Entry point for the application
+     *
+     *  @modif  None
+     *  ============================================================================
+     */
+    int main (int argc, char** argv)
+    {
+    
+    	Timer mainFile;
+    	Timer mainFunction;
+    	Timer multiply;
+    	
+        Char8* dspExecutable = NULL;
+        Char8* strNumIterations = NULL;
+        Char8* strProcessorId = NULL;
+        Uint8 processorId = 0;
+
+        /*	long long _Fract value = atof("2.3");
+        	printf("%k\n",value);	*/
+
+		initTimer(&multiply, "multiplication on just the gpp");
+		startTimer(&multiply);
+		
+    	Uint32 k,l,m;
+    	Uint16 mat1[MAX_MATSIZE][MAX_MATSIZE];
+    	Uint16 mat2[MAX_MATSIZE][MAX_MATSIZE];
+    	Uint16 prod[MAX_MATSIZE][MAX_MATSIZE];
+
+    	matrix_fill(1,mat1);
+    	matrix_fill(2,mat2);
+    	
+    	// Start multiplication
+        for (k = 0; k < MAX_MATSIZE; k++)
+        {
+            for (l = 0; l < MAX_MATSIZE; l++)
+            {
+                prod[k][l]=0;
+                for(m = 0; m < MAX_MATSIZE; m++)
+                    prod[k][l] = prod[k][l] + mat1[k][m] * mat2[m][l];
+            }
+        }
+    	stopTimer(&multiply);
+    	printTimer(&multiply);
+    	/*      // Print the received matrix
+              for(k = 0; k < MAX_MATSIZE; k++)
+              {
+                  for(l = 0; l < MAX_MATSIZE; l++)
+                  {
+                      SYSTEM_1Print("%d\t", mat1[k][l]);
+                  }
+                  SYSTEM_0Print("\n");
+              }
+              SYSTEM_0Print("\n"); 
+              
+                  	      // Print the received matrix
+              for(k = 0; k < MAX_MATSIZE; k++)
+              {
+                  for(l = 0; l < MAX_MATSIZE; l++)
+                  {
+                      SYSTEM_1Print("%d\t", mat2[k][l]);
+                  }
+                  SYSTEM_0Print("\n");
+              }
+              SYSTEM_0Print("\n"); 
+              
+                  	      // Print the received matrix
+              for(k = 0; k < MAX_MATSIZE; k++)
+              {
+                  for(l = 0; l < MAX_MATSIZE; l++)
+                  {
+                      SYSTEM_1Print("%d\t", prod[k][l]);
+                  }
+                  SYSTEM_0Print("\n");
+              }
+              SYSTEM_0Print("\n"); 
+    	*/
+        initTimer(&mainFile, "main file: ");
+    	initTimer(&mainFunction, "main function helloDSP_main: ");
+    	    	
+		startTimer(&mainFile);
+        if ((argc != 4) && (argc!=3))
+        {
+            //SYSTEM_1Print("Usage : %s <absolute path of DSP executable> <number of transfers> <DSP Processor Id>\n"
+            //              "For infinite transfers, use value of 0 for <number of transfers>\n"
+            //              "For DSP Processor Id,"
+            //              "\n\t use value of 0  if sample needs to be run on DSP 0 "
+            //              "\n\t use value of 1  if sample needs to be run on DSP 1"
+            //              "\n\t For single DSP configuration this is optional argument\n",
+            //              (int) argv[0]);
+        }
+
+        else
+        {
+            dspExecutable = argv[1];
+            strNumIterations = argv[2];
+
+            if (argc == 3)
+            {
+                strProcessorId = "0";
+                processorId = 0;
+            }
+            else
+            {
+                strProcessorId = argv[3];
+                processorId = atoi(argv[3]);
+            }
+
+            if (processorId < MAX_PROCESSORS)
+            {
+                startTimer(&mainFunction);
+                helloDSP_Main(dspExecutable, strNumIterations, strProcessorId);
+            	stopTimer(&mainFunction);
+            }
+        }
+		stopTimer(&mainFile);		
+		
+		printTimer(&mainFile);
+		printTimer(&mainFunction);
+		printTimer(&multiply);
+        return 0;
+    }
+
+
+#if defined (__cplusplus)
+}
+#endif /* defined (__cplusplus) */
