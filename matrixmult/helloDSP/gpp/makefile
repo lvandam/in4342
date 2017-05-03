@@ -41,7 +41,7 @@ DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/to
 #   ----------------------------------------------------------------------------
 #   General options, sources and libraries
 #   ----------------------------------------------------------------------------
-SRCS := matrix_config.c helloDSP.c system_os.c main.c
+SRCS := matrix_config.c helloDSP.c system_os.c main.c Timer.c
 OBJS :=
 DEBUG :=
 LDFLAGS := -lpthread

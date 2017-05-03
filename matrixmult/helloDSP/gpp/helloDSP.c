@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include "matrix_config.h"
+#include "Timer.h"
 
 #if defined (__cplusplus)
 extern "C"
@@ -47,6 +48,8 @@ extern "C"
 #define NUMMSGINPOOL1   2
 #define NUMMSGINPOOL2   2
 #define NUMMSGINPOOL3   4
+
+Timer totalTime;
 
     /* Control message data structure. */
     /* Must contain a reserved space for the header */
@@ -299,6 +302,11 @@ extern "C"
 
         for(i = 0; (i < 2 && DSP_SUCCEEDED(status)); i++)
         {
+          if(i == 0)
+          {
+            // Start the overall timer
+            startTimer(&totalTime);
+          }
           // Send matrices
           if(DSP_SUCCEEDED(status))
           {
@@ -348,6 +356,11 @@ extern "C"
                   SYSTEM_0Print("\n");
               }
               SYSTEM_0Print("\n");
+
+              // Stop timers
+              stopTimer(&totalTime);
+              SYSTEM_0Print("Total execution took: ");
+              printTimer(&totalTime);
             }
           }
 
@@ -500,6 +513,9 @@ extern "C"
                 if (DSP_SUCCEEDED(status))
                 {
                     status = helloDSP_Create(dspExecutable, strNumIterations, processorId);
+
+                    /* Timer initialization */
+                    initTimer(&totalTime, "Total Time");
 
                     /* Execute the message execute phase. */
                     if (DSP_SUCCEEDED(status))
