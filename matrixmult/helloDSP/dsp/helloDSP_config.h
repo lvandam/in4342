@@ -51,12 +51,13 @@ extern "C" {
 
 /* Control message data structure. */
 /* Must contain a reserved space for the header */
+#define MSG_MATSIZE 64 // Size of the matrix per message
 typedef struct ControlMsg
 {
     MSGQ_MsgHeader header;
-    Uint16 command;
+    Uint8 command; // This will contain the current chunk of the matrix to be sent
     Char text[ARG_SIZE];
-    Uint16 mat[MAX_MATSIZE][MAX_MATSIZE];
+	  int mat[MSG_MATSIZE * MSG_MATSIZE];
 } ControlMsg;
 
 /* Messaging buffer used by the application.

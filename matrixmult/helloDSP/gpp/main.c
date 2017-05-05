@@ -38,8 +38,7 @@ extern "C"
 
         if ((argc != 4) && (argc!=3))
         {
-            SYSTEM_1Print("Usage : %s <absolute path of DSP executable> <number of transfers> <DSP Processor Id>\n"
-                          "For infinite transfers, use value of 0 for <number of transfers>\n"
+            SYSTEM_1Print("Usage : %s <absolute path of DSP executable> <matrix size> <DSP Processor Id>\n"
                           "For DSP Processor Id,"
                           "\n\t use value of 0  if sample needs to be run on DSP 0 "
                           "\n\t use value of 1  if sample needs to be run on DSP 1"

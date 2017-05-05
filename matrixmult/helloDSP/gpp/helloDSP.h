@@ -54,7 +54,7 @@ extern "C"
      *  @see    helloDSP_Delete
      *  ============================================================================
      */
-    NORMAL_API DSP_STATUS helloDSP_Create (IN Char8* dspExecutable, IN Char8* strNumIterations, IN Uint8 processorId);
+    NORMAL_API DSP_STATUS helloDSP_Create (IN Char8* dspExecutable, IN Char8* strMatrixSize, IN Uint8 processorId);
 
 
     /** ============================================================================
@@ -134,7 +134,7 @@ extern "C"
      *  @see    helloDSP_Create, helloDSP_Execute, helloDSP_Delete
      *  ============================================================================
      */
-    NORMAL_API Void helloDSP_Main(IN Char8* dspExecutable, IN Char8* strNumIterations, IN Char8* strProcessorId);
+    NORMAL_API Void helloDSP_Main(IN Char8* dspExecutable, IN Char8* strMatrixSize, IN Char8* strProcessorId);
 
 
 #if defined (DA8XXGEM)
