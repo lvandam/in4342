@@ -1,77 +1,111 @@
-/*  ----------------------------------- OS Specific Headers           */
-#include <stdio.h>
-#include <stdlib.h>
+// Example code
+/*  ----------------------------------- DSP/BIOS Headers            */
+#include "helloDSPcfg.h"
+#include <sys.h>
+#include <sem.h>
+#include <msgq.h>
+#include <pool.h>
 
-/*  ----------------------------------- DSP/BIOS Link                 */
-#include <gpptypes.h>
+/*  ----------------------------------- DSP/BIOS LINK Headers       */
 #include <dsplink.h>
-#include <errbase.h>
+#include <failure.h>
 
-/*  ----------------------------------- Application Header            */
-#include <system_os.h>
-#include <helloDSP.h>
+/*  ----------------------------------- Sample Headers              */
+#include <tskMessage.h>
+
+/*  ----------------------------------- BSL Headers                 */
+ 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-#if defined (__cplusplus)
-extern "C"
+/* FILEID is used by SET_FAILURE_REASON macro. */
+#define FILEID  FID_APP_C
+
+/* Number of iterations message transfers to be done by the application. */
+Uint16 numTransfers;
+
+/** ----------------------------------------------------------------------------
+ *  @func   tskMessage
+ *
+ *  @desc   Task for TSK based TSKMESSAGE application.
+ */
+static Int tskMessage();
+
+/** ============================================================================
+ *  @func   atoi
+ *
+ *  @desc   Converts character string to integer value.
+ *
+ *  ============================================================================
+ */
+extern int atoi(const char* str);
+
+/** ============================================================================
+ *  @func   main
+ *
+ *  @desc   Entry function.
+ *
+ *  @modif  None
+ *  ============================================================================
+ */
+Void main(Int argc, Char* argv [])
 {
-#endif /* defined (__cplusplus) */
+    /* Task handler for TSK_create */
+    TSK_Handle tskMessageTask;
 
+#if !defined (DSP_BOOTMODE_NOBOOT)
+    /* Get the number of transfers to be done by the application */
+    numTransfers = atoi(argv [0]);
+    /* Initialize DSP/BIOS LINK. */
+    DSPLINK_init();
+#endif
 
-    /** ============================================================================
-     *  @func   main
-     *
-     *  @desc   Entry point for the application
-     *
-     *  @modif  None
-     *  ============================================================================
-     */
-    int main (int argc, char** argv)
+    /* Creating task for TSKMESSAGE application */
+    tskMessageTask = TSK_create(tskMessage, NULL, 0);
+    if (tskMessageTask == NULL)
     {
-        Char8* dspExecutable = NULL;
-        Char8* strNumIterations = NULL;
-        Char8* strProcessorId = NULL;
-        Uint8 processorId = 0;
+        SET_FAILURE_REASON(SYS_EALLOC);
+        LOG_printf(&trace, "Create TSKMESSAGE: Failed.\n");
+    }
+}
 
-        /*	long long _Fract value = atof("2.3");
-        	printf("%k\n",value);	*/
+/** ----------------------------------------------------------------------------
+ *  @func   tskMessage
+ *
+ *  @desc   Task for TSK based TSKMESSAGE application.
+ *
+ *  @modif  None
+ *  ----------------------------------------------------------------------------
+ */
+static Int tskMessage()
+{
+    Int status = SYS_OK;
+    TSKMESSAGE_TransferInfo* info;
 
-        if ((argc != 4) && (argc!=3))
+    /* Create Phase */
+    status = TSKMESSAGE_create(&info);
+
+    /* Execute Phase */
+    if (status == SYS_OK)
+    {
+        /* Start the execution phase. */
+        status = TSKMESSAGE_execute(info);
+        if (status != SYS_OK)
         {
-            SYSTEM_1Print("Usage : %s <absolute path of DSP executable> <number of transfers> <DSP Processor Id>\n"
-                          "For infinite transfers, use value of 0 for <number of transfers>\n"
-                          "For DSP Processor Id,"
-                          "\n\t use value of 0  if sample needs to be run on DSP 0 "
-                          "\n\t use value of 1  if sample needs to be run on DSP 1"
-                          "\n\t For single DSP configuration this is optional argument\n",
-                          (int) argv[0]);
+            SET_FAILURE_REASON(status);
         }
-
-        else
-        {
-            dspExecutable = argv[1];
-            strNumIterations = argv[2];
-
-            if (argc == 3)
-            {
-                strProcessorId = "0";
-                processorId = 0;
-            }
-            else
-            {
-                strProcessorId = argv[3];
-                processorId = atoi(argv[3]);
-            }
-
-            if (processorId < MAX_PROCESSORS)
-            {
-                helloDSP_Main(dspExecutable, strNumIterations, strProcessorId);
-            }
-        }
-
-        return 0;
     }
 
+    /* Delete Phase */
+    status = TSKMESSAGE_delete(info);
+    if (status != SYS_OK)
+    {
+        SET_FAILURE_REASON(status);
+    }
+    return status;
+}
 
 #if defined (__cplusplus)
 }
