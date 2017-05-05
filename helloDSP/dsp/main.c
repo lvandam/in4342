@@ -1,4 +1,4 @@
-// lam
+// Original code
 /*  ----------------------------------- DSP/BIOS Headers            */
 #include "helloDSPcfg.h"
 #include <sys.h>
