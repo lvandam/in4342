@@ -21,7 +21,6 @@
 #if !defined (HELLODSP_H)
 #define HELLODSP_H
 
-
 #if defined (__cplusplus)
 extern "C"
 {

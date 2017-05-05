@@ -48,12 +48,92 @@ extern "C"
 #define NUMMSGINPOOL2   2
 #define NUMMSGINPOOL3   4
 
+// Comment THIS FOR BENCHMARKING!!!
+#define DEBUG 1
 
 #define MAX_MATSIZE 128
 #define MSG_MATSIZE 64
+
+// Timers
+Timer totalTime;
+// Matrix size which is specified by the user
 Uint8 matSize;
 
-Timer totalTime;
+int mat1 [MAX_MATSIZE * MAX_MATSIZE];
+int mat2 [MAX_MATSIZE * MAX_MATSIZE];
+int product [MAX_MATSIZE * MAX_MATSIZE];
+int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
+
+  #ifdef DEBUG
+    void matrix_mult(void)
+    {
+      Uint16 i, j, k;
+      for (i = 0; i < matSize; i++)
+      {
+        for (j = 0; j < matSize; j++)
+        {
+          prod_gpp[i * matSize + j] = 0;
+          for(k = 0; k < matSize; k++)
+            prod_gpp[i * matSize + j] += mat1[i * matSize + k] * mat2[k * matSize + j];
+        }
+      }
+    }
+
+    int matrix_compare(void)
+    {
+      Uint16 i, j;
+      for (i = 0; i < matSize; i++)
+      {
+        for (j = 0; j < matSize; j++)
+        {
+          if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return 0;
+        }
+      }
+      return 1;
+    }
+#endif
+
+
+    void matrix_fill(Uint8 matNum, int matrix[MAX_MATSIZE * MAX_MATSIZE])
+    {
+        Uint8 i, j;
+
+        if(matNum == 1)
+        {
+            for (i = 0;i < matSize; i++)
+            {
+                for (j = 0; j < matSize; j++)
+                {
+                    matrix[i * matSize + j] = i+j*2;
+                }
+            }
+        }
+    	else if(matNum == 2)
+        {
+            for(i = 0; i < matSize; i++)
+            {
+                for (j = 0; j < matSize; j++)
+                {
+                    matrix[i * matSize + j] = i+j*3;
+                }
+            }
+        }
+      return;
+    }
+
+    void memcpyMatrix(int* src, int* dst, int width){
+      int i;
+      int *ptr = dst;
+
+      i = 0;
+      while(i < width)
+      {
+        *ptr = *src;
+        i++;
+        ptr++;
+        src++;
+      }
+    }
 
     /* Control message data structure. */
     /* Must contain a reserved space for the header */
@@ -120,10 +200,6 @@ Timer totalTime;
     /* Extern declaration to the default DSP/BIOS LINK configuration structure. */
     extern LINKCFG_Object LINKCFG_config;
 
-    int mat1 [MAX_MATSIZE * MAX_MATSIZE];
-    int mat2 [MAX_MATSIZE * MAX_MATSIZE];
-    int product [MAX_MATSIZE * MAX_MATSIZE];
-
 #if defined (VERIFY_DATA)
     /** ============================================================================
      *  @func   helloDSP_VerifyData
@@ -133,40 +209,6 @@ Timer totalTime;
      */
     STATIC NORMAL_API DSP_STATUS helloDSP_VerifyData(IN MSGQ_Msg msg, IN Uint16 sequenceNumber);
 #endif
-
-    void matrix_fill(Uint8 matNum, int matrix[MAX_MATSIZE * MAX_MATSIZE])
-    {
-        Uint8 i, j;
-
-        if(matNum == 1)
-        {
-            for (i = 0;i < matSize; i++)
-            {
-                for (j = 0; j < matSize; j++)
-                {
-                    matrix[i * matSize + j] = i+j*2;
-                }
-            }
-        }
-    	else if(matNum == 2)
-        {
-            for(i = 0; i < matSize; i++)
-            {
-                for (j = 0; j < matSize; j++)
-                {
-                    matrix[i * matSize + j] = i+j*3;
-                }
-            }
-        }
-      return;
-    }
-
-
-    void sendMatrix(int[] matrix, int command, int size, ControlMsg &msg)
-    {
-
-    }
-
 
     /** ============================================================================
      *  @func   helloDSP_Create
@@ -183,12 +225,14 @@ Timer totalTime;
         Uint32 numArgs = NUM_ARGS;
         MSGQ_LocateAttrs syncLocateAttrs;
         Char8* args[NUM_ARGS];
-        //Uint8 i,j;
 
         SYSTEM_0Print("Entered helloDSP_Create ()\n");
 
         matrix_fill(1, mat1);
         matrix_fill(2, mat2);
+        #ifdef DEBUG
+        matrix_mult();
+        #endif
 
         /* Create and initialize the proc object. */
         status = PROC_setup(NULL);
@@ -297,7 +341,6 @@ Timer totalTime;
         return status;
     }
 
-
     /** ============================================================================
      *  @func   helloDSP_Execute
      *
@@ -311,8 +354,7 @@ Timer totalTime;
         DSP_STATUS  status = DSP_SOK;
         Uint16 sequenceNumber = 0;
         Uint16 msgId = 0;
-        Uint32 i, offset, remainingEls;
-        Uint8 k, l;
+        Uint32 i, offset, remainingEls, totalMessages;
         ControlMsg *msg;
 
         SYSTEM_0Print("Entered helloDSP_Execute ()\n");
@@ -326,10 +368,10 @@ Timer totalTime;
         if (DSP_FAILED(status))
         {
             SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
-        } 
+        }
 
-        int totalMessages = ((matSize * matSize) + (MSG_MATSIZE * MSG_MATSIZE) - 1) / (MSG_MATSIZE * MSG_MATSIZE); // Total amount of messages needed to send a matrix
-      //  int totalMessages = (matSize * matSize) / (MSG_MATSIZE * MSG_MATSIZE); // Total amount of messages needed to send a matrix
+        totalMessages = ((matSize * matSize) + (MSG_MATSIZE * MSG_MATSIZE) - 1) / (MSG_MATSIZE * MSG_MATSIZE); // Total amount of messages needed to send a matrix
+
         // Start the overall timer
         startTimer(&totalTime);
 
@@ -341,39 +383,33 @@ Timer totalTime;
             msgId = MSGQ_getMsgId(msg);
             MSGQ_setMsgId(msg, msgId);
 
-            // void sendMatrix(int[] matrix, int command, int size, ControlMsg &msg)
-            offset = MSG_MATSIZE * MSG_MATSIZE * (i % totalMessages) * sizeof(int);
+            offset = MSG_MATSIZE * MSG_MATSIZE * (i % totalMessages);
             remainingEls = (matSize * matSize) % (MSG_MATSIZE * MSG_MATSIZE);
+            msg->command = i;
+
             if(i < totalMessages) // Send messages for matrix 1
             {
-
               if(i == totalMessages - 1 && remainingEls > 0) // Send the remaining elements
-              {
-                sendMatrix(mat1+offset, i, remainingEls*sizeof(int), msg);
-              }
+                memcpyMatrix(mat1 + offset, msg->mat, remainingEls);
               else
-                memcpy(msg->mat, mat1 + offset, MSG_MATSIZE * MSG_MATSIZE * sizeof(int));
+                memcpyMatrix(mat1 + offset, msg->mat, MSG_MATSIZE * MSG_MATSIZE);
             }
             else if(i < totalMessages * 2) // Send messages for matrix 2
             {
               if(i == totalMessages*2 - 1 && remainingEls > 0) // Send the remaining elements
-              {
-                  memcpy(msg->mat, mat2 + offset, remainingEls * sizeof(int));
-              }
+                memcpyMatrix(mat2 + offset, msg->mat, remainingEls);
               else
-                memcpy(msg->mat, mat2 + offset, MSG_MATSIZE * MSG_MATSIZE * sizeof(int));
+                memcpyMatrix(mat2 + offset, msg->mat, MSG_MATSIZE * MSG_MATSIZE);
             }
-            else // Receive product matrix
+            else // Receive prod
             {
               if(i == totalMessages*3 - 1 && remainingEls > 0) // Receive the remaining elements
-              {
-                  memcpy(product + offset, msg->mat, remainingEls * sizeof(int));
-              }
+                memcpyMatrix(msg->mat, product + offset, remainingEls);
               else
-                  memcpy(product + offset, msg->mat, MSG_MATSIZE * MSG_MATSIZE * sizeof(int));
+                memcpyMatrix(msg->mat, product + offset, MSG_MATSIZE * MSG_MATSIZE);
             }
 
-            if(i < totalMessages * 3-1)
+            if(i < totalMessages*3-1)
             {
               status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
               if (DSP_FAILED(status))
@@ -389,22 +425,30 @@ Timer totalTime;
                   SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
               }
 
+              #ifdef DEBUG
               if (msg->command == 0xFF)
-                  SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
-              else
-                  SYSTEM_1Print("He received number %d\n", msg->command);
+                SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
+              #endif
             }
             else
             {
-              for(k = 0; k < matSize; k++)
-              {
-               for(l = 0; l < matSize; l++)
-               {
-                   SYSTEM_1Print("%d\t", product[k * matSize + l]);
-               }
-               SYSTEM_0Print("\n");
-              }
-              SYSTEM_0Print("\n\n\n\n\n");
+              // Verify received product matrix
+              #ifdef DEBUG
+              if(matrix_compare())
+                SYSTEM_0Print("\n\n//////////// MATRIX VERIFICATION: Matrices are OK!!\n\n");
+              else
+                SYSTEM_0Print("\n\n//////////// ERROR: GPP and DSP multiplications are unequal!\n\n");
+              #endif
+
+              // for(k = 0; k < matSize; k++)
+              // {
+              //  for(l = 0; l < matSize; l++)
+              //  {
+              //      SYSTEM_1Print("%d\t", product[k * matSize + l]);
+              //  }
+              //  SYSTEM_0Print("\n");
+              // }
+              // SYSTEM_0Print("\n\n\n\n\n");
             }
 
           }
@@ -416,104 +460,6 @@ Timer totalTime;
               sequenceNumber = 0;
           }
         }
-
-
-                SYSTEM_2Print("OK %d --> %d!!!\n", matSize, totalMessages);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // for(i = 0; (i < totalMessages && DSP_SUCCEEDED(status)); i++)
-        // {
-        //   // Send matrices
-        //   if(DSP_SUCCEEDED(status))
-        //   {
-        //     msgId = MSGQ_getMsgId(msg);
-        //     MSGQ_setMsgId(msg, msgId);
-        //
-        //     //if(i == 0)
-        //     //{
-        //
-        //
-        //       offset = MSG_MATSIZE * MSG_MATSIZE * i * sizeof(int);
-        //       remainingEls = (matSize * matSize) - (i * MSG_MATSIZE * MSG_MATSIZE);
-        //       memcpy(msg->mat, mat1 + offset, remainingEls * sizeof(int));
-        //
-        //
-        //     //}
-        //     // else if(i == 1)
-        //     // {
-        //     //   // Matrix 2
-        //     //   SYSTEM_0Print("Sending matrix 2...\n");
-        //     //   memcpy(msg->mat, mat2, MSG_MATSIZE * MSG_MATSIZE * sizeof(int));
-        //     // }
-        //
-        //     status = MSGQ_put(SampleDspMsgq, (MsgqMsg) msg);
-        //     if (DSP_FAILED(status))
-        //     {
-        //         MSGQ_free((MsgqMsg) msg);
-        //         SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
-        //     }
-        //
-        //     /* Receive the message. */
-        //     status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
-        //     if (DSP_FAILED(status))
-        //     {
-        //         SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
-        //     }
-        //
-        //     if (msg->command == 0xFF)
-        //         SYSTEM_1Print("Message received: %s\n", (Uint32) msg->text);
-        //
-        //     //if(i == 1)
-        //     //{
-        //       // Print the received matrix
-        //   }
-
-
-        //
-        //   Uint8 k, l;
-        //   for(k = 0; k < MSG_MATSIZE; k++)
-        //   {
-        //       for(l = 0; l < MSG_MATSIZE; l++)
-        //       {
-        //           SYSTEM_1Print("%d\t", msg->mat[k * MSG_MATSIZE + l]);
-        //       }
-        //       SYSTEM_0Print("\n");
-        //   }
-        //   SYSTEM_0Print("\n");
-        //
-        // if(i == 1)
-        //   {
-        //   // Stop timers
-        //   stopTimer(&totalTime);
-        //   SYSTEM_0Print("Total execution took: ");
-        //   printTimer(&totalTime);
-        // }
-
-
-        //
-        //   sequenceNumber++;
-        //   /* Make sure that the sequenceNumber stays within the permitted
-        //    * range for applications. */
-        //   if (sequenceNumber == MSGQ_INTERNALIDSSTART)
-        //   {
-        //       sequenceNumber = 0;
-        //   }
-        // }
 
 #if defined (PROFILE)
         if (DSP_SUCCEEDED(status))
@@ -643,11 +589,6 @@ Timer totalTime;
                 status = DSP_EINVALIDARG;
                 SYSTEM_0Print("ERROR! Invalid arguments specified for helloDSP application.\n Maximum matrix size = 128");
             }
-            // if (numIterations > 0xFFFF)
-            // {
-            //     status = DSP_EINVALIDARG;
-            //     SYSTEM_1Print("ERROR! Invalid arguments specified for helloDSP application.\n Max iterations = %d\n", 0xFFFF);
-            // }
             else
             {
                 processorId = SYSTEM_Atoi(strProcessorId);

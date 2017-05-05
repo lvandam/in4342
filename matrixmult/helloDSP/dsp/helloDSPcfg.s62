@@ -5,11 +5,7 @@
 ;; INPUT helloDSP.cdb
 
 ;; CONFIGURATION/VERSION INFORMATION
-<<<<<<< Updated upstream
-	.asg "Tue May  2 02:13:53 2017", VERS$DATE
-=======
-	.asg "Thu May  4 21:12:16 2017", VERS$DATE
->>>>>>> Stashed changes
+	.asg "Fri May  5 14:00:20 2017", VERS$DATE
 
 ;; PROLOGUE
 	.include helloDSPcfg.h62
