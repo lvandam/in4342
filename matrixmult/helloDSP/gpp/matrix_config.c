@@ -4,12 +4,12 @@
 NORMAL_API DSP_STATUS matrix_fill(Uint8 matNum, Uint16 matrix[MAX_MATSIZE][MAX_MATSIZE])
 {
     Uint8 i, j;
-	
+
     if(matNum == 1)
     {
-        for (i = 0;i < MAX_MATSIZE; i++)
+        for (i = 0;i < matSize; i++)
         {
-            for (j = 0; j < MAX_MATSIZE; j++)
+            for (j = 0; j < matSize; j++)
             {
                 matrix[i][j] = i+j*2;
             }
@@ -17,9 +17,9 @@ NORMAL_API DSP_STATUS matrix_fill(Uint8 matNum, Uint16 matrix[MAX_MATSIZE][MAX_M
     }
 	else if(matNum == 2)
     {
-        for(i = 0; i < MAX_MATSIZE; i++)
+        for(i = 0; i < matSize; i++)
         {
-            for (j = 0; j < MAX_MATSIZE; j++)
+            for (j = 0; j < matSize; j++)
             {
                 matrix[i][j] = i+j*3;
             }

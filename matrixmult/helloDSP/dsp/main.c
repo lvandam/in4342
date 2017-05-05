@@ -13,7 +13,7 @@
 #include <tskMessage.h>
 
 /*  ----------------------------------- BSL Headers                 */
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,6 +24,7 @@ extern "C" {
 
 /* Number of iterations message transfers to be done by the application. */
 Uint16 numTransfers;
+Uint8 matSize;
 
 /** ----------------------------------------------------------------------------
  *  @func   tskMessage
@@ -56,7 +57,9 @@ Void main(Int argc, Char* argv [])
 
 #if !defined (DSP_BOOTMODE_NOBOOT)
     /* Get the number of transfers to be done by the application */
-    numTransfers = atoi(argv [0]);
+    numTransfers = 1;//atoi(argv [0]);
+    /* Get the matrix size */
+    matSize = atoi(argv [0]);
     /* Initialize DSP/BIOS LINK. */
     DSPLINK_init();
 #endif

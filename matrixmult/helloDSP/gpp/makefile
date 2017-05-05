@@ -41,7 +41,9 @@ DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/to
 #   ----------------------------------------------------------------------------
 #   General options, sources and libraries
 #   ----------------------------------------------------------------------------
-SRCS := matrix_config.c helloDSP.c system_os.c main.c Timer.c
+
+SRCS := helloDSP.c system_os.c main.c Timer.c
+
 OBJS :=
 DEBUG :=
 LDFLAGS := -lpthread
@@ -163,7 +165,9 @@ $(OBJDIR_R)/%.o : %.c
 	@$(BASE_TOOLCHAIN)/bin/$(CC) $(DEFS) $(ALL_CFLAGS) -o$@ $<
 
 send:
-	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/laurens/helloDSP/.
+
+#	scp $(BINDIR_R)/$(BIN) root@80.114.140.50:/home/root/esLAB/helloDSP/.
+	scp $(BINDIR_R)/$(BIN) root@88.202.161.61:/home/root/esLAB/helloDSP/.
 
 .PHONY: clean
 clean:

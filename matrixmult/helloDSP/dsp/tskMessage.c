@@ -41,7 +41,13 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
+// Comment THIS FOR BENCHMARKING!!!
+#define DEBUG 1
+extern Uint8 matSize;
 
+int mat1[MAX_MATSIZE * MAX_MATSIZE];
+int mat2[MAX_MATSIZE * MAX_MATSIZE];
+int prod[MAX_MATSIZE * MAX_MATSIZE];
 
 /** ============================================================================
  *  @func   TSKMESSAGE_create
@@ -125,6 +131,34 @@ Int TSKMESSAGE_create(TSKMESSAGE_TransferInfo** infoPtr)
     return status;
 }
 
+void multiplyMatrices()
+{
+  int k, l, m;
+  // Start multiplication
+  for (k = 0; k < matSize; k++)
+  {
+    for (l = 0; l < matSize; l++)
+    {
+      prod[k * matSize + l] = 0;
+      for(m = 0; m < matSize; m++)
+        prod[k * matSize + l] = prod[k * matSize + l] + mat1[k * matSize + m] * mat2[m * matSize + l];
+    }
+  }
+}
+
+void memcpyMatrix(int* src, int* dst, int width){
+  int i;
+  int *ptr = dst;
+
+  i = 0;
+  while(i < width)
+  {
+    *ptr = *src;
+    i++;
+    ptr++;
+    src++;
+  }
+}
 
 /** ============================================================================
  *  @func   TSKMESSAGE_execute
@@ -135,15 +169,14 @@ Int TSKMESSAGE_create(TSKMESSAGE_TransferInfo** infoPtr)
  *  @modif  None.
  *  ============================================================================
  */
+
 Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 {
     Int status = SYS_OK;
     ControlMsg* msg;
-    Uint32 k,l,m,i,j;
-    Uint16 recmat[MAX_MATSIZE][MAX_MATSIZE];
-    Uint16 mat1[MAX_MATSIZE][MAX_MATSIZE];
-    Uint16 mat2[MAX_MATSIZE][MAX_MATSIZE];
-    Uint16 prod[MAX_MATSIZE][MAX_MATSIZE];
+    Uint32 i, offset, remainingEls;
+    Uint8 totalMessages;
+    Uint8 messageNumber;
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -152,8 +185,10 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     {
         MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
         MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
-        msg->command = 0x01;
+        msg->command = 0xFF;
+        #ifdef DEBUG
         SYS_sprintf(msg->text, "DSP is awake!");
+        #endif
 
         status = MSGQ_put(info->locatedMsgq, (MSGQ_Msg) msg);
         if (status != SYS_OK)
@@ -168,95 +203,114 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
         SET_FAILURE_REASON(status);
     }
 
-    /* Execute the loop for the configured number of transfers  */
-    /* A value of 0 in numTransfers implies infinite iterations */
-    /*for (i = 0; (((info->numTransfers == 0) || (i < info->numTransfers)) && (status == SYS_OK)); i++)
-    {*/
+    totalMessages = ((matSize * matSize) + (MSG_MATSIZE * MSG_MATSIZE) - 1) / (MSG_MATSIZE * MSG_MATSIZE); // Total amount of messages needed to send a matrix
 
-    for(i = 0; (i < 3 && status == SYS_OK); i++)
+    for(i = 0; (i < totalMessages*3 && status == SYS_OK); i++)
     {
-        /* Receive a message from the GPP */
-        status = MSGQ_get(info->localMsgq,(MSGQ_Msg*) &msg, SYS_FOREVER);
-        if (status == SYS_OK)
-        {
-            /* Check if the message is an asynchronous error message */
-            if (MSGQ_getMsgId((MSGQ_Msg) msg) == MSGQ_ASYNCERRORMSGID)
-            {
-#if !defined (LOG_COMPONENT)
-                LOG_printf(&trace, "Transport error Type = %d",((MSGQ_AsyncErrorMsg *) msg)->errorType);
-#endif
-                /* Must free the message */
-                MSGQ_free((MSGQ_Msg) msg);
-                status = SYS_EBADIO;
-                SET_FAILURE_REASON(status);
-            }
-            /* Check if the message received has the correct sequence number */
-            else if (MSGQ_getMsgId ((MSGQ_Msg) msg) != info->sequenceNumber)
-            {
-#if !defined (LOG_COMPONENT)
-                LOG_printf(&trace, "Out of sequence message!");
-#endif
-                MSGQ_free((MSGQ_Msg) msg);
-                status = SYS_EBADIO;
-                SET_FAILURE_REASON(status);
-            }
-            else
-            {
-              if(i == 0) // Received matrix 1
-              {
-                memcpy(mat1, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+      /* Receive a message from the GPP */
+      status = MSGQ_get(info->localMsgq,(MSGQ_Msg*) &msg, SYS_FOREVER);
+      if (status == SYS_OK)
+      {
+          /* Check if the message is an asynchronous error message */
+          if (MSGQ_getMsgId((MSGQ_Msg) msg) == MSGQ_ASYNCERRORMSGID)
+          {
+  #if !defined (LOG_COMPONENT)
+              LOG_printf(&trace, "Transport error Type = %d",((MSGQ_AsyncErrorMsg *) msg)->errorType);
+  #endif
+              /* Must free the message */
+              MSGQ_free((MSGQ_Msg) msg);
+              status = SYS_EBADIO;
+              SET_FAILURE_REASON(status);
+          }
+          /* Check if the message received has the correct sequence number */
+          else if (MSGQ_getMsgId ((MSGQ_Msg) msg) != info->sequenceNumber)
+          {
+  #if !defined (LOG_COMPONENT)
+              LOG_printf(&trace, "Out of sequence message!");
+  #endif
+              MSGQ_free((MSGQ_Msg) msg);
+              status = SYS_EBADIO;
+              SET_FAILURE_REASON(status);
+          }
+          else
+          {
+              messageNumber = msg->command;
 
-                msg->command = 0x01;
-                SYS_sprintf(msg->text, "Received matrix 1..");
-              }
-              else if(i == 1) // Received matrix 2
-              {
-                memcpy(mat2, msg->mat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+              offset = MSG_MATSIZE * MSG_MATSIZE * (messageNumber % totalMessages);
+              remainingEls = (matSize * matSize) % (MSG_MATSIZE * MSG_MATSIZE);
 
-                msg->command = 0x01;
-                SYS_sprintf(msg->text, "Received matrix 2, multiplying!");
-              }
+              msg->command = 0xFF;
 
-              if(i == 1)
+              if(messageNumber < totalMessages) // Message is part of matrix 1
               {
-                // Start multiplication
-                for (k = 0; k < MAX_MATSIZE; k++)
-                {
-                  for (l = 0; l < MAX_MATSIZE; l++)
-                  {
-                    prod[k][l]=0;
-                    for(m = 0; m < MAX_MATSIZE; m++)
-                      prod[k][l] = prod[k][l] + mat1[k][m] * mat2[m][l];
-                  }
+                #ifdef DEBUG
+                SYS_sprintf(msg->text, "Got messageNumber=%d, part of matrix 1.., offset %d", messageNumber, offset);
+                #endif
+                if(messageNumber == totalMessages-1 && remainingEls > 0){ // Receive the remaining elements
+                  memcpyMatrix(msg->mat, mat1+offset, remainingEls);
                 }
-                memcpy(msg->mat, prod, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
+                else
+                  memcpyMatrix(msg->mat, mat1+offset, MSG_MATSIZE * MSG_MATSIZE);
+              }
+              else if(messageNumber < totalMessages * 2) // Message is part of matrix 2
+              {
+                if(messageNumber == (totalMessages*2)-1 && remainingEls > 0) // Receive the remaining elements
+                  memcpyMatrix(msg->mat, mat2+offset, remainingEls);
+                else
+                  memcpyMatrix(msg->mat, mat2+offset, MSG_MATSIZE * MSG_MATSIZE);
+
+                if(messageNumber == totalMessages*2-1)
+                {
+                  #ifdef DEBUG
+                  SYS_sprintf(msg->text, "Got messageNumber=%d, part of matrix 2.., offset %d, 2nd element %d, sending product part", messageNumber, offset, msg->mat[1]);
+                  #endif
+                  // Perform matrix multiplication
+                  multiplyMatrices();
+                  if(totalMessages == 1 && remainingEls > 0)
+                    memcpyMatrix(prod, msg->mat, remainingEls);
+                  else
+                    memcpyMatrix(prod, msg->mat, MSG_MATSIZE * MSG_MATSIZE);
+                }
+                #ifdef DEBUG
+                else
+                  SYS_sprintf(msg->text, "Got messageNumber=%d, part of matrix 2.., offset %d", messageNumber, offset);
+                #endif
               }
               else
-                memcpy(msg->mat, recmat, MAX_MATSIZE * MAX_MATSIZE * sizeof(Uint16));
-
-              /* Increment the sequenceNumber for next received message */
-              info->sequenceNumber++;
-              /* Make sure that sequenceNumber stays within the range of iterations */
-              if (info->sequenceNumber == MSGQ_INTERNALIDSSTART)
               {
-                  info->sequenceNumber = 0;
+                #ifdef DEBUG
+                SYS_sprintf(msg->text, "Sending product messageNumber is now %d", messageNumber);
+                #endif
+                if(messageNumber == (totalMessages*3)-2 && remainingEls > 0) // Send the remaining elements
+                  memcpyMatrix(prod + offset + MSG_MATSIZE * MSG_MATSIZE, msg->mat, remainingEls);
+                else
+                  memcpyMatrix(prod + offset + MSG_MATSIZE * MSG_MATSIZE, msg->mat, MSG_MATSIZE*MSG_MATSIZE);
               }
-              MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
-              MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
 
-              /* Send the message back to the GPP */
-              status = MSGQ_put(info->locatedMsgq,(MSGQ_Msg) msg);
-              if (status != SYS_OK)
-              {
-                  SET_FAILURE_REASON(status);
-              }
+            /* Increment the sequenceNumber for next received message */
+            info->sequenceNumber++;
+            /* Make sure that sequenceNumber stays within the range of iterations */
+            if (info->sequenceNumber == MSGQ_INTERNALIDSSTART)
+            {
+                info->sequenceNumber = 0;
             }
-        }
-        else
-        {
-            SET_FAILURE_REASON (status);
-        }
+            MSGQ_setMsgId((MSGQ_Msg) msg, info->sequenceNumber);
+            MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
+
+            /* Send the message back to the GPP */
+            status = MSGQ_put(info->locatedMsgq,(MSGQ_Msg) msg);
+            if (status != SYS_OK)
+            {
+                SET_FAILURE_REASON(status);
+            }
+          }
+      }
+      else
+      {
+          SET_FAILURE_REASON (status);
+      }
     }
+
     return status;
 }
 

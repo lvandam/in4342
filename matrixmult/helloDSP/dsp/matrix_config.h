@@ -1,1 +1,1 @@
-#define MAX_MATSIZE 8
+#define MAX_MATSIZE 128
