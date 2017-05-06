@@ -55,7 +55,10 @@ extern "C"
 #define MSG_MATSIZE 64
 
 // Timers
-Timer totalTime;
+Timer dspMult;
+Timer baselineMult;
+Timer speedupMult;
+
 // Matrix size which is specified by the user
 Uint8 matSize;
 
@@ -63,8 +66,9 @@ int mat1 [MAX_MATSIZE * MAX_MATSIZE];
 int mat2 [MAX_MATSIZE * MAX_MATSIZE];
 int product [MAX_MATSIZE * MAX_MATSIZE];
 int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
+int prod_gpp_speedup[MAX_MATSIZE * MAX_MATSIZE];
 
-  #ifdef DEBUG
+#ifdef DEBUG
     void matrix_mult(void)
     {
       Uint16 i, j, k;
@@ -79,6 +83,20 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
       }
     }
 
+	/* Modified matrix_mult. No need to set matrix elements to zero, the matrices are already created that way. */
+	void matrix_mult_speedup(void)
+    {
+      Uint16 i, j, k;
+      for (i = 0; i < matSize; i++)
+      {
+        for (k = 0; k < matSize; k++)
+        {
+          for(j = 0; j < matSize; j++)
+            prod_gpp_speedup[i * matSize + j] += mat1[i * matSize + k] * mat2[k * matSize + j];
+        }
+      }
+    }
+
     int matrix_compare(void)
     {
       Uint16 i, j;
@@ -87,6 +105,19 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         for (j = 0; j < matSize; j++)
         {
           if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return 0;
+        }
+      }
+      return 1;
+    }
+    
+    int matrix_compare_speedup(void)
+    {
+      Uint16 i, j;
+      for (i = 0; i < matSize; i++)
+      {
+        for (j = 0; j < matSize; j++)
+        {
+          if(prod_gpp[i * matSize + j] != prod_gpp_speedup[i * matSize + j]) return 0;
         }
       }
       return 1;
@@ -142,7 +173,7 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         MSGQ_MsgHeader header;
         Uint8 command; // This will contain the current chunk of the matrix to be sent
         Char8 text[ARG_SIZE];
-    	  int mat[MSG_MATSIZE * MSG_MATSIZE];
+    	int mat[MSG_MATSIZE * MSG_MATSIZE];
     } ControlMsg;
 
     /* Messaging buffer used by the application.
@@ -231,7 +262,13 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         matrix_fill(1, mat1);
         matrix_fill(2, mat2);
         #ifdef DEBUG
+		startTimer(&baselineMult);
         matrix_mult();
+        stopTimer(&baselineMult);
+        
+		startTimer(&speedupMult);
+        matrix_mult_speedup();
+        stopTimer(&speedupMult);
         #endif
 
         /* Create and initialize the proc object. */
@@ -373,7 +410,7 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         totalMessages = ((matSize * matSize) + (MSG_MATSIZE * MSG_MATSIZE) - 1) / (MSG_MATSIZE * MSG_MATSIZE); // Total amount of messages needed to send a matrix
 
         // Start the overall timer
-        startTimer(&totalTime);
+        startTimer(&dspMult);
 
         for(i = 0; (i < totalMessages*3 && DSP_SUCCEEDED(status)); i++)
         {
@@ -438,6 +475,11 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                 SYSTEM_0Print("\n\n//////////// MATRIX VERIFICATION: Matrices are OK!!\n\n");
               else
                 SYSTEM_0Print("\n\n//////////// ERROR: GPP and DSP multiplications are unequal!\n\n");
+                
+              if(matrix_compare_speedup())
+                SYSTEM_0Print("\n\n//////////// MATRIX VERIFICATION: Matrices are OK!!\n\n");
+              else
+                SYSTEM_0Print("\n\n//////////// ERROR: GPP baseline and speedup multiplications are unequal!\n\n");
               #endif
 
               // for(k = 0; k < matSize; k++)
@@ -576,6 +618,12 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         DSP_STATUS status = DSP_SOK;
         Uint32 numIterations = 0;
         Uint8 processorId = 0;
+        
+        /* Timer initialization */
+        initTimer(&dspMult, "Total mult time with dsp");	
+        initTimer(&baselineMult, "Baseline mult time on gpp"); 
+		initTimer(&speedupMult, "Speedup mult time on gpp"); 
+					
 
         SYSTEM_0Print ("========== Sample Application : matrix multiplication ==========\n");
 
@@ -602,16 +650,21 @@ int prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                 if (DSP_SUCCEEDED(status))
                 {
                     status = helloDSP_Create(dspExecutable, strMatrixSize, processorId);
-
-                    /* Timer initialization */
-                    initTimer(&totalTime, "Total Time");
-
                     /* Execute the message execute phase. */
                     if (DSP_SUCCEEDED(status))
                     {
+                        startTimer(&dspMult);
                         status = helloDSP_Execute(numIterations, processorId);
+                        stopTimer(&dspMult);
                     }
 
+					/* Print timing results */
+					#ifdef DEBUG
+					printTimer(&baselineMult);
+					printTimer(&speedupMult);
+					#endif
+					printTimer(&dspMult);
+					
                     /* Perform cleanup operation. */
                     helloDSP_Delete(processorId);
                 }
