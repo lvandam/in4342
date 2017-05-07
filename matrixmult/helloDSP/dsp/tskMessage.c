@@ -27,6 +27,7 @@
 /*  ----------------------------------- Sample Headers              */
 #include <helloDSP_config.h>
 #include <tskMessage.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,13 +42,15 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
+
 // Comment THIS FOR BENCHMARKING!!!
 #define DEBUG 1
 extern Uint8 matSize;
 
 int mat1[MAX_MATSIZE * MAX_MATSIZE];
 int mat2[MAX_MATSIZE * MAX_MATSIZE];
-int prod[MAX_MATSIZE * MAX_MATSIZE];
+//int prod[MAX_MATSIZE * MAX_MATSIZE]; 
+int * prod; // Use this to initialize prod to zero array. Saves time at multiplication.
 
 /** ============================================================================
  *  @func   TSKMESSAGE_create
@@ -146,6 +149,22 @@ void multiplyMatrices()
   }
 }
 
+
+void multiplyMatrices_speedup()
+{
+  int k, l, m;
+  
+  // Start multiplication
+  for (k = 0; k < matSize; k++)
+  {
+    for (m = 0; m < matSize; m++)
+    {
+      for(l = 0; l < matSize; l++)
+        prod[k * matSize + l] = prod[k * matSize + l] + mat1[k * matSize + m] * mat2[m * matSize + l];
+    }
+  }
+}
+
 void memcpyMatrix(int* src, int* dst, int width){
   int i;
   int *ptr = dst;
@@ -177,6 +196,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
     Uint32 i, offset, remainingEls;
     Uint8 totalMessages;
     Uint8 messageNumber;
+    prod = calloc(MAX_MATSIZE * MAX_MATSIZE, sizeof(int));
 
     /* Allocate and send the message */
     status = MSGQ_alloc(SAMPLE_POOL_ID, (MSGQ_Msg*) &msg, APP_BUFFER_SIZE);
@@ -187,7 +207,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
         MSGQ_setSrcQueue((MSGQ_Msg) msg, info->localMsgq);
         msg->command = 0xFF;
         #ifdef DEBUG
-        SYS_sprintf(msg->text, "DSP is awake!");
+        SYS_sprintf(msg->text, "DSP is awake! val %d");
         #endif
 
         status = MSGQ_put(info->locatedMsgq, (MSGQ_Msg) msg);
@@ -265,7 +285,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                   SYS_sprintf(msg->text, "Got messageNumber=%d, part of matrix 2.., offset %d, 2nd element %d, sending product part", messageNumber, offset, msg->mat[1]);
                   #endif
                   // Perform matrix multiplication
-                  multiplyMatrices();
+                  multiplyMatrices_speedup();
+                  
                   if(totalMessages == 1 && remainingEls > 0)
                     memcpyMatrix(prod, msg->mat, remainingEls);
                   else

@@ -83,7 +83,7 @@ int prod_gpp_speedup[MAX_MATSIZE * MAX_MATSIZE];
       }
     }
 
-	/* Modified matrix_mult. No need to set matrix elements to zero, the matrices are already created that way. */
+	/* Modified matrix_mult. No need to set matrix elements to zero, the matrices are already created that way by compiler since they are global variables. */
 	void matrix_mult_speedup(void)
     {
       Uint16 i, j, k;
@@ -122,6 +122,7 @@ int prod_gpp_speedup[MAX_MATSIZE * MAX_MATSIZE];
       }
       return 1;
     }
+    
 #endif
 
 
