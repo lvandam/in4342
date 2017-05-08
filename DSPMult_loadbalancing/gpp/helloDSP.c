@@ -52,7 +52,7 @@ extern "C"
 #define NUMMSGINPOOL3   4
 
 // Comment THIS FOR BENCHMARKING!!!
-//#define DEBUG 1
+#define DEBUG 1
 
 #define MAX_MATSIZE 128
 #define MSG_MATSIZE 64
@@ -90,8 +90,14 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
     {
       Uint16 i, j;
       for (i = 0; i < matSize; i++)
+      {
         for (j = 0; j < matSize; j++)
-          if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return i;
+        {
+          printf("%d \t", product[i*matSize+j]);
+          //if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return i;
+        }
+        printf("\n");
+      }
       return -1;
     }
 #endif
@@ -142,11 +148,11 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
       }
     }
 
-    // Half of the multiplications are done on GPP
+    // Quarter of the multiplications are done on GPP
     void gppMultiplication(void)
     {
       Uint16 i, j, k;
-      for (i = CEIL(matSize, 2)-1; i < matSize; i++)
+      for (i = (CEIL(matSize, 4)-1); i < matSize; i++)
       {
         for(k = 0; k < matSize; k++)
         {
@@ -407,8 +413,8 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
 
         // Total amount of messages needed to send a matrix: ceil(matSize*matSize / (messageSize*messageSize))
         totalMessages = CEIL(matSize * matSize, MSG_MATSIZE * MSG_MATSIZE);
-        // Total iterations: sending the two matrices + half of it to receive the half multiplication
-        iterations = totalMessages + CEIL(totalMessages, 2);
+        // Total iterations: sending the two matrices + quarter of it to receive 1/4 multiplication
+        iterations = totalMessages + CEIL(totalMessages, 4);
 
         for(i = 0; (i < iterations && DSP_SUCCEEDED(status)); i++)
         {
@@ -425,8 +431,8 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
             offset = MSG_MATSIZE * MSG_MATSIZE * (i % totalMessages);
             // Remaining elements for the last message to be sent to DSP
             remainingEls = (matSize * matSize) % (MSG_MATSIZE * MSG_MATSIZE);
-            // Remaining elements of half the product that is received
-            remainingElsHalf = ((matSize/2)*matSize) % (MSG_MATSIZE * MSG_MATSIZE);
+            // Remaining elements of quarter the product that is received
+            remainingElsHalf = ((matSize/4)*matSize) % (MSG_MATSIZE * MSG_MATSIZE);
 
             msg->command = i;
             if(i < totalMessages) // Send messages for matrix 1 and 2
@@ -443,13 +449,6 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                 memcpyMatrix(mat1 + offset, msg->mat1, MSG_MATSIZE * MSG_MATSIZE);
                 memcpyMatrix(mat2 + offset, msg->mat2, MSG_MATSIZE * MSG_MATSIZE);
               }
-
-              if(i == totalMessages - 1)
-              {
-                startTimer(&dspTime); // Start the multiplication timer
-                // Half of the multiplications are done on GPP
-                gppMultiplication();
-              }
             }
             else // Receive prod
             {
@@ -459,7 +458,7 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                 SYSTEM_2Print("iterations %d, remainingels = %d\n", iterations, remainingElsHalf);
                 SYSTEM_2Print("i = %d, offset %d, remainingels\n", i, offset);
                 #endif
-                // Receive the remaining elements of half the product from DSP
+                // Receive the remaining elements of quarter the product from DSP
                 memcpyResultMatrix(msg->mat1, msg->mat2, product + offset, remainingElsHalf);
               }
               else
@@ -467,7 +466,7 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                 #ifdef DEBUG
                 SYSTEM_2Print("i = %d, offset %d, fullsize\n", i, offset);
                 #endif
-                // Receive elements of half the product from DSP
+                // Receive elements of quarter the product from DSP
                 memcpyResultMatrix(msg->mat1, msg->mat2, product + offset, MSG_MATSIZE * MSG_MATSIZE);
               }
             }
@@ -486,6 +485,13 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
               if (DSP_FAILED(status))
               {
                   SYSTEM_1Print("MSGQ_get () failed. Status = [0x%x]\n", status);
+              }
+
+              if(i == totalMessages - 1)
+              {
+                startTimer(&dspTime); // Start the multiplication timer
+                // Quarter of the multiplications are done on GPP
+                gppMultiplication();
               }
 
               // Last data has been received, stop the timers

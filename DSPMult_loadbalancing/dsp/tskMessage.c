@@ -42,7 +42,7 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
 // Comment THIS FOR BENCHMARKING!!!
-//#define DEBUG 1
+#define DEBUG 1
 extern Uint8 matSize;
 
 int16_t mat1[MAX_MATSIZE * MAX_MATSIZE];
@@ -137,7 +137,7 @@ void multiplyMatrices()
   int k, l, m;
   int32_t temp1, temp2;
   // Start multiplication
-  for (k = 0; k < matSize / 2; k++)
+  for (k = 0; k < (matSize / 4); k++)
   {
     for (l = 0; l < matSize; l++)
     {
@@ -156,21 +156,6 @@ void multiplyMatrices()
     }
   }
 }
-
-// void multiplyMatrices()
-// {
-//   int k, l, m;
-//   // Start multiplication
-//   for (k = 0; k < matSize/2; k++)
-//   {
-//     for (l = 0; l < matSize; l++)
-//     {
-//       prod[k * matSize + l] = 0;
-//       for(m = 0; m < matSize; m++)
-//         prod[k * matSize + l] = prod[k * matSize + l] + mat1[k * matSize + m] * mat2[m * matSize + l];
-//     }
-//   }
-// }
 
 void memcpyMatrix(int16_t* src, int16_t* dst, int width){
   int16_t i;
@@ -248,8 +233,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
 
     // Total amount of messages needed to send a matrix: ceil(matSize*matSize / (messageSize*messageSize))
     totalMessages = CEIL(matSize * matSize, MSG_MATSIZE * MSG_MATSIZE);
-    // Total iterations: sending the two matrices + half of it to receive the half multiplication
-    iterations = totalMessages + CEIL(totalMessages, 2);
+    // Total iterations: sending the two matrices + 1/4 of it to receive the quarter multiplication
+    iterations = totalMessages + CEIL(totalMessages, 4);
 
     for(i = 0; (i < iterations && status == SYS_OK); i++)
     {
@@ -286,8 +271,8 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
               offset = MSG_MATSIZE * MSG_MATSIZE * (messageNumber % totalMessages);
               // Remaining elements for the last message received from DSP
               remainingEls = (matSize * matSize) % (MSG_MATSIZE * MSG_MATSIZE);
-              // Remaining elements of half the product that is sent
-              remainingElsHalf = ((matSize/2)*matSize) % (MSG_MATSIZE * MSG_MATSIZE);
+              // Remaining elements of 1/4 the product that is sent
+              remainingElsHalf = ((matSize/4)*matSize) % (MSG_MATSIZE * MSG_MATSIZE);
 
               msg->command = 0xFF;
               if(messageNumber < totalMessages) // Receive part of matrix 1 and 2
@@ -319,7 +304,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
                     SYS_sprintf(msg->text, "Got part %d/%d, offset %d, last part -> sending product part", messageNumber, totalMessages-1, offset);
                   #endif
 
-                  multiplyMatrices(); // Perform matrix multiplication (first half)
+                  multiplyMatrices(); // Perform matrix multiplication (first quarter)
 
                   if(totalMessages == 1 && remainingElsHalf > 0) // Can fit complete result in 1 message
                     memcpyProdMatrix(prod, msg->mat1, msg->mat2, remainingElsHalf);  // Upper 16 bits in mat1, lower 16 bits in mat2 of product result
@@ -330,7 +315,7 @@ Int TSKMESSAGE_execute(TSKMESSAGE_TransferInfo* info)
               else
               {
                 #ifdef DEBUG
-                SYS_sprintf(msg->text, "Sending half of the product, messageNumber is now %d", messageNumber);
+                SYS_sprintf(msg->text, "Sending quarter of the product, messageNumber is now %d", messageNumber);
                 #endif
                 if(messageNumber == (iterations-2) && remainingElsHalf > 0) // Send the remaining elements
                   memcpyProdMatrix(prod + offset + MSG_MATSIZE * MSG_MATSIZE, msg->mat1, msg->mat2, remainingElsHalf);
