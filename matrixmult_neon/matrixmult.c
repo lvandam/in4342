@@ -44,118 +44,70 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-inline void MAC4 (int32x4_t *additive_value, int16x4_t *data1, int16x4_t *data2,int32x4_t *mac_output)
+inline void vectormultiply (int32x4_t *additive_value, int16x4_t *mat1_value, int16x4_t *mat2_value,int32x4_t *output)
 {
-	*mac_output = vmlal_s16 (*additive_value,*data1, *data2);
+	*output = vmlal_s16 (*additive_value,*mat1_value, *mat2_value);
 }
 void matMult(int16_t mat1[], int16_t mat2[], int32_t prod[SIZE][SIZE])
 {
 	int output_size = 2 * SIZE;
-	int l,k,i, iterations;
-	int16x4_t data1;
-	int32x4_t output[output_size/4];
-	int32x4_t addvalue[output_size/4];
-	int16x4_t constant_value; // 4 numbers of 16 bits
-	unsigned int index_input = 0;
-	unsigned int transfer_index = 0 ;
-	unsigned int dummy = 0;
-	int32_t *pres, prod_ver[SIZE][SIZE];
-	int32_t print[output_size];
+	int l,k;
+	int16x4_t mat1_value, mat2_value;
+	int32x4_t output[output_size/4], addvalue[output_size/4];
+	unsigned int index_mat2 = 0, transfer_index = 0, dummy = 0;
 
- // MAT_SIZE = output_size
- // SIZE = SIZE
-	if (SIZE%4 ==0)
-	{
-		iterations = SIZE;
-	}
-	else{
-		iterations = SIZE + 4 -SIZE%4;
-	}
-	// Allocate memory for output
-	pres = malloc(output_size * output_size * sizeof(int32_t));
-	for(l = 0 ; l < iterations/4; l++)
+	// Uncomment this value and arguments later on to print output
+  //	int32_t print[output_size];
+	//int i;
+
+	for(l = 0 ; l < SIZE/4; l++)
 	{
 		// Fill a vector of size (size/4) with zeroes. A q suffix indicates the instruction run for 128 bit registers, in which we can put 4 variables of size 32 at the same time. So for every 4 variables, we need a 128 bit register.
 		// Basically we initialize all 4 lanes of addvalue to zero.
 		addvalue[l] = vmovq_n_s32(0);
+		output[l] = vmovq_n_s32(0);
 	}
-
-	printf("\nMatrix 1:\n");
-	for (l = 0; l < SIZE; l++){
-		for (k= 0; k < SIZE; k++) {
-			printf("%d ", mat1[l*SIZE+k]);
-		}
-		printf("\n");
-	}
-
-	printf("\nMatrix 2:\n");
-	for (l = 0; l < SIZE; l++){
-		for (k= 0; k < SIZE; k++) {
-			printf("%d ", mat2[l*SIZE+k]);
-		}
-		printf("\n");
-	}
-
-			printf("\nResult: \n");
 
 	// Perform the operation SIZE*SIZE times, this way going over all the values of mat1. (16384 for max size, 16x for size = 4)
-	for(l = 0; l < iterations*iterations; l++)
+	for(l = 0; l < SIZE*SIZE; l++)
 	{
-		// constant_value is the l-th element of matrix 1. Basically, this value is used SIZE time.
+		// mat1_value is the l-th element of matrix 1. Basically, this value is used SIZE time.
 		// Difference with previous vmov is that we use the d registers here (64 bits).
-		constant_value = vmov_n_s16 (mat1[l]);
+		mat1_value = vmov_n_s16 (mat1[l]);
 		// We only need SIZE/4 runs in the fbecause we load 4 values at once.
-		for(k = 0 ; k*4< SIZE; k++)
+		for(k = 0 ; k < SIZE/4; k++)
 		{
-			index_input = dummy;
+			index_mat2 = dummy;
 			// Load elements of matrix 2 into neon register/lane. Difference here is that instead of setting all elements to the same value, we load 4 values at once.
-			data1 = vld1_s16 (&mat2[index_input]);
+			mat2_value = vld1_s16 (&mat2[index_mat2]);
 
 			// Vector Multiply Accumulate Long: Multiply one value of mat1 with four values of mat2, then add a different addvalue and obtain output.
 			// Basically, we compute output = addvalue + mat1*mat2.
-			//*output = vmlal_s16(addvalue[k],constant_value, data1);
-
-			MAC4 (&addvalue[k], &constant_value, &data1,&output[k]);
-
+			//*output = vmlal_s16(addvalue[k],mat1_value, mat2_value);
+			vectormultiply (&addvalue[k], &mat1_value, &mat2_value,&output[k]);
 			// Put output in addvalue, so we accumulate the sum
 			addvalue[k] = output[k];
 			dummy +=4;
 		}
-		// Debug print. Put first four lanes of output in print
-		// vst1q_s32(print,*output);
-		// for (i = 0; i < 4; i++)
-		// {
-		// 	printf ("%d ", print[i]);
-		// }
-		// printf ("\n");
 
-		// This could be wrong.
-		index_input += output_size-iterations;
-
+		index_mat2 += output_size-SIZE;
 
 		if ((l + 1) % SIZE == 0 )
 		{
-		// 'Correct' print
-		// 	//Print output only when sum has been accumulated SIZE times
-		for(k=0; k*4 < SIZE; k++)
-		{
-			vst1q_s32(print,*(output+k));
-			for (i = 0; i < 4; i++)
-			{
-				printf ("%d ", print[i]);
-			}
-		}
-		printf ("\n");
-			for(k = 0 ; k*4 < SIZE ; k++)
-			{
-				// Store loop output in general output
-				// vst1q_s32(&pres[transfer_index],addvalue[k]);
-				// Storing 4 values at a time
-				transfer_index +=4;
-			}
 
-			transfer_index += output_size-iterations;
-			for(k = 0 ; k*4 < SIZE; k++)
+		// Uncomment this (and initialization of print variable) to print output
+		// for(k=0; k < SIZE/4; k++)
+		// {
+		// 	vst1q_s32(print,*(output+k));
+		// 	for (i = 0; i < 4; i++)
+		// 	{
+		// 		printf ("%d ", print[i]);
+		// 	}
+		// 	transfer_index +=4;
+		// }
+
+			transfer_index += output_size-SIZE;
+			for(k = 0 ; k < SIZE/4; k++)
 			{
 				// Put zeros in addvalue again, so it can be reused to store the temporary computations
 				addvalue[k] = vmovq_n_s32(0);
@@ -166,26 +118,4 @@ void matMult(int16_t mat1[], int16_t mat2[], int32_t prod[SIZE][SIZE])
 
 	}
 
-	// old and wrong output printing:
-// 	printf("\nOutput matrix:\n");
-// 	for (l = 0; l < SIZE; l++){
-// 		for (k= 0; k < SIZE; k++) {
-// 			printf("%d ", pres[l*SIZE+k]);
-// 		}
-// 		printf("\n");
-// 	}
- printf ("looped %d times\n", k);
 }
-
-// seed print en oude functies
-//MAC4 (&addvalue[k], &constant_value, &data1,&output[k]);
-//
-// old and wrong output printing:
-// printf("\nOutput matrix:\n");
-// for (l = 0; l < SIZE; l++){
-// 	for (k= 0; k < SIZE; k++) {
-// 		printf("%d ", pres[l*SIZE+k]);
-// 	}
-// 	printf("\n");
-// }
-// }
