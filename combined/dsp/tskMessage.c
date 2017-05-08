@@ -42,7 +42,7 @@ Uint8 dspMsgQName[DSP_MAX_STRLEN];
 /* Number of iterations message transfers to be done by the application. */
 extern Uint16 numTransfers;
 // Comment THIS FOR BENCHMARKING!!!
-//#define DEBUG 1
+#define DEBUG 1
 extern Uint8 matSize;
 
 int16_t mat1[MAX_MATSIZE * MAX_MATSIZE];

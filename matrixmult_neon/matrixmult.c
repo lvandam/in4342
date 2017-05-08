@@ -12,10 +12,13 @@ int main(int argc, char** argv)
 	int16_t *mat1, *mat2;
 	int32_t prod[sizeof(int32_t)*SIZE][sizeof(int32_t)*SIZE];
 
+
 	initTimer(&totalTime, "NEON execution time");
 
 	// Determine size and allocate memory for matrices
-	SIZE = 128;
+
+	SIZE = atoi(argv[1]);
+	printf("Running with matrix size %d\n", SIZE);
 	mat1 = malloc(SIZE * SIZE * sizeof(int16_t));
 	mat2 = malloc(SIZE * SIZE * sizeof(int16_t));
 

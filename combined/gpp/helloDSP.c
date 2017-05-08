@@ -52,7 +52,7 @@ extern "C"
 #define NUMMSGINPOOL3   4
 
 // Comment THIS FOR BENCHMARKING!!!
-//#define DEBUG 1
+#define DEBUG 1
 
 #define MAX_MATSIZE 128
 #define MSG_MATSIZE 64
@@ -60,7 +60,7 @@ extern "C"
 #include <stdint.h>
 #define CEIL(a, b) (((a) / (b)) + (((a) % (b)) > 0 ? 1 : 0))
 // Timers
-Timer totalTime, gppTime, dspTime, neonTime;
+Timer totalTime, gppTime, dspTime;
 // Matrix size which is specified by the user
 Uint8 matSize;
 
@@ -68,85 +68,6 @@ int16_t mat1 [MAX_MATSIZE * MAX_MATSIZE];
 int16_t mat2 [MAX_MATSIZE * MAX_MATSIZE];
 int32_t product [MAX_MATSIZE * MAX_MATSIZE];
 int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
-
-    inline void vectormultiply (int32x4_t *additive_value, int16x4_t *mat1_value, int16x4_t *mat2_value,int32x4_t *output)
-    {
-    	*output = vmlal_s16 (*additive_value,*mat1_value, *mat2_value);
-    }
-
-    void matMult(void)
-    {
-      startTimer(&neonTime);
-    	int output_size = 2 * matSize;
-    	int i,l,k;
-      int prodCounter;
-
-      int32_t print[output_size];
-    	int16x4_t mat1_value, mat2_value;
-    	int32x4_t output[output_size/4], addvalue[output_size/4];
-    	unsigned int index_mat2 = 0, transfer_index = 0, dummy = 0;
-
-
-    	for(l = 0 ; l < matSize/4; l++)
-    	{
-    		// Fill a vector of size (size/4) with zeroes. A q suffix indicates the instruction run for 128 bit registers, in which we can put 4 variables of size 32 at the same time. So for every 4 variables, we need a 128 bit register.
-    		// Basically we initialize all 4 lanes of addvalue to zero.
-    		addvalue[l] = vmovq_n_s32(0);
-    		output[l] = vmovq_n_s32(0);
-    	}
-
-    	// Perform the operation *matSize times, this way going over all the values of mat1. (16384 for max size, 16x for size = 4)
-      prodCounter = (CEIL(matSize, 4)-1)*matSize;
-      for(l = (CEIL(matSize, 4)-1)*matSize; l < matSize*matSize; l++)  // 0
-    	{
-    		// mat1_value is the l-th element of matrix 1. Basically, this value is used matSize time.
-    		// Difference with previous vmov is that we use the d registers here (64 bits).
-    		mat1_value = vmov_n_s16 (mat1[l]);
-    		// We only need matSize/4 runs in the fbecause we load 4 values at once.
-    		for(k = 0 ; k < matSize/4; k++)
-    		{
-    			index_mat2 = dummy;
-    			// Load elements of matrix 2 into neon register/lane. Difference here is that instead of setting all elements to the same value, we load 4 values at once.
-    			mat2_value = vld1_s16 (&mat2[index_mat2]);
-
-    			// Vector Multiply Accumulate Long: Multiply one value of mat1 with four values of mat2, then add a different addvalue and obtain output.
-    			// Basically, we compute output = addvalue + mat1*mat2.
-    			//*output = vmlal_s16(addvalue[k],mat1_value, mat2_value);
-    			vectormultiply (&addvalue[k], &mat1_value, &mat2_value,&output[k]);
-    			// Put output in addvalue, so we accumulate the sum
-    			addvalue[k] = output[k];
-    			dummy +=4;
-    		}
-
-    		index_mat2 += output_size-matSize;
-
-    		if ((l + 1) % matSize == 0 )
-    		{
-      		for(k=0; k < matSize/4; k++)
-      		{
-      			vst1q_s32(print,*(output+k));
-            	for (i = 0; i < 4; i++)
-            	{
-                product[prodCounter++] = print[i];
-            	}
-      			transfer_index +=4;
-      		}
-
-    			transfer_index += output_size-matSize;
-    			for(k = 0 ; k < matSize/4; k++)
-    			{
-    				// Put zeros in addvalue again, so it can be reused to store the temporary computations
-    				addvalue[k] = vmovq_n_s32(0);
-    			}
-    			// Reset index to 0 to prepare for next mat1 value
-    			dummy = 0;
-    		}
-    	}
-        stopTimer(&neonTime);
-        printTimer(&neonTime);
-    }
-
-
 
   #ifdef DEBUG
     // Reference multiplication function
@@ -172,10 +93,10 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
       {
         for (j = 0; j < matSize; j++)
         {
-          //printf("%d \t", product[i*matSize+j]);
-          if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return i;
+          printf("%d \t", product[i*matSize+j]);
+          //if(prod_gpp[i * matSize + j] != product[i * matSize + j]) return i;
         }
-        //printf("\n");
+        printf("\n");
       }
       return -1;
     }
@@ -240,7 +161,6 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         }
       }
     }
-
 
     /* Control message data structure. */
     /* Must contain a reserved space for the header */
@@ -342,7 +262,6 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
         initTimer(&totalTime, "Total time");
         initTimer(&gppTime, "GPP multiplication time");
         initTimer(&dspTime, "DSP multiplication time");
-        initTimer(&neonTime, "NEON multiplication time");
         // Generate the initial matrices
         matrix_fill(1, mat1);
         matrix_fill(2, mat2);
@@ -561,7 +480,6 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
                   SYSTEM_1Print("MSGQ_put () failed. Status = [0x%x]\n", status);
               }
 
-
               /* Receive the message. */
               status = MSGQ_get(SampleGppMsgq, WAIT_FOREVER, (MsgqMsg *) &msg);
               if (DSP_FAILED(status))
@@ -573,12 +491,9 @@ int32_t prod_gpp [MAX_MATSIZE * MAX_MATSIZE];
               {
                 startTimer(&dspTime); // Start the multiplication timer
                 // Quarter of the multiplications are done on GPP
-
-                if(matSize % 4 == 0)
-                  matMult(); // neon multiplication
-                else
-                  gppMultiplication();
+                gppMultiplication();
               }
+
               // Last data has been received, stop the timers
               if(i == iterations - 2)
               {
