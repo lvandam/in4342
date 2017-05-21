@@ -1,0 +1,16 @@
+Running several times:
+
+Total Time : 10745.9 msec
+Processed 32 frames
+Time: 10.7459 sec
+FPS : 2.97788
+
+Total Time : 9743.62 msec
+Processed 32 frames
+Time: 9.74362 sec
+FPS : 3.2842
+
+Total Time : 10679.4 msec
+Processed 32 frames
+Time: 10.6794 sec
+FPS : 2.99641
