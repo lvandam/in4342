@@ -27,7 +27,7 @@ CFLAGS=$(DEFS) $(INCLUDES)          \
       -mapcs                        \
       -mabi=aapcs-linux				\
       -mfloat-abi=softfp 			\
-      -mfpu=neon
+      -mfpu=neon					
 
 all: clean $(EXEC)
 

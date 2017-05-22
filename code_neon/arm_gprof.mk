@@ -30,7 +30,7 @@ CFLAGS=$(DEFS) $(INCLUDES)          \
       -mabi=aapcs-linux 			\
       -pg -g						\
       -mfloat-abi=softfp 			\
-      -mfpu=neon
+      -mfpu=neon					
 
 all: clean $(EXEC)
 
