@@ -88,6 +88,18 @@ void printint (int32x4_t value, char name [])
 	printf("%s: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
 }
 
+void print3reg (int8x16x3_t value, char name []) 
+{
+	static int32_t test[48];
+	vst1q_s8(test, value.val[0]);	
+	printf("%s red: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
+	vst1q_s8(test, value.val[1]);
+	printf("%s green: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
+	vst1q_s8(test, value.val[2]);
+	printf("%s blue: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
+
+}
+
 void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
@@ -185,10 +197,8 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
         for(int i=0;i<rows;i++)
         {
             col_index = rec.x;
-            for(int j=0;j<cols;j+=4)
+            for(int j=0;j<cols;j+=16)
             {
-            	// modify loop to go per four!! Think about how if nr cols%4!=0
-            	// TODO but somehow it is going okay...
             	
             	// now for 32 bit, but if other types turn out to be possible,
             	// try smaller!!
@@ -199,42 +209,52 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
                 // that should speed it up a lot!!
                 // For now this way, since errors otherwise
                 
-                int size = cols - j<4? cols -j : 4;
+                // Check if j value will not run out of bounds,
+                // if so, set size to cols -j 
+                int size = cols - j<16? cols -j : 16;
                 //printf("size: %d \n",size);
                 
 		            // TODO  sometimes the sqrt or weight function results in nan, how to solve this
 		            
 		            // Get values of the next four pixels
-		            int32_t curr_pixel [size];
+		            /*int32_t curr_pixel [size];
 		            for (z=0;z<size;z++) {
 		            	curr_pixel[z]=bgr_planes[k].at<uchar>(row_index,col_index+z);
-		            }
-		            //printf("hello\n");
-		            int32x4_t curr_pixel_vec;
-		            curr_pixel_vec = vld1q_s32 (&curr_pixel[0]);
-	            	//printint(curr_pixel_vec,"curr_pixel_vec");
-		            // Load the 4 different pixel values into neon registers
-		            //float32x4_t curr_pixel_vec;
-					//curr_pixel_vec = vld1q_f32 (curr_pixel); 
-				
-					// Load the bin width into all four lanes of a register
-					int32x4_t bin_width_vec = vmovq_n_s32(bin_width);
+		            }*/
+		            
+		        int8x16x3_t curr_pixel_vec;
+
+		        curr_pixel_vec = vld3q_s8 (&(bgr_planes.at<int>(row_index,col_index)));
+	            print3reg(curr_pixel_vec,"Current pixel value");
+	            	
+				// Load the bin width into all four lanes of a register
+				int8x16_t bin_width_vec = vmovq_n_s8(bin_width);
 
 	 							
-	 				// Divide pixel values by bin width
-	 				int32x4_t bin_value_vec; 
-					vectordivide(&bin_value_vec, curr_pixel_vec, bin_width_vec);
-					//printint(bin_value_vec,"bin_value_vec");
-	 				// Store bin values 
-	 				int32_t bin_value [size];
-	 				vst1q_s32 (bin_value,bin_value_vec);
+	 			// Divide pixel values by bin width
+	 			int8x16x3_t bin_value_vec; 
+				vectordivide(&bin_value_vec.val[0], curr_pixel_vec.val[0], bin_width_vec);
+				vectordivide(&bin_value_vec.val[1], curr_pixel_vec.val[1], bin_width_vec);
+				vectordivide(&bin_value_vec.val[2], curr_pixel_vec.val[2], bin_width_vec);
+				
+				print3reg(bin_value_vec,"bin_value_vec");
+	 			
+	 			// Store bin values 
+	 			int8_t bin_value_r [size];
+	 			int8_t bin_value_g [size];
+	 			int8_t bin_value_b [size];
+	 					
+	 			vst1q_s8 (bin_value_r,bin_value_vec.val[0]);
+	 			vst1q_s8 (bin_value_g,bin_value_vec.val[1]);
+	 			vst1q_s8 (bin_value_b,bin_value_vec.val[2]);
 	 				
-	 				// Load target model and candidate
+	 			
+	 			// Load target model and candidate
 						
-	 				float32_t model[size];
-		            for (z=0;z<size;z++) {
-						model[z]=target_model.at<float>(k, bin_value[z]);
-					}	
+	 			float32_t model[size];
+		        for (z=0;z<size;z++) {
+					model[z]=target_model.at<float>(k, bin_value_r[z]);
+				}	
 	 					
 	 				float32_t candidate[size];
 		            for (z=0;z<size;z++) {
@@ -253,6 +273,7 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
 					//printfloat(division_vec,"division_vec");
 					
 					// Compute square root of the division of model and candidate
+					// TODO teller en noemer hoeven niet allebei gesquared te worden, target model is constant
 					float32x4_t root_vec;
 					vectorsqrt(&root_vec,division_vec);
 					//printfloat(root_vec,"root_vec");
