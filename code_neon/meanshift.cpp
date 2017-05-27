@@ -13,65 +13,35 @@ MeanShift::MeanShift()
     cfg.num_bins = 16;
     cfg.piexl_range = 256;
     bin_width = cfg.piexl_range / cfg.num_bins;
-}
+} 
 
-/*float sqrt1(const float x)  
-{
-  union
-  {
-    int i;
-    float x;
-  } u;
-  u.x = x;
-  u.i = (1<<29) + (u.i >> 1) - (1<<22); 
-  
-  // Two Babylonian Steps (simplified from:)
-
-  // u.x = 0.5f * (u.x + x/u.x);
-
-  // u.x = 0.5f * (u.x + x/u.x);
-
-  u.x =       u.x + x/u.x;
-  u.x = 0.25f*u.x + x/u.x;
-
-  return u.x;
-}*/  
-
-// QUESTION FOR TA: IS THERE NO WAY OF DOING DIVISION WITH INTS IN NEON..?
-inline void vectordivide (int32x4_t *divided_value, int32x4_t value_a, int32x4_t value_b) {
-	// Source : http://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
-	float32x4_t b = vcvtq_f32_s32(value_b);
+inline void vectordivide (uint32x4_t *divided_value, uint32x4_t value_a, uint32x4_t value_b) {
+	
+	float32x4_t b = vcvtq_f32_u32(value_b);
 	float32x4_t reciprocal = vrecpeq_f32(b);
 	
-	// Initial estimate of 1/b 	
-	//float32x4_t reciprocal = vrecpeq_f32(value_b);
-		
 	reciprocal = vmulq_f32(vrecpsq_f32(b, reciprocal), reciprocal);
 	reciprocal = vmulq_f32(vrecpsq_f32(b, reciprocal), reciprocal);
 	
-	float32x4_t output = vmulq_f32(vcvtq_f32_s32(value_a),reciprocal);
-	//*divided_value = vmulq_f32(value_a,reciprocal);
-	*divided_value = vcvtq_s32_f32(output);
+	float32x4_t output = vmulq_f32(vcvtq_f32_u32(value_a),reciprocal);
+	*divided_value = vcvtq_u32_f32(output);
 }
 
 inline void vectordivide_float (float32x4_t *divided_value, float32x4_t value_a, float32x4_t value_b) {
-	// Source : http://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
-
-	// Initial estimate of 1/b 	
 	float32x4_t reciprocal = vrecpeq_f32(value_b);
 		
 	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
 	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
 	
-	*divided_value = vmulq_f32(value_a,reciprocal);
-	
+	*divided_value = vmulq_f32(value_a,reciprocal);	
 }
 
+//inline void vectorsqrt (uint8x16_t *output, uint8x16_t input) {
 inline void vectorsqrt (float32x4_t *output, float32x4_t input) {
 
 	//TODO should be made a bit more accurate
 	*output = vmulq_f32(vrsqrteq_f32(input), input);
-	
+
 }
 
 void printfloat (float32x4_t value, char name[]) 
@@ -81,16 +51,24 @@ void printfloat (float32x4_t value, char name[])
 	printf("%s: %f, %f, %f, %f. \n",name,test[0],test[1],test[2],test[3]);
 }
 
-void printint (int32x4_t value, char name []) 
+void printint (uint32x4_t value, char name []) 
 {
-	static int32_t test[4];
-	vst1q_s32 (test, value);	
+	uint32_t test[4];
+	vst1q_u32 (test, value);	
+	printf("%s: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
+}
+
+
+void printuint8 (uint8x16_t value, char name []) 
+{
+	static uint8_t test[16];
+	vst1q_u8 (test, value);	
 	printf("%s: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
 }
 
 void print3reg (int8x16x3_t value, char name []) 
 {
-	static int32_t test[48];
+	static int8_t test[48];
 	vst1q_s8(test, value.val[0]);	
 	printf("%s red: %d, %d, %d, %d. \n",name,test[0],test[1],test[2],test[3]);
 	vst1q_s8(test, value.val[1]);
@@ -172,23 +150,6 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
     cv::Mat weight(rows,cols,CV_32F,cv::Scalar(1.0000));
     std::vector<cv::Mat> bgr_planes;
     cv::split(frame, bgr_planes);
-
-    /*for(int k = 0; k < 3;  k++)
-    {
-        row_index = rec.y;
-        for(int i=0;i<rows;i++)
-        {
-            col_index = rec.x;
-            for(int j=0;j<cols;j++)
-            {
-                int curr_pixel = (bgr_planes[k].at<uchar>(row_index,col_index));
-                int bin_value = curr_pixel/bin_width;
-                weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(k, bin_value))));
-                col_index++;
-            }
-            row_index++;
-        }
-    }*/
     
     int z;
     for(int k = 0; k < 3;  k++)
@@ -197,119 +158,92 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
         for(int i=0;i<rows;i++)
         {
             col_index = rec.x;
-            for(int j=0;j<cols;j+=16)
+            for(int j=0;j<cols;j+=4)
             {
-            	
-            	// now for 32 bit, but if other types turn out to be possible,
-            	// try smaller!!
-            	// Pixel values are  - 255 right?
                 
-                // If reciprocal possible with ints, 
-                // jsut use a pointer to the matrix of pixels,
-                // that should speed it up a lot!!
-                // For now this way, since errors otherwise
-                
-                // Check if j value will not run out of bounds,
-                // if so, set size to cols -j 
-                int size = cols - j<16? cols -j : 16;
-                //printf("size: %d \n",size);
-                
-		            // TODO  sometimes the sqrt or weight function results in nan, how to solve this
-		            
-		            // Get values of the next four pixels
-		            /*int32_t curr_pixel [size];
-		            for (z=0;z<size;z++) {
-		            	curr_pixel[z]=bgr_planes[k].at<uchar>(row_index,col_index+z);
-		            }*/
-		            
-		        int8x16x3_t curr_pixel_vec;
+                // Prevent j from running out of bounds
+                int size = cols - j<4? cols -j : 4;
+                	        
+		        // TODO later on check if vld3 can speed up more, using several regs
+		        // Load in 16 pixel values per color  
+		        uint8x16_t curr_pixel;
+		        curr_pixel = vld1q_u8 ((const uint8_t*)bgr_planes[k].ptr(row_index,col_index));
 
-		        curr_pixel_vec = vld3q_s8 (&(bgr_planes.at<int>(row_index,col_index)));
-	            print3reg(curr_pixel_vec,"Current pixel value");
-	            	
-				// Load the bin width into all four lanes of a register
-				int8x16_t bin_width_vec = vmovq_n_s8(bin_width);
-
-	 							
-	 			// Divide pixel values by bin width
-	 			int8x16x3_t bin_value_vec; 
-				vectordivide(&bin_value_vec.val[0], curr_pixel_vec.val[0], bin_width_vec);
-				vectordivide(&bin_value_vec.val[1], curr_pixel_vec.val[1], bin_width_vec);
-				vectordivide(&bin_value_vec.val[2], curr_pixel_vec.val[2], bin_width_vec);
-				
-				print3reg(bin_value_vec,"bin_value_vec");
-	 			
-	 			// Store bin values 
-	 			int8_t bin_value_r [size];
-	 			int8_t bin_value_g [size];
-	 			int8_t bin_value_b [size];
-	 					
-	 			vst1q_s8 (bin_value_r,bin_value_vec.val[0]);
-	 			vst1q_s8 (bin_value_g,bin_value_vec.val[1]);
-	 			vst1q_s8 (bin_value_b,bin_value_vec.val[2]);
+		        // Convert the 8bit values to 32bit values
+		        uint16x8_t low = vmovl_u8(vget_low_u8(curr_pixel));    
+				//uint16x8_t high = vmovl_u8(vget_high_u8(curr_pixel));
+		        
+				// Lower 8 eight values    
+		        uint32x4_t curr1 = vmovl_u16(vget_low_u16(low));    
+				//uint32x4_t curr2 = vmovl_u16(vget_high_u16(low));  
+							
+		        // Higher 8 values
+		        //uint32x4_t curr3 = vmovl_u16(vget_low_u16(high));    
+				//uint32x4_t curr4 = vmovl_u16(vget_high_u16(high));
+			
+	           // Load the bin width into all four lanes of a register
+				uint32x4_t bin_width_vec = vmovq_n_u32(bin_width);
+	 						
+	 			uint32_t bin_value [size];	
 	 				
-	 			
-	 			// Load target model and candidate
-						
-	 			float32_t model[size];
-		        for (z=0;z<size;z++) {
-					model[z]=target_model.at<float>(k, bin_value_r[z]);
+				// Divide pixel values by bin width
+				uint32x4_t bin_value_vec;
+				vectordivide(&bin_value_vec, curr1, bin_width_vec);
+	
+				// Store bin values 
+				vst1q_u32 (bin_value,bin_value_vec);		 			
+
+
+				float32_t model[size], candidate[size];
+				
+				for (z=0;z<size;z++) {
+					model[z]=target_model.at<float>(k, bin_value[z]);	
 				}	
-	 					
-	 				float32_t candidate[size];
-		            for (z=0;z<size;z++) {
-						candidate[z]=target_candidate.at<float>(k, bin_value[z]);
-					}	
-					
-					float32x4_t model_vec, candidate_vec;				
-					model_vec = vld1q_f32 (model);
-					candidate_vec = vld1q_f32 (candidate);			
-					//printfloat(model_vec,"model vec");
-					//printfloat(candidate_vec,"candidate vec");
-					
-					// Divide model by candidate
-					float32x4_t division_vec;
-					vectordivide_float(&division_vec,model_vec,candidate_vec);
-					//printfloat(division_vec,"division_vec");
-					
-					// Compute square root of the division of model and candidate
-					// TODO teller en noemer hoeven niet allebei gesquared te worden, target model is constant
-					float32x4_t root_vec;
-					vectorsqrt(&root_vec,division_vec);
-					//printfloat(root_vec,"root_vec");
-					
-					// Load in weight data
-					float32_t weight_data[size];
-		            for (z=0;z<size;z++) {
-						weight_data[z]=weight.at<float>(i,j+z);
-					}
-					
-					//printf("load in weight_data: ");
-					//for (z=0;z<4;z++){
-					//	printf(" %f ",weight_data[z]);
-					//}
-					//printf("\n");
+				for (z=0;z<size;z++) {
+					candidate[z]=target_candidate.at<float>(k, bin_value[z]);	
+				}
+				float32x4_t model_vec, candidate_vec;				
+				model_vec = vld1q_f32 (model);
+				candidate_vec = vld1q_f32 (candidate);			
 				
-					float32x4_t weight_vec;				
-					weight_vec = vld1q_f32 (weight_data);			
-					//printfloat(weight_vec,"weight_vec");
-					
-					// Multiply the weight by the square root computed earlier
-					weight_vec = vmulq_f32 (weight_vec,root_vec);
+				// Divide model by candidate
+				float32x4_t division_vec;
+				vectordivide_float(&division_vec,model_vec,candidate_vec);
+			
 				
-					//printfloat(weight_vec,"weight_vec result");
+				// Compute square root of the division of model and candidate
+				float32x4_t root_vec;
+				vectorsqrt(&root_vec,division_vec);
+
+				
+				// Load in weight data
+				float32x4_t weight_vec;
+				weight_vec = vld1q_f32 ((const float32_t *) weight.ptr(i,j));
+
+				// Multiply the weight by the square root computed earlier
+				weight_vec = vmulq_f32 (weight_vec,root_vec);
+
+				// Store the new weight back
+				if (size == 4 ) {
+					vst1q_f32 ((float32_t *) weight.ptr(i,j),weight_vec);
+				} else {
+					float32_t * ptr = (float32_t *) weight.ptr(i,j);
 					
-					// Store the new weight back
-					vst1q_f32(weight_data, weight_vec);
-				    //printf("weight stored: ");
-					//for (z=0;z<4;z++){
-					//	printf(" %f ",weight_data[z]);
-					//}
-					//printf("\n");
-					for (z=0;z<size;z++){
-						weight.at<float>(i,j+z) = weight_data[z];
+					// Putting this in a loop resulted in errors
+					// (argument cannot be variable), so instead like this
+					if (size == 1) {
+						vst1q_lane_f32(ptr, weight_vec, 0);
+					} else if (size == 2) {
+						vst1q_lane_f32(ptr, weight_vec, 0);
+						vst1q_lane_f32(ptr+1, weight_vec, 1);
+					} else if (size == 3) {
+						vst1q_lane_f32(ptr, weight_vec, 0);
+						vst1q_lane_f32(ptr+1, weight_vec, 1);
+						vst1q_lane_f32(ptr+2, weight_vec, 2);
 					}
-					col_index+=4;
+				}
+
+				col_index+=4;
 				
             }
             row_index++;
