@@ -17,6 +17,9 @@ MeanShift::MeanShift()
 
 inline void vectordivide (uint32x4_t *divided_value, uint32x4_t value_a, uint32x4_t value_b) {
 	
+	// SOURCE: https://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
+	// TODO add comments
+	
 	float32x4_t b = vcvtq_f32_u32(value_b);
 	float32x4_t reciprocal = vrecpeq_f32(b);
 	
