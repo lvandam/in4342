@@ -1,6 +1,6 @@
 BASE_TOOLCHAIN=/opt/bbToolChain/usr/local/share/codesourcery
 CC=$(BASE_TOOLCHAIN)/bin/arm-none-linux-gnueabi-g++
-BEAGLE_DIR=/home/root/esLAB/danilo/neon
+BEAGLE_DIR=/home/root/esLAB/zdanilo/neon
 
 SRCS=meanshift.cpp main.cpp
 OBJS=$(SRCS:%.cpp=%.o)
@@ -29,7 +29,7 @@ CFLAGS=$(DEFS) $(INCLUDES)          \
       -mabi=aapcs-linux							\
 			-mfloat-abi=softfp 						\
 			-mfpu=neon
-			
+
 all: clean $(EXEC)
 
 

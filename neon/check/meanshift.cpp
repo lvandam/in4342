@@ -5,8 +5,6 @@
 
 #include"meanshift.h"
 #include"arm_neon.h"
-#include <bitset>
-
 
 MeanShift::MeanShift()
 {
@@ -42,11 +40,21 @@ void  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
             float  y = static_cast<float> (j - w/2);
             float norm_x = x*x/(h*h/4)+y*y/(w*w/4);
             float result =norm_x<1?(epanechnikov_cd*(1.0-norm_x)):0;
-            kernel.at<float>(i,j) = result;
+            kernel.at<float>(i,j) = result/300;
             //kernel_sum += result;
         }
     }
+
     //return kernel_sum;
+    //
+    // printf("%f\n", kernel.at<float>(30,30));
+    //
+    // printf("%f\n", kernel.at<float>(30,40));
+    //
+    //  printf("%d\n", kernel.at<uint>(30,30));
+    // std::cout << kernel.at<float>(30,40);
+    // printf("Ik geloof het niet.");
+    // printf("gekkkk.");
 }
 
 cv::Mat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
@@ -85,12 +93,8 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
 {
     cv::Mat pdf_model(1, 16, CV_32F, cv::Scalar(1e-10));
 
-    uint8x8_t curr_pixel_value_neon, bin_value_neon;
-    uint16x8_t pdf_model_neon;
-    static uint8_t binarray[16];
-
-    uchar curr_pixel_value;
-    float bin_value;
+    uint8x16_t curr_pixel_value_neon, bin_value_neon;
+    static uint8_t bin_array[16];
 
     int row_index = rect.y;
     int clo_index = rect.x;
@@ -98,51 +102,35 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     for(int i = 0; i < rect.height;i++)
     {
         clo_index = rect.x;
-        for(int j=0;j<rect.width;j++)
+        for(int j=0;j<rect.width;j+=16)
         {
-            // Preventing j from going out of bounds. Sadly both rows and cols are not multiples of 4.
-            int size = rect.width - j<8? rect.width -j : 8;
+            int size = rect.width - j<16? rect.width -j : 16;
+            curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,clo_index));
+            bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+            vst1q_u8(bin_array, bin_value_neon);
 
-            curr_pixel_value = frameLayer.at<uchar>(row_index,clo_index);
-            curr_pixel_value_neon = vld1_u8 (&(frameLayer.at<uchar>(row_index,clo_index)));
-            //printf("Curr_pixel_value: %d\n", curr_pixel_value);
-            // if (bin_width != 16)
-            // {
-            //   printf("bin_width is not 16 but: %f\n. Program not optimized for this yet \n.", bin_width);
-            // }
-            //
+            // Useful prints. Bitset, curr_pixel_valueand bin_value.
             // std::bitset<8> x(curr_pixel_value);
             // std::cout << "bitset = " << x << "\n";
-            bin_value_neon = vrshr_n_u8(curr_pixel_value_neon, 4);
-
-            // Printing result
-            static uint8_t test[8];
-            vst1_u8(test,curr_pixel_value_neon);
-            printf("Pixel values: %u %u %u %u %u\n",test[0],test[1],test[2],test[3], test[7]);
-
-            vst1_u8(binarray, bin_value_neon);
-            printf("Binarray: %u %u %u %u %u \n",binarray[0],binarray[1],binarray[2],binarray[3], binarray[7]);
-
-            bin_value = curr_pixel_value / bin_width;
-            printf("%f \n",bin_value);
-
-            // pdf_model_neon = vld1q_u8(&(pdf_model.at<uchar>(0, bin_value)));
-            // kernel_neon = vld1q_u8(&(kernel.at<uchar>(i,j)));
-            //
-            // pdf_model_neon += kernel_neon;
-
-            // for(int k = 0; k < size; k++)
-            // {
-            // pdfmodel[z] = pdf_model.at<uint>(0, bin_array[k]);
-            //
+            // static uint8_t test[16];
+            // vst1q_u8(test,curr_pixel_value_neon);
+            // printf("Pixel values: ");
+            // for(int k = 0; k<size; k++){
+            //   printf("%u ",test[k]); // Hier komen waardes uit als 157, 158, 149, 147, etc.
             // }
-          // pdf_model.at<float>(0, bin_array[k]) += kernel.at<float>(i,j);
-          if (j>3)
-          {
-            exit(EXIT_FAILURE);
-          }
-            clo_index++;
+            // printf("\nbin_array: ");
+            // for(int k = 0; k<size; k++){
+            //   printf("%u ",bin_array[k]); // Hier komen waardes uit als 9,9,9,10,9.
+            // }
+            // printf("\n");
+            // Note: You can also add an if j > 2 EXIT_FAILURE
 
+            for(int k = 0; k < size; k++)
+            {
+              // Dividing by 30000 gives a correct results. Figure out uints!
+            pdf_model.at<float>(0, bin_array[k]) += kernel.at<float>(i,j+k);
+            }
+             clo_index+=16;
         }
         row_index++;
     }
@@ -157,6 +145,8 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     int cols = rec.width;
     int row_index = rec.y;
     int col_index = rec.x;
+  //  uint8x16_t curr_pixel_value_neon2, bin_value_neon2;
+    //static uint8_t bin_array2[16];
 
     cv::Mat weight(rows, cols, CV_32F, cv::Scalar(1.0000));
 
@@ -164,6 +154,20 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     for(int i=0;i<rows;i++)
     {
         col_index = rec.x;
+        // for(int j=0;j<cols;j++)
+        // {
+        //     int size2 = rec.width - j<16? rec.width -j : 16;
+        //     curr_pixel_value_neon2 = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
+        //     bin_value_neon2 = vshrq_n_u8(curr_pixel_value_neon2, 4);
+        //     vst1q_u8(bin_array2, bin_value_neon2);
+        //
+        //     for(int k = 0; k < size2; k++)
+        //     {
+        //     weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_array2[k])/target_candidate.at<float>(0, bin_array2[k]))));
+        //     }
+        //     col_index+=16;
+        // }
+        // Old implementation
         for(int j=0;j<cols;j++)
         {
             int curr_pixel = (frameLayer.at<uchar>(row_index,col_index));

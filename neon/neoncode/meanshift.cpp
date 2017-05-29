@@ -4,8 +4,6 @@
 */
 
 #include"meanshift.h"
-#include"arm_neon.h"
-#include <stdio.h>
 
 MeanShift::MeanShift()
 {
@@ -25,7 +23,7 @@ void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     target_model = pdf_representation_target(frame,target_Region);
 }
-// Computing the kernel. This is used for combining the optimal distance and the color-seeking algorithm
+
 void  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
 {
     int h = kernel.rows;
@@ -45,7 +43,6 @@ void  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
             //kernel_sum += result;
         }
     }
-    std::cout << kernel << "\n";
     //return kernel_sum;
 }
 
@@ -64,11 +61,11 @@ cv::Mat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rec
         clo_index = rect.x;
         for(int j=0;j<rect.width;j++)
         {
-            curr_pixel_value = frame.at<cv::Vec3b>(row_index,clo_index); // Pak RGB waarde op row/col index
-            bin_value[0] = (curr_pixel_value[0]/bin_width); // Deel R, G en B waardes door bin_width
+            curr_pixel_value = frame.at<cv::Vec3b>(row_index,clo_index);
+            bin_value[0] = (curr_pixel_value[0]/bin_width);
             bin_value[1] = (curr_pixel_value[1]/bin_width);
             bin_value[2] = (curr_pixel_value[2]/bin_width);
-            pdf_model.at<float>(0,bin_value[0]) += kernel.at<float>(i,j); // pdf_model.totat(R,R) = kernel * constant --> vmlalq_s32
+            pdf_model.at<float>(0,bin_value[0]) += kernel.at<float>(i,j);
             pdf_model.at<float>(1,bin_value[1]) += kernel.at<float>(i,j);
             pdf_model.at<float>(2,bin_value[2]) += kernel.at<float>(i,j);
 
@@ -91,19 +88,11 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     int row_index = rect.y;
     int clo_index = rect.x;
 
-
     for(int i = 0; i < rect.height;i++)
     {
         clo_index = rect.x;
         for(int j=0;j<rect.width;j++)
         {
-          // int size = rect.width - j<4? rect.width -j : 4;
-          // int8x16x3_t curr_pixel_value; // Load in 3 colors in 128*3 long vector
-          // curr_pixel_value = vld3q_s8 (&(frame.at<int>(row_index,col_index)));
-          // // Inladen in neon met vld3
-          // curr_pixel_vec.val[0] // 16 bytes met r
-
-
             curr_pixel_value = frameLayer.at<uchar>(row_index,clo_index);
             bin_value = curr_pixel_value / bin_width;
 
@@ -132,7 +121,7 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
         col_index = rec.x;
         for(int j=0;j<cols;j++)
         {
-                        int curr_pixel = (frameLayer.at<uchar>(row_index,col_index));
+            int curr_pixel = (frameLayer.at<uchar>(row_index,col_index));
             int bin_value = curr_pixel/bin_width;
             weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(0, bin_value))));
             col_index++;

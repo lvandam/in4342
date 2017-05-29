@@ -9,7 +9,7 @@
 int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
-    
+
     cv::VideoCapture frame_capture;
     if(argc<2)
     {
