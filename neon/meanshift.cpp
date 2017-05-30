@@ -5,6 +5,7 @@
 
 #include"meanshift.h"
 #include"arm_neon.h"
+#include "Timer.h"
 
 MeanShift::MeanShift()
 {
@@ -44,17 +45,7 @@ void  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
             //kernel_sum += result;
         }
     }
-
     //return kernel_sum;
-    //
-    // printf("%f\n", kernel.at<float>(30,30));
-    //
-    // printf("%f\n", kernel.at<float>(30,40));
-    //
-    //  printf("%d\n", kernel.at<uint>(30,30));
-    // std::cout << kernel.at<float>(30,40);
-    // printf("Ik geloof het niet.");
-    // printf("gekkkk.");
 }
 
 cv::Mat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
@@ -99,6 +90,7 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     int row_index = rect.y;
     int clo_index = rect.x;
 
+
     for(int i = 0; i < rect.height;i++)
     {
         clo_index = rect.x;
@@ -127,7 +119,7 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
 
             for(int k = 0; k < size; k++)
             {
-              // Dividing by 30000 gives a correct results. Figure out uints!
+            // Dividing by 30000 gives a correct results. Figure out uints!
             pdf_model.at<float>(0, bin_array[k]) += kernel.at<float>(i,j+k);
             }
              clo_index+=16;
@@ -145,36 +137,32 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     int cols = rec.width;
     int row_index = rec.y;
     int col_index = rec.x;
-  //  uint8x16_t curr_pixel_value_neon2, bin_value_neon2;
-    //static uint8_t bin_array2[16];
+    uint8x16_t curr_pixel_value_neon, bin_value_neon;
+    static uint8_t bin_array[16];
 
-    cv::Mat weight(rows, cols, CV_32F, cv::Scalar(1.0000));
+
+    cv::Mat weight(rows, cols, CV_32F, cv::Scalar(0.0000));
 
     row_index = rec.y;
     for(int i=0;i<rows;i++)
     {
         col_index = rec.x;
-        // for(int j=0;j<cols;j++)
-        // {
-        //     int size2 = rec.width - j<16? rec.width -j : 16;
-        //     curr_pixel_value_neon2 = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
-        //     bin_value_neon2 = vshrq_n_u8(curr_pixel_value_neon2, 4);
-        //     vst1q_u8(bin_array2, bin_value_neon2);
-        //
-        //     for(int k = 0; k < size2; k++)
-        //     {
-        //     weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_array2[k])/target_candidate.at<float>(0, bin_array2[k]))));
-        //     }
-        //     col_index+=16;
-        // }
-        // Old implementation
-        for(int j=0;j<cols;j++)
+
+        for(int j=0;j<cols;j+=16)
         {
-            int curr_pixel = (frameLayer.at<uchar>(row_index,col_index));
-            int bin_value = curr_pixel/bin_width;
-            weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(0, bin_value))));
-            col_index++;
+            int size = rec.width - j<16? rec.width -j : 16;
+            curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
+            bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+            vst1q_u8(bin_array, bin_value_neon);
+
+            for(int g = 0; g < size; g++)
+            {
+            // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
+            weight.at<float>(i,j+g) = static_cast<float>((sqrt(target_model.at<float>(k, bin_array[g])/target_candidate.at<float>(0, bin_array[g]))));
+            }
+            col_index+=16;
         }
+
         row_index++;
     }
 
@@ -184,12 +172,13 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
 cv::Rect MeanShift::track(const cv::Mat &next_frame)
 {
     cv::Rect next_rect;
-
+      //Timer loopTimer("Outer loop timer");
     std::vector<cv::Mat> bgr_planes;
     cv::split(next_frame, bgr_planes);
 
     for(int iter=0;iter<cfg.MaxIter;iter++)
     {
+      //loopTimer.Start();
         cv::Mat target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
         cv::Mat weight0 = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
 
@@ -198,9 +187,14 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
         cv::Mat target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
         cv::Mat weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
+        // loopTimer.Pause();
+        // loopTimer.Print();
+        // exit (EXIT_FAILURE);
 
         // Merge back intermediate results
         cv::Mat weight = weight0.mul(weight1.mul(weight2));
+
+
 
         float delta_x = 0.0;
         float sum_wij = 0.0;
@@ -213,10 +207,16 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
+
+
         for(int i=0;i<weight.rows;i++)
         {
             for(int j=0;j<weight.cols;j++)
             {
+              // Working commented on neon version for now
+              // int size = cols - j<4? cols -j : 4;
+              // float8x16_t norm_i, norm_j;
+              //
                 float norm_i = static_cast<float>(i-centre)/centre;
                 float norm_j = static_cast<float>(j-centre)/centre;
                 mult = pow(norm_i,2)+pow(norm_j,2)>1.0?0.0:1.0;
