@@ -3,7 +3,8 @@
  * you can find all the formula in the paper
 */
 
-#include"meanshift.h"
+#include "meanshift.h"
+#include "arm_neon.h"
 
 MeanShift::MeanShift()
 {
@@ -56,8 +57,8 @@ cv::Mat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rec
 {
     cv::Mat pdf_model(3, 16, CV_16UC2, cv::Scalar(0)); // CV_32SC1
 
-    cv::Vec3f curr_pixel_value;
-    cv::Vec3f bin_value;
+    cv::Vec3b curr_pixel_value;
+    cv::Vec3i bin_value;
 
     int row_index = rect.y;
     int clo_index = rect.x;
@@ -90,22 +91,29 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     //cv::Mat pdf_model(1, 16, CV_32F, cv::Scalar(1e-10)); // FLOAT
     cv::Mat pdf_model(1, 16, CV_16UC2, cv::Scalar(0)); // INT // CV_32SC1
 
-    uchar curr_pixel_value;
-    int bin_value;
+    uint8x16_t curr_pixel_value_neon, bin_value_neon;
+    static uint8_t bin_array[16];
 
     int row_index = rect.y;
     int clo_index = rect.x;
 
+
     for(int i = 0; i < rect.height;i++)
     {
         clo_index = rect.x;
-        for(int j = 0; j < rect.width; j++)
+        for(int j=0;j<rect.width;j+=16)
         {
-            curr_pixel_value = frameLayer.at<uchar>(row_index,clo_index);
-            bin_value = curr_pixel_value / bin_width;
+            int size = rect.width - j<16? rect.width -j : 16;
+            curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,clo_index));
+            bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+            vst1q_u8(bin_array, bin_value_neon);
 
-            pdf_model.at<uint>(0, bin_value) += kernel.at<unsigned short>(i,j);
-            clo_index++;
+            for(int k = 0; k < size; k++)
+            {
+              // Dividing by 30000 gives a correct results. Figure out uints!
+              pdf_model.at<float>(0, bin_array[k]) += kernel.at<float>(i,j+k);
+            }
+            clo_index += 16;
         }
         row_index++;
     }
@@ -120,6 +128,8 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     int cols = rec.width;
     int row_index = rec.y;
     int col_index = rec.x;
+    uint8x16_t curr_pixel_value_neon, bin_value_neon;
+    static uint8_t bin_array[16];
 
     // cv::Mat weight(rows, cols, CV_32F, cv::Scalar(1.0000)); // float
     cv::Mat weight(rows, cols, CV_16UC2, cv::Scalar(1)); // int
@@ -128,16 +138,21 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     for(int i = 0; i < rows; i++)
     {
         col_index = rec.x;
-        for(int j = 0; j < cols; j++)
+        for(int j = 0; j < cols; j+=16)
         {
-            int curr_pixel = frameLayer.at<uchar>(row_index, col_index);
-            int bin_value = curr_pixel / bin_width;
+            int size = rec.width - j<16? rec.width -j : 16;
+            curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
+            bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+            vst1q_u8(bin_array, bin_value_neon);
 
-            if(target_candidate.at<uint>(0, bin_value) != 0) // Added: so that weights won't become 0 by uninitialized pdf_model values
-              // weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(0, bin_value)))); // float
-              weight.at<uint>(i,j) *= static_cast<uint>((sqrt(target_model.at<uint>(k, bin_value) / target_candidate.at<uint>(0, bin_value)))); // int
+            for(int g = 0; g < size; g++)
+            {
+              // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
+              if(target_candidate.at<uint>(0, bin_array[g]) != 0)
+                weight.at<uint>(i,j+g) = static_cast<uint>((sqrt(target_model.at<uint>(k, bin_array[g])/target_candidate.at<uint>(0, bin_array[g]))));
+            }
 
-            col_index++;
+            col_index += 16;
         }
         row_index++;
     }
@@ -206,3 +221,69 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
     return next_rect;
 }
+
+
+
+
+
+// // PDF_REPRESENTATION WITHOUT NEON
+// cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
+// {
+//     //cv::Mat pdf_model(1, 16, CV_32F, cv::Scalar(1e-10)); // FLOAT
+//     cv::Mat pdf_model(1, 16, CV_16UC2, cv::Scalar(0)); // INT // CV_32SC1
+//
+//     uchar curr_pixel_value;
+//     int bin_value;
+//
+//     int row_index = rect.y;
+//     int clo_index = rect.x;
+//
+//     for(int i = 0; i < rect.height;i++)
+//     {
+//         clo_index = rect.x;
+//         for(int j = 0; j < rect.width; j++)
+//         {
+//             curr_pixel_value = frameLayer.at<uchar>(row_index,clo_index);
+//             bin_value = curr_pixel_value / bin_width;
+//
+//             pdf_model.at<uint>(0, bin_value) += kernel.at<unsigned short>(i,j);
+//             clo_index++;
+//         }
+//         row_index++;
+//     }
+//
+//     return pdf_model;
+// }
+
+// // CALWEIGHT WITHOUT NEON
+// cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
+//                     cv::Mat &target_candidate, cv::Rect &rec)
+// {
+//     int rows = rec.height;
+//     int cols = rec.width;
+//     int row_index = rec.y;
+//     int col_index = rec.x;
+//
+//     // cv::Mat weight(rows, cols, CV_32F, cv::Scalar(1.0000)); // float
+//     cv::Mat weight(rows, cols, CV_16UC2, cv::Scalar(1)); // int
+//
+//     row_index = rec.y;
+//     for(int i = 0; i < rows; i++)
+//     {
+//         col_index = rec.x;
+//         for(int j = 0; j < cols; j++)
+//         {
+//             int curr_pixel = frameLayer.at<uchar>(row_index, col_index);
+//             int bin_value = curr_pixel / bin_width;
+//
+//             if(target_candidate.at<uint>(0, bin_value) != 0) // Added: so that weights won't become 0 by uninitialized pdf_model values
+//               // weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(0, bin_value)))); // float
+//               weight.at<uint>(i,j) *= static_cast<uint>((sqrt(target_model.at<uint>(k, bin_value) / target_candidate.at<uint>(0, bin_value)))); // int
+//
+//             col_index++;
+//         }
+//         row_index++;
+//     }
+//
+//     return weight;
+// }

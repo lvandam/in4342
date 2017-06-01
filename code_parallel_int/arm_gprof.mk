@@ -28,7 +28,8 @@ CFLAGS=$(DEFS) $(INCLUDES)          \
       -fno-omit-frame-pointer       \
       -mapcs                        \
       -mabi=aapcs-linux \
-      -pg -g
+      -pg -g \
+      -mfloat-abi=softfp -mfpu=neon
 
 all: clean $(EXEC)
 
