@@ -10,7 +10,6 @@ using namespace std;
 
 typedef vector< vector<unsigned short> > Matrix;
 typedef vector<unsigned short> Row;
-void init_matrix(Matrix &matrix, int width, int height);
 
 template<typename T>
 ostream& operator<< (ostream& out, const vector<T>& v) {
@@ -33,7 +32,10 @@ class MeanShift
     Matrix target_model;
     cv::Rect target_Region;
     Matrix kernel;
-    float normalized_C;
+    std::vector<float> norm_i;
+    std::vector<float> norm_j;
+    Matrix norm_i_j;
+    float centre;
 
     struct config{
         int num_bins;
