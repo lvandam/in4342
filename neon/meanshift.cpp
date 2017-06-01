@@ -15,6 +15,25 @@ MeanShift::MeanShift()
     bin_width = cfg.piexl_range / cfg.num_bins;
 }
 
+float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
+	
+	// SOURCE: https://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
+
+	float32x4_t reciprocal = vrecpeq_f32(value_b);
+		
+	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
+	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
+	
+	return vmulq_f32(value_a,reciprocal);	
+}
+
+float32x4_t vectorsqrt (float32x4_t input) {
+
+	//TODO should be made a bit more accurate
+	return vmulq_f32(vrsqrteq_f32(input), input);
+
+}
+
 void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
@@ -101,22 +120,6 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
             bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
             vst1q_u8(bin_array, bin_value_neon);
 
-            // Useful prints. Bitset, curr_pixel_valueand bin_value.
-            // std::bitset<8> x(curr_pixel_value);
-            // std::cout << "bitset = " << x << "\n";
-            // static uint8_t test[16];
-            // vst1q_u8(test,curr_pixel_value_neon);
-            // printf("Pixel values: ");
-            // for(int k = 0; k<size; k++){
-            //   printf("%u ",test[k]); // Hier komen waardes uit als 157, 158, 149, 147, etc.
-            // }
-            // printf("\nbin_array: ");
-            // for(int k = 0; k<size; k++){
-            //   printf("%u ",bin_array[k]); // Hier komen waardes uit als 9,9,9,10,9.
-            // }
-            // printf("\n");
-            // Note: You can also add an if j > 2 EXIT_FAILURE
-
             for(int k = 0; k < size; k++)
             {
             // Dividing by 30000 gives a correct results. Figure out uints!
@@ -139,7 +142,8 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     int col_index = rec.x;
     uint8x16_t curr_pixel_value_neon, bin_value_neon;
     static uint8_t bin_array[16];
-
+	float32_t model[16], candidate[16], result[16];
+	float32x4x4_t model_neon, candidate_neon, result_neon;
 
     cv::Mat weight(rows, cols, CV_32F, cv::Scalar(0.0000));
 
@@ -150,16 +154,36 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
 
         for(int j=0;j<cols;j+=16)
         {
+        	// Compute bin values of 16 pixels
             int size = rec.width - j<16? rec.width -j : 16;
             curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
             bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
             vst1q_u8(bin_array, bin_value_neon);
 
-            for(int g = 0; g < size; g++)
-            {
-            // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
-            weight.at<float>(i,j+g) = static_cast<float>((sqrt(target_model.at<float>(k, bin_array[g])/target_candidate.at<float>(0, bin_array[g]))));
-            }
+			// Read in 16 model values, store as 32x4x4 float 
+			for (int z =0;z<16;z++) {
+				model[z]=target_model.at<float>(k, bin_array[z]);
+			}	
+			model_neon = vld4q_f32((const float32_t *)&model);
+
+			// Read in 16 candidate values, store as 32x4x4 float
+			for (int z =0;z<16;z++) {
+				candidate[z]=target_candidate.at<float>(0, bin_array[z]);
+			}	
+			candidate_neon = vld4q_f32((const float32_t *)&candidate);
+
+			// Divide model by candidate
+			for (int z = 0; z < 4; z++) {
+				result_neon.val[z] = vectordivide(model_neon.val[z],candidate_neon.val[z]);
+			}
+
+			// Store result in weight matrix
+			vst4q_f32(result,result_neon);
+
+			for (int g = 0; g < size; g++) {
+				weight.at<float>(i,j+g) = result[g];	
+			}			
+			
             col_index+=16;
         }
 
