@@ -23,7 +23,7 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     norm_i = std::vector<float>(rect.height);
     norm_j = std::vector<float>(rect.width);
-    norm_i_j = Matrix(rect.height, Row(rect.width));
+    norm_i_j = MatrixFloat(rect.height, RowFloat(rect.width));
     // for(int i = 0; i < rect.height; i++)
     //   norm_i[i] = static_cast<float>(i-centre)/centre;
     // for(int j = 0; j < rect.width; j++)
@@ -96,7 +96,6 @@ Matrix MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect
         }
         row_index++;
     }
-
     return pdf_model;
 }
 
@@ -161,7 +160,7 @@ Matrix MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
               // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
               if(target_candidate[0][bin_array[g]] != 0)
               {
-                weight[i][j+g] = static_cast<unsigned short>((sqrt((target_model[k][bin_array[g]]*500)/target_candidate[0][bin_array[g]])));
+                weight[i][j+g] = static_cast<unsigned short>((sqrt((target_model[k][bin_array[g]]*1000)/target_candidate[0][bin_array[g]])));
               }
             }
 
@@ -169,6 +168,7 @@ Matrix MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
         }
         row_index++;
     }
+    // std::cout << weight << std::endl;
 
     return weight;
 }
@@ -188,7 +188,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     {
         Matrix target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
         Matrix weight = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
-        // std::cout << weight << std::endl;
 
         Matrix target_candidate1 = pdf_representation(bgr_planes[1], target_Region);
         Matrix weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
@@ -196,14 +195,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         Matrix target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
         Matrix weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
 
-        // TODO: Speed this shit up!
-        for (size_t jj = 0; jj < weight[0].size(); ++jj)
-          for (size_t ii = 0; ii < weight.size(); ++ii)
-            weight[ii][jj] = weight[ii][jj] * weight1[ii][jj] * weight2[ii][jj];
-
-
-        // multTimer.Pause();
-        // multTimer.Print();
 
         float delta_x = 0.0;
         float delta_y = 0.0;
@@ -214,18 +205,34 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
-        for(size_t i = 0; i < weight.size(); i++)
+        // TODO: Speed this shit up!
+        for (size_t i = 0; i < weight.size(); ++i)
         {
-            for(size_t j = 0; j < weight[0].size(); j++)
+          for (size_t j = 0; j < weight[0].size(); ++j)
+          {
+            if(norm_i_j[i][j] <= 1.0)
             {
-                if(norm_i_j[i][j] <= 1.0)
-                {
-                  delta_x += static_cast<float>(norm_j[j]*weight[i][j]);
-                  delta_y += static_cast<float>(norm_i[i]*weight[i][j]);
-                  sum_wij += static_cast<float>(weight[i][j]);
-                }
+              weight[i][j] = weight[i][j] * weight1[i][j] * weight2[i][j];
+
+              delta_x += static_cast<float>(norm_j[j]*weight[i][j]);
+              delta_y += static_cast<float>(norm_i[i]*weight[i][j]);
+              sum_wij += static_cast<float>(weight[i][j]);
             }
+
+          }
+
         }
+
+
+        // multTimer.Pause();
+        // multTimer.Print();
+
+        // for(size_t i = 0; i < weight.size(); i++)
+        // {
+        //     for(size_t j = 0; j < weight[0].size(); j++)
+        //     {
+        //     }
+        // }
 
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);

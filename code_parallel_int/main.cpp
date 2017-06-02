@@ -9,6 +9,7 @@
 int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
+    // Timer trackTimer("Track Time");
 
     cv::VideoCapture frame_capture;
     if(argc<2)
@@ -50,7 +51,10 @@ int main(int argc, char ** argv)
         #ifndef ARMCC
         // MCPROF_START();
         #endif
+        // trackTimer.Start();
         cv::Rect ms_rect =  ms.track(frame);
+        // trackTimer.Stop();
+        // trackTimer.Print();
         #ifndef ARMCC
         // MCPROF_STOP();
         #endif
