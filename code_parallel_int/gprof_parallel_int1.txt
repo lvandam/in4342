@@ -1,0 +1,64 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 45.47      0.25     0.25      537     0.47     0.47  MeanShift::CalWeight(cv::Mat&, int, cv::Mat&, cv::Mat&, cv::Rect_<int>&)
+ 32.74      0.43     0.18       32     5.63    16.88  MeanShift::track(cv::Mat const&)
+ 20.01      0.54     0.11      537     0.20     0.20  MeanShift::pdf_representation(cv::Mat&, cv::Rect_<int> const&)
+  1.82      0.55     0.01        1    10.00    10.00  MeanShift::pdf_representation_target(cv::Mat const&, cv::Rect_<int> const&)
+  0.00      0.55     0.00        1     0.00     0.00  global constructors keyed to _ZN9MeanShiftC2Ev
+  0.00      0.55     0.00        1     0.00     0.00  global constructors keyed to main
+  0.00      0.55     0.00        1     0.00    10.00  MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&)
+  0.00      0.55     0.00        1     0.00     0.00  MeanShift::Epanechnikov_kernel(cv::Mat&)
+  0.00      0.55     0.00        1     0.00     0.00  MeanShift::MeanShift()
+
+			Call graph
+
+
+granularity: each sample hit covers 2 byte(s) for 1.82% of 0.55 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]    100.0    0.00    0.55                 main [1]
+                0.18    0.36      32/32          MeanShift::track(cv::Mat const&) [2]
+                0.00    0.01       1/1           MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&) [5]
+                0.00    0.00       1/1           MeanShift::MeanShift() [16]
+-----------------------------------------------
+                0.18    0.36      32/32          main [1]
+[2]     98.2    0.18    0.36      32         MeanShift::track(cv::Mat const&) [2]
+                0.25    0.00     537/537         MeanShift::CalWeight(cv::Mat&, int, cv::Mat&, cv::Mat&, cv::Rect_<int>&) [3]
+                0.11    0.00     537/537         MeanShift::pdf_representation(cv::Mat&, cv::Rect_<int> const&) [4]
+-----------------------------------------------
+                0.25    0.00     537/537         MeanShift::track(cv::Mat const&) [2]
+[3]     45.5    0.25    0.00     537         MeanShift::CalWeight(cv::Mat&, int, cv::Mat&, cv::Mat&, cv::Rect_<int>&) [3]
+-----------------------------------------------
+                0.11    0.00     537/537         MeanShift::track(cv::Mat const&) [2]
+[4]     20.0    0.11    0.00     537         MeanShift::pdf_representation(cv::Mat&, cv::Rect_<int> const&) [4]
+-----------------------------------------------
+                0.00    0.01       1/1           main [1]
+[5]      1.8    0.00    0.01       1         MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&) [5]
+                0.01    0.00       1/1           MeanShift::pdf_representation_target(cv::Mat const&, cv::Rect_<int> const&) [6]
+                0.00    0.00       1/1           MeanShift::Epanechnikov_kernel(cv::Mat&) [15]
+-----------------------------------------------
+                0.01    0.00       1/1           MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&) [5]
+[6]      1.8    0.01    0.00       1         MeanShift::pdf_representation_target(cv::Mat const&, cv::Rect_<int> const&) [6]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [27]
+[13]     0.0    0.00    0.00       1         global constructors keyed to _ZN9MeanShiftC2Ev [13]
+-----------------------------------------------
+                0.00    0.00       1/1           __libc_csu_init [27]
+[14]     0.0    0.00    0.00       1         global constructors keyed to main [14]
+-----------------------------------------------
+                0.00    0.00       1/1           MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&) [5]
+[15]     0.0    0.00    0.00       1         MeanShift::Epanechnikov_kernel(cv::Mat&) [15]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[16]     0.0    0.00    0.00       1         MeanShift::MeanShift() [16]
+-----------------------------------------------
+
+Index by function name
+
+  [13] global constructors keyed to _ZN9MeanShiftC2Ev (meanshift.cpp) [4] MeanShift::pdf_representation(cv::Mat&, cv::Rect_<int> const&) [2] MeanShift::track(cv::Mat const&)
+  [14] global constructors keyed to main (main.cpp) [15] MeanShift::Epanechnikov_kernel(cv::Mat&) [3] MeanShift::CalWeight(cv::Mat&, int, cv::Mat&, cv::Mat&, cv::Rect_<int>&)
+   [5] MeanShift::Init_target_frame(cv::Mat const&, cv::Rect_<int> const&) [6] MeanShift::pdf_representation_target(cv::Mat const&, cv::Rect_<int> const&) [16] MeanShift::MeanShift()

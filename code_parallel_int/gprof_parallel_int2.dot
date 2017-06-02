@@ -1,0 +1,12 @@
+digraph {
+	graph [fontname=Arial, nodesep=0.125, ranksep=0.25];
+	node [fontcolor=white, fontname=Arial, height=0, shape=box, style=filled, width=0];
+	edge [fontname=Arial];
+	1 [color="#ff0000", fontcolor="#ffffff", fontsize="10.00", label="main\n100.00%\n(0.00%)"];
+	1 -> 2 [arrowsize="1.00", color="#ff0000", fontcolor="#ff0000", fontsize="10.00", label="100.00%\n32×", labeldistance="4.00", penwidth="4.00"];
+	2 [color="#ff0000", fontcolor="#ffffff", fontsize="10.00", label="MeanShift::track(cv::Mat const&)\n100.00%\n(30.77%)\n32×"];
+	2 -> 3 [arrowsize="0.65", color="#0aab3c", fontcolor="#0aab3c", fontsize="10.00", label="42.31%\n537×", labeldistance="1.69", penwidth="1.69"];
+	2 -> 4 [arrowsize="0.52", color="#0c968b", fontcolor="#0c968b", fontsize="10.00", label="26.92%\n537×", labeldistance="1.08", penwidth="1.08"];
+	3 [color="#0aab3c", fontcolor="#ffffff", fontsize="10.00", label="MeanShift::CalWeight(cv::Mat&, int, cv::Mat&, cv::Mat&, cv::Rect_<int>&)\n42.31%\n(42.31%)\n537×"];
+	4 [color="#0c968b", fontcolor="#ffffff", fontsize="10.00", label="MeanShift::pdf_representation(cv::Mat&, cv::Rect_<int> const&)\n26.92%\n(26.92%)\n537×"];
+}
