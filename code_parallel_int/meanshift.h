@@ -11,6 +11,9 @@ using namespace std;
 typedef vector< vector<unsigned short> > Matrix;
 typedef vector<unsigned short> Row;
 
+typedef vector< vector<float> > MatrixFloat;
+typedef vector<float> RowFloat;
+
 template<typename T>
 ostream& operator<< (ostream& out, const vector<T>& v) {
     out << "[";
@@ -34,7 +37,7 @@ class MeanShift
     Matrix kernel;
     std::vector<float> norm_i;
     std::vector<float> norm_j;
-    Matrix norm_i_j;
+    MatrixFloat norm_i_j;
     float centre;
 
     struct config{
@@ -49,7 +52,7 @@ public:
     void Epanechnikov_kernel(Matrix &kernel);
     Matrix pdf_representation_target(const cv::Mat &frame,const cv::Rect &rect);
     Matrix pdf_representation(cv::Mat &frameLayer,const cv::Rect &rect);
-    Matrix CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model, Matrix &target_candidate, cv::Rect &rec);
+    MatrixFloat CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model, Matrix &target_candidate, cv::Rect &rec);
     cv::Rect track(const cv::Mat &next_frame);
 };
 

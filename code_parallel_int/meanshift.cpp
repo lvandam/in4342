@@ -15,6 +15,25 @@ MeanShift::MeanShift()
     bin_width = cfg.piexl_range / cfg.num_bins;
 }
 
+float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
+
+	// SOURCE: https://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
+
+	float32x4_t reciprocal = vrecpeq_f32(value_b);
+
+	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
+	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
+
+	return vmulq_f32(value_a,reciprocal);
+}
+
+float32x4_t vectorsqrt (float32x4_t input) {
+
+	//TODO should be made a bit more accurate
+	return vmulq_f32(vrsqrteq_f32(input), input);
+
+}
+
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
@@ -23,7 +42,7 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     norm_i = std::vector<float>(rect.height);
     norm_j = std::vector<float>(rect.width);
-    norm_i_j = Matrix(rect.height, Row(rect.width));
+    norm_i_j = MatrixFloat(rect.height, RowFloat(rect.width));
     // for(int i = 0; i < rect.height; i++)
     //   norm_i[i] = static_cast<float>(i-centre)/centre;
     // for(int j = 0; j < rect.width; j++)
@@ -96,7 +115,6 @@ Matrix MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect
         }
         row_index++;
     }
-
     return pdf_model;
 }
 
@@ -133,7 +151,7 @@ Matrix MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     return pdf_model;
 }
 
-Matrix MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
+MatrixFloat MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
                     Matrix &target_candidate, cv::Rect &rec)
 {
     int rows = rec.height;
@@ -142,8 +160,10 @@ Matrix MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
     int col_index = rec.x;
     uint8x16_t curr_pixel_value_neon, bin_value_neon;
     static uint8_t bin_array[16];
+    float32_t model[16], candidate[16], result[16];
+    float32x4x4_t model_neon, candidate_neon, result_neon;
 
-    Matrix weight(rows, Row(cols));
+    MatrixFloat weight(rows, RowFloat(cols));
 
     row_index = rec.y;
     for(int i = 0; i < rows; i++)
@@ -151,19 +171,44 @@ Matrix MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
         col_index = rec.x;
         for(int j = 0; j < cols; j+=16)
         {
+        	 // Compute bin values of 16 pixels
             int size = rec.width - j<16? rec.width -j : 16;
             curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
             bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
             vst1q_u8(bin_array, bin_value_neon);
 
-            for(int g = 0; g < size; g++)
-            {
-              // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
-              if(target_candidate[0][bin_array[g]] != 0)
-              {
-                weight[i][j+g] = static_cast<unsigned short>((sqrt((target_model[k][bin_array[g]]*500)/target_candidate[0][bin_array[g]])));
-              }
-            }
+            // Read in 16 model values, store as 32x4x4 float
+      			for (int z =0;z<16;z++) {
+      				model[z]=target_model[k][bin_array[z]];
+      			}
+      			model_neon = vld4q_f32((const float32_t *)&model);
+
+      			// Read in 16 candidate values, store as 32x4x4 float
+      			for (int z =0;z<16;z++) {
+      				candidate[z]=target_candidate[0][bin_array[z]];
+      			}
+      			candidate_neon = vld4q_f32((const float32_t *)&candidate);
+
+      			// Divide model by candidate
+      			for (int z = 0; z < 4; z++) {
+      				result_neon.val[z] = vectordivide(model_neon.val[z],candidate_neon.val[z]);
+      			}
+
+      			// Store result in weight matrix
+      			vst4q_f32(result,result_neon);
+
+      			for (int g = 0; g < size; g++) {
+      				weight[i][j+g]= result[g];
+      			}
+
+            // for(int g = 0; g < size; g++)
+            // {
+            //   // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
+            //   if(target_candidate[0][bin_array[g]] != 0)
+            //   {
+            //     weight[i][j+g] = static_cast<unsigned short>((sqrt((target_model[k][bin_array[g]]*1000)/target_candidate[0][bin_array[g]])));
+            //   }
+            // }
 
             col_index += 16;
         }
@@ -187,23 +232,14 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
         Matrix target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
-        Matrix weight = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
-        // std::cout << weight << std::endl;
+        MatrixFloat weight = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
 
         Matrix target_candidate1 = pdf_representation(bgr_planes[1], target_Region);
-        Matrix weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
+        MatrixFloat weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
 
         Matrix target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
-        Matrix weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
+        MatrixFloat weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
 
-        // TODO: Speed this shit up!
-        for (size_t jj = 0; jj < weight[0].size(); ++jj)
-          for (size_t ii = 0; ii < weight.size(); ++ii)
-            weight[ii][jj] = weight[ii][jj] * weight1[ii][jj] * weight2[ii][jj];
-
-
-        // multTimer.Pause();
-        // multTimer.Print();
 
         float delta_x = 0.0;
         float delta_y = 0.0;
@@ -214,18 +250,24 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
-        for(size_t i = 0; i < weight.size(); i++)
+        // TODO: Speed this shit up!
+        for (size_t i = 0; i < weight.size(); ++i)
         {
-            for(size_t j = 0; j < weight[0].size(); j++)
+          for (size_t j = 0; j < weight[0].size(); ++j)
+          {
+            if(norm_i_j[i][j] <= 1.0)
             {
-                if(norm_i_j[i][j] <= 1.0)
-                {
-                  delta_x += static_cast<float>(norm_j[j]*weight[i][j]);
-                  delta_y += static_cast<float>(norm_i[i]*weight[i][j]);
-                  sum_wij += static_cast<float>(weight[i][j]);
-                }
+              weight[i][j] = weight[i][j] * weight1[i][j] * weight2[i][j];
+
+              delta_x += static_cast<float>(norm_j[j]*weight[i][j]);
+              delta_y += static_cast<float>(norm_i[i]*weight[i][j]);
+              sum_wij += static_cast<float>(weight[i][j]);
             }
+          }
         }
+
+        // multTimer.Pause();
+        // multTimer.Print();
 
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
