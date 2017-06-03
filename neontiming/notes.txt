@@ -1,0 +1,12 @@
+- How to deal with the bayesian method with splitting the implementation? --- offload some tasks
+- Uitleg van de meanshift algoritme. Je modelleert je target als een ellips in de vorm van de Epanechnikov kernel, en dan kijk je naar  de volgende frame. Dan kijk je naar een combinatie van een minimal distance dmv de kernel en een hoge likelihood estimator die kleur gebruikt???. En dan move je die kernel weer daarheen? Gebruik je voor die distance de kernel? Minimizing distance, maximizing Bhattacharyya coefficient.
+- Can we decrease the number of iterations or bins? Iterations: is basically a slightly worse approximation of the middle. Bins: Program doesnt work correctly anymore. Changes time? -- mag niet
+- Is it ok to compute stuff before the program starts running? We found out that the Epanechnikov_kernel only needs to be computed once, and this is not dependent on the frames of the video.
+- bins/piexl_range
+- Any easy way to remove the warnings? Or not necessary -- Doesn't matter
+
+
+Using color information.
+
+Neon optimizations:
+-
