@@ -3,8 +3,8 @@
  * you can find all the formula in the paper
 */
 
-#include"meanshift.h"
-#include"arm_neon.h"
+#include "meanshift.h"
+#include "arm_neon.h"
 #include "Timer.h"
 
 MeanShift::MeanShift()
@@ -15,100 +15,96 @@ MeanShift::MeanShift()
     bin_width = cfg.piexl_range / cfg.num_bins;
 }
 
-float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
-	
-	// SOURCE: https://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
-
-	float32x4_t reciprocal = vrecpeq_f32(value_b);
-		
-	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
-	reciprocal = vmulq_f32(vrecpsq_f32(value_b, reciprocal), reciprocal);
-	
-	return vmulq_f32(value_a,reciprocal);	
-}
-
-float32x4_t vectorsqrt (float32x4_t input) {
-
-	//TODO should be made a bit more accurate
-	return vmulq_f32(vrsqrteq_f32(input), input);
-
-}
-
-void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
+void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
-    kernel = cv::Mat(rect.height,rect.width,CV_32F,cv::Scalar(0));
-    //normalized_C = 1.0 / Epanechnikov_kernel(kernel);
 
+    centre = static_cast<float>((rect.height - 1) / 2.0);
+
+    norm_i = std::vector<float>(rect.height);
+    norm_j = std::vector<float>(rect.width);
+    norm_i_j = Matrix(rect.height, Row(rect.width));
+
+    for(int i = 0; i < rect.height; i++)
+    {
+      norm_i[i] = static_cast<float>(i-centre)/centre;
+      for(int j = 0; j < rect.width; j++)
+      {
+        norm_j[j] = static_cast<float>(j-centre)/centre;
+        norm_i_j[i][j] = norm_i[i]*norm_i[i] + norm_j[j]*norm_j[j];
+      }
+    }
+
+    kernel = Matrix(rect.height, Row(rect.width));
     Epanechnikov_kernel(kernel);
 
-    target_model = pdf_representation_target(frame,target_Region);
+    target_model = pdf_representation_target(frame, target_Region);
 }
 
-void  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
+void MeanShift::Epanechnikov_kernel(Matrix &kernel)
 {
-    int h = kernel.rows;
-    int w = kernel.cols;
+    int h = kernel.size();
+    int w = kernel[0].size();
 
-    float epanechnikov_cd = 0.1*PI*h*w;
-    //float kernel_sum = 0.0;
-    for(int i=0;i<h;i++)
+    unsigned short epanechnikov_cd = 0.1 * PI * h * w;
+
+    for(int i = 0; i < h; i++)
     {
-        for(int j=0;j<w;j++)
+        for(int j = 0; j < w; j++)
         {
-            float x = static_cast<float>(i - h/2);
-            float  y = static_cast<float> (j - w/2);
-            float norm_x = x*x/(h*h/4)+y*y/(w*w/4);
-            float result =norm_x<1?(epanechnikov_cd*(1.0-norm_x)):0;
-            kernel.at<float>(i,j) = result/300;
-            //kernel_sum += result;
+            float x = i - h/2;
+            float y = j - w/2;
+
+            unsigned short norm_x = (25*h*h*w*w/4) / (h*h*w*w/4 - x*x*w*w - y*y*h*h); // Float -> int by multiplying with a factor 5
+            unsigned short result = norm_x > 25 ? (epanechnikov_cd / norm_x) : 0;
+
+            kernel[i][j] = result;
         }
     }
-    //return kernel_sum;
 }
 
-cv::Mat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
+Matrix MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
 {
-    cv::Mat pdf_model(3, 16, CV_32SC1, cv::Scalar(1e-10));
+    Matrix pdf_model(3, Row(16));
 
-    cv::Vec3f curr_pixel_value;
-    cv::Vec3f bin_value;
+    cv::Vec3b curr_pixel_value;
+    cv::Vec3i bin_value;
 
     int row_index = rect.y;
     int clo_index = rect.x;
 
-    for(int i=0;i<rect.height;i++)
+    for(int i = 0; i < rect.height; i++)
     {
         clo_index = rect.x;
-        for(int j=0;j<rect.width;j++)
+        for(int j = 0; j < rect.width; j++)
         {
-            curr_pixel_value = frame.at<cv::Vec3b>(row_index,clo_index);
-            bin_value[0] = (curr_pixel_value[0]/bin_width);
-            bin_value[1] = (curr_pixel_value[1]/bin_width);
-            bin_value[2] = (curr_pixel_value[2]/bin_width);
-            pdf_model.at<float>(0,bin_value[0]) += kernel.at<float>(i,j);
-            pdf_model.at<float>(1,bin_value[1]) += kernel.at<float>(i,j);
-            pdf_model.at<float>(2,bin_value[2]) += kernel.at<float>(i,j);
+            curr_pixel_value = frame.at<cv::Vec3b>(row_index, clo_index);
+
+            bin_value[0] = curr_pixel_value[0] / bin_width;
+            bin_value[1] = curr_pixel_value[1] / bin_width;
+            bin_value[2] = curr_pixel_value[2] / bin_width;
+
+            pdf_model[0][bin_value[0]] += kernel[i][j];
+            pdf_model[1][bin_value[0]] += kernel[i][j];
+            pdf_model[2][bin_value[0]] += kernel[i][j];
 
             clo_index++;
         }
         row_index++;
     }
 
-
     return pdf_model;
 }
 
-cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
+Matrix MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
 {
-    cv::Mat pdf_model(1, 16, CV_32F, cv::Scalar(1e-10));
+    Matrix pdf_model(1, Row(16));
 
     uint8x16_t curr_pixel_value_neon, bin_value_neon;
     static uint8_t bin_array[16];
 
     int row_index = rect.y;
     int clo_index = rect.x;
-
 
     for(int i = 0; i < rect.height;i++)
     {
@@ -122,10 +118,9 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
 
             for(int k = 0; k < size; k++)
             {
-            // Dividing by 30000 gives a correct results. Figure out uints!
-            pdf_model.at<float>(0, bin_array[k]) += kernel.at<float>(i,j+k);
+              pdf_model[0][bin_array[k]] += kernel[i][j + k];
             }
-             clo_index+=16;
+            clo_index += 16;
         }
         row_index++;
     }
@@ -133,8 +128,8 @@ cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
     return pdf_model;
 }
 
-cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
-                    cv::Mat &target_candidate, cv::Rect &rec)
+MatrixFloat MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_model,
+                    Matrix &target_candidate, cv::Rect &rec)
 {
     int rows = rec.height;
     int cols = rec.width;
@@ -142,51 +137,31 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
     int col_index = rec.x;
     uint8x16_t curr_pixel_value_neon, bin_value_neon;
     static uint8_t bin_array[16];
-	float32_t model[16], candidate[16], result[16];
-	float32x4x4_t model_neon, candidate_neon, result_neon;
 
-    cv::Mat weight(rows, cols, CV_32F, cv::Scalar(0.0000));
+    MatrixFloat weight(rows, RowFloat(cols));
 
     row_index = rec.y;
-    for(int i=0;i<rows;i++)
+    for(int i = 0; i < rows; i++)
     {
         col_index = rec.x;
-
-        for(int j=0;j<cols;j+=16)
+        for(int j = 0; j < cols; j+=16)
         {
-        	// Compute bin values of 16 pixels
             int size = rec.width - j<16? rec.width -j : 16;
             curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,col_index));
             bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
             vst1q_u8(bin_array, bin_value_neon);
 
-			// Read in 16 model values, store as 32x4x4 float 
-			for (int z =0;z<16;z++) {
-				model[z]=target_model.at<float>(k, bin_array[z]);
-			}	
-			model_neon = vld4q_f32((const float32_t *)&model);
+            for(int g = 0; g < size; g++)
+            {
+              // weight values example: 0.841341 0.841341 0.841341 0.841341 0.841341 0.841341 0.846652 0.782825 0.782825 0.846652 0.846652 0.841341 0.939198 0.939198 0.841341 0.841341
+              if(target_candidate[0][bin_array[g]] != 0)
+              {
+                weight[i][j+g] = static_cast<unsigned short>((sqrt((target_model[k][bin_array[g]]*500)/target_candidate[0][bin_array[g]])));
+              }
+            }
 
-			// Read in 16 candidate values, store as 32x4x4 float
-			for (int z =0;z<16;z++) {
-				candidate[z]=target_candidate.at<float>(0, bin_array[z]);
-			}	
-			candidate_neon = vld4q_f32((const float32_t *)&candidate);
-
-			// Divide model by candidate
-			for (int z = 0; z < 4; z++) {
-				result_neon.val[z] = vectordivide(model_neon.val[z],candidate_neon.val[z]);
-			}
-
-			// Store result in weight matrix
-			vst4q_f32(result,result_neon);
-
-			for (int g = 0; g < size; g++) {
-				weight.at<float>(i,j+g) = result[g];	
-			}			
-			
-            col_index+=16;
+            col_index += 16;
         }
-
         row_index++;
     }
 
@@ -196,59 +171,73 @@ cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
 cv::Rect MeanShift::track(const cv::Mat &next_frame)
 {
     cv::Rect next_rect;
-      //Timer loopTimer("Outer loop timer");
+
     std::vector<cv::Mat> bgr_planes;
     cv::split(next_frame, bgr_planes);
 
-    for(int iter=0;iter<cfg.MaxIter;iter++)
+    for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
-      //loopTimer.Start();
-        cv::Mat target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
-        cv::Mat weight0 = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
+        Matrix target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
+        MatrixFloat weight = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
 
-        cv::Mat target_candidate1 = pdf_representation(bgr_planes[1], target_Region);
-        cv::Mat weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
+        Matrix target_candidate1 = pdf_representation(bgr_planes[1], target_Region);
+        MatrixFloat weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
 
-        cv::Mat target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
-        cv::Mat weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
-        // loopTimer.Pause();
-        // loopTimer.Print();
-        // exit (EXIT_FAILURE);
+        Matrix target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
+        MatrixFloat weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
 
-        // Merge back intermediate results
-        cv::Mat weight = weight0.mul(weight1.mul(weight2));
-
-
-
-        float delta_x = 0.0;
-        float sum_wij = 0.0;
-        float delta_y = 0.0;
-        float centre = static_cast<float>((weight.rows-1)/2.0);
-        double mult = 0.0;
+        float32_t delta_x = 0.0;
+        float32_t delta_y = 0.0;
+        float32_t sum_wij = 0.0;
 
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
+        float32x4_t norm_i_neon, norm_j_neon, weight_neon, delta_x_temp, delta_y_temp, sum_wij_temp;
+        float32x2_t delta_x_sumtemp1, delta_y_sumtemp1, sum_wij_temp1;
+        float32x2_t delta_x_sumtemp2, delta_y_sumtemp2, sum_wij_temp2;
 
+        sum_wij_temp = vmovq_n_f32(0.000000001);
+        delta_x_temp = vmovq_n_f32(0.000000001);
+        delta_y_temp = vmovq_n_f32(0.000000001);
 
-        for(int i=0;i<weight.rows;i++)
+        for(size_t i = 0; i < weight.size(); i++)
         {
-            for(int j=0;j<weight.cols;j++)
+            for(size_t j = 0; j < weight[0].size(); j+=4)
             {
-              // Working commented on neon version for now
-              // int size = cols - j<4? cols -j : 4;
-              // float8x16_t norm_i, norm_j;
-              //
-                float norm_i = static_cast<float>(i-centre)/centre;
-                float norm_j = static_cast<float>(j-centre)/centre;
-                mult = pow(norm_i,2)+pow(norm_j,2)>1.0?0.0:1.0;
-                delta_x += static_cast<float>(norm_j*weight.at<float>(i,j)*mult);
-                delta_y += static_cast<float>(norm_i*weight.at<float>(i,j)*mult);
-                sum_wij += static_cast<float>(weight.at<float>(i,j)*mult);
+                if(norm_i_j[i][j] <= 1.0)
+                {
+                  weight[i][j] = weight[i][j] * weight1[i][j] * weight2[i][j];
+
+                  // Load values into neon
+                  norm_j_neon = vld1q_f32 ((const float32_t *)&norm_j[j]);
+                  norm_i_neon = vld1q_f32 ((const float32_t *)&norm_i[i]);
+                  weight_neon = vld1q_f32 ((const float32_t *)&weight[i][j]);
+
+                  // Do required operation and store partial result in four lanes
+                  delta_x_temp = vmlaq_f32(delta_x_temp, norm_j_neon, weight_neon);
+                  delta_y_temp = vmlaq_f32(delta_y_temp, norm_i_neon, weight_neon);
+                  sum_wij_temp = vaddq_f32(sum_wij_temp, weight_neon);
+                }
             }
         }
+
+        // Add the temporary result of four lanes together in one lane, and store the result in delta_x
+        delta_x_sumtemp1 = vadd_f32(vget_high_f32(delta_x_temp), vget_low_f32(delta_x_temp));
+        delta_x_sumtemp2 = vpadd_f32(delta_x_sumtemp1, delta_x_sumtemp1);
+        vst1_lane_f32(&delta_x, delta_x_sumtemp2,0);
+
+        // Add the temporary result of four lanes together in one lane, and store the result in delta_y
+        delta_y_sumtemp1 = vadd_f32(vget_high_f32(delta_y_temp), vget_low_f32(delta_y_temp));
+        delta_y_sumtemp2 = vpadd_f32(delta_y_sumtemp1, delta_y_sumtemp1);
+        vst1_lane_f32(&delta_y, delta_y_sumtemp2,0);
+
+        // Add the temporary result of four lanes together in one lane, and store the result in sum_wij
+        sum_wij_temp1 = vadd_f32(vget_high_f32(sum_wij_temp), vget_low_f32(sum_wij_temp));
+        sum_wij_temp2 = vpadd_f32(sum_wij_temp1, sum_wij_temp1);
+        vst1_lane_f32(&sum_wij, sum_wij_temp2,0);
 
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
@@ -263,6 +252,70 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
             target_Region.y = next_rect.y;
         }
     }
-
     return next_rect;
 }
+
+
+
+
+// // PDF_REPRESENTATION WITHOUT NEON
+// cv::Mat MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
+// {
+//     //cv::Mat pdf_model(1, 16, CV_32F, cv::Scalar(1e-10)); // FLOAT
+//     cv::Mat pdf_model(1, 16, CV_16UC2, cv::Scalar(0)); // INT // CV_32SC1
+//
+//     uchar curr_pixel_value;
+//     int bin_value;
+//
+//     int row_index = rect.y;
+//     int clo_index = rect.x;
+//
+//     for(int i = 0; i < rect.height;i++)
+//     {
+//         clo_index = rect.x;
+//         for(int j = 0; j < rect.width; j++)
+//         {
+//             curr_pixel_value = frameLayer.at<uchar>(row_index,clo_index);
+//             bin_value = curr_pixel_value / bin_width;
+//
+//             pdf_model.at<uint>(0, bin_value) += kernel.at<unsigned short>(i,j);
+//             clo_index++;
+//         }
+//         row_index++;
+//     }
+//
+//     return pdf_model;
+// }
+
+// // CALWEIGHT WITHOUT NEON
+// cv::Mat MeanShift::CalWeight(cv::Mat &frameLayer, int k, cv::Mat &target_model,
+//                     cv::Mat &target_candidate, cv::Rect &rec)
+// {
+//     int rows = rec.height;
+//     int cols = rec.width;
+//     int row_index = rec.y;
+//     int col_index = rec.x;
+//
+//     // cv::Mat weight(rows, cols, CV_32F, cv::Scalar(1.0000)); // float
+//     cv::Mat weight(rows, cols, CV_16UC2, cv::Scalar(1)); // int
+//
+//     row_index = rec.y;
+//     for(int i = 0; i < rows; i++)
+//     {
+//         col_index = rec.x;
+//         for(int j = 0; j < cols; j++)
+//         {
+//             int curr_pixel = frameLayer.at<uchar>(row_index, col_index);
+//             int bin_value = curr_pixel / bin_width;
+//
+//             if(target_candidate.at<uint>(0, bin_value) != 0) // Added: so that weights won't become 0 by uninitialized pdf_model values
+//               // weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(0, bin_value)))); // float
+//               weight.at<uint>(i,j) *= static_cast<uint>((sqrt(target_model.at<uint>(k, bin_value) / target_candidate.at<uint>(0, bin_value)))); // int
+//
+//             col_index++;
+//         }
+//         row_index++;
+//     }
+//
+//     return weight;
+// }
