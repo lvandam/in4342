@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
     cv::Rect rect(228,367,86,58);
     cv::Mat frame;
     frame_capture.read(frame);
-
+    
     MeanShift ms; // creat meanshift obj
     ms.Init_target_frame(frame,rect); // init the meanshift
 
@@ -54,7 +54,7 @@ int main(int argc, char ** argv)
         #ifndef ARMCC
         // MCPROF_STOP();
         #endif
-
+        
         // mark the tracked object in frame
         cv::rectangle(frame,ms_rect,cv::Scalar(0,0,255),3);
 
@@ -73,3 +73,4 @@ int main(int argc, char ** argv)
 
     return 0;
 }
+

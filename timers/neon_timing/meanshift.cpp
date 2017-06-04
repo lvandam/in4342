@@ -24,6 +24,10 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     norm_i = std::vector<float>(rect.height);
     norm_j = std::vector<float>(rect.width);
     norm_i_j = Matrix(rect.height, Row(rect.width));
+    // for(int i = 0; i < rect.height; i++)
+    //   norm_i[i] = static_cast<float>(i-centre)/centre;
+    // for(int j = 0; j < rect.width; j++)
+    //   norm_j[j] = static_cast<float>(j-centre)/centre;
 
     for(int i = 0; i < rect.height; i++)
     {
@@ -118,6 +122,7 @@ Matrix MeanShift::pdf_representation(cv::Mat &frameLayer, const cv::Rect &rect)
 
             for(int k = 0; k < size; k++)
             {
+              // Dividing by 30000 gives a correct results. Figure out uints!
               pdf_model[0][bin_array[k]] += kernel[i][j + k];
             }
             clo_index += 16;
@@ -170,6 +175,15 @@ MatrixFloat MeanShift::CalWeight(cv::Mat &frameLayer, int k, Matrix &target_mode
 
 cv::Rect MeanShift::track(const cv::Mat &next_frame)
 {
+    // Timer multTimer("Mult Time");
+    // Timer trackTimer("Track Time");
+    // trackTimer.Start();
+
+    Timer totTimer("Total timer");
+    Timer pdfcalTimer("3xpdf_representation + 3xCalweight timer");
+    Timer bodyTimer("For loop body timer");
+    Timer afterbodyTimer("After for loop timer");
+
     cv::Rect next_rect;
 
     std::vector<cv::Mat> bgr_planes;
@@ -177,14 +191,21 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
+        totTimer.Start();
+        pdfcalTimer.Start();
         Matrix target_candidate0 = pdf_representation(bgr_planes[0], target_Region);
         MatrixFloat weight = CalWeight(bgr_planes[0], 0, target_model, target_candidate0, target_Region);
+        // std::cout << weight << std::endl;
 
         Matrix target_candidate1 = pdf_representation(bgr_planes[1], target_Region);
         MatrixFloat weight1 = CalWeight(bgr_planes[1], 1, target_model, target_candidate1, target_Region);
 
         Matrix target_candidate2 = pdf_representation(bgr_planes[2], target_Region);
         MatrixFloat weight2 = CalWeight(bgr_planes[2], 2, target_model, target_candidate2, target_Region);
+
+        pdfcalTimer.Stop();
+        pdfcalTimer.Print();
+        bodyTimer.Start();
 
         float32_t delta_x = 0.0;
         float32_t delta_y = 0.0;
@@ -195,50 +216,60 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
+
         float32x4_t norm_i_neon, norm_j_neon, weight_neon, delta_x_temp, delta_y_temp, sum_wij_temp;
         float32x2_t delta_x_sumtemp1, delta_y_sumtemp1, sum_wij_temp1;
         float32x2_t delta_x_sumtemp2, delta_y_sumtemp2, sum_wij_temp2;
-
+        // float32_t test;
         sum_wij_temp = vmovq_n_f32(0.000000001);
         delta_x_temp = vmovq_n_f32(0.000000001);
         delta_y_temp = vmovq_n_f32(0.000000001);
+        // curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) frameLayer.ptr(row_index,clo_index));
+        // bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
 
         for(size_t i = 0; i < weight.size(); i++)
         {
             for(size_t j = 0; j < weight[0].size(); j+=4)
             {
+                // int size = weight[0].size() - j<4? weight[0].size() -j : 4;
                 if(norm_i_j[i][j] <= 1.0)
                 {
                   weight[i][j] = weight[i][j] * weight1[i][j] * weight2[i][j];
 
-                  // Load values into neon
                   norm_j_neon = vld1q_f32 ((const float32_t *)&norm_j[j]);
                   norm_i_neon = vld1q_f32 ((const float32_t *)&norm_i[i]);
                   weight_neon = vld1q_f32 ((const float32_t *)&weight[i][j]);
 
-                  // Do required operation and store partial result in four lanes
+                  //delta_x_temp = vmulq_f32(norm_j_neon,weight_neon);
                   delta_x_temp = vmlaq_f32(delta_x_temp, norm_j_neon, weight_neon);
                   delta_y_temp = vmlaq_f32(delta_y_temp, norm_i_neon, weight_neon);
                   sum_wij_temp = vaddq_f32(sum_wij_temp, weight_neon);
+
+
                 }
             }
         }
+        bodyTimer.Stop();
+        bodyTimer.Print();
 
-        // Add the temporary result of four lanes together in one lane, and store the result in delta_x
+        afterbodyTimer.Start();
+        // printf("Old delta_x: %f\n ",delta_x);
+        // vadd adds two 32x2 values together. vget_high and low get 32x2 high/low values from a 32x4 value.
         delta_x_sumtemp1 = vadd_f32(vget_high_f32(delta_x_temp), vget_low_f32(delta_x_temp));
+        // Add these values to one another in a pairwise manner.
         delta_x_sumtemp2 = vpadd_f32(delta_x_sumtemp1, delta_x_sumtemp1);
+
         vst1_lane_f32(&delta_x, delta_x_sumtemp2,0);
 
-        // Add the temporary result of four lanes together in one lane, and store the result in delta_y
         delta_y_sumtemp1 = vadd_f32(vget_high_f32(delta_y_temp), vget_low_f32(delta_y_temp));
         delta_y_sumtemp2 = vpadd_f32(delta_y_sumtemp1, delta_y_sumtemp1);
         vst1_lane_f32(&delta_y, delta_y_sumtemp2,0);
 
-        // Add the temporary result of four lanes together in one lane, and store the result in sum_wij
         sum_wij_temp1 = vadd_f32(vget_high_f32(sum_wij_temp), vget_low_f32(sum_wij_temp));
         sum_wij_temp2 = vpadd_f32(sum_wij_temp1, sum_wij_temp1);
         vst1_lane_f32(&sum_wij, sum_wij_temp2,0);
 
+        // exit(EXIT_FAILURE);
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
@@ -251,7 +282,13 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
             target_Region.x = next_rect.x;
             target_Region.y = next_rect.y;
         }
+        afterbodyTimer.Stop();
+        afterbodyTimer.Print();
     }
+
+    // trackTimer.Pause();
+    // trackTimer.Print();
+
     return next_rect;
 }
 
