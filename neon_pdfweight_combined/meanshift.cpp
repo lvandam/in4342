@@ -213,8 +213,9 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
           // Read in 16 model values, store as 32x4x4 float
           // Read in 16 candidate values, store as 32x4x4 float
           for (int z =0;z<16;z++) {
-            model[z]=target_model[kk][bin_array[z]];
-            candidate[z]=pdf_model[kk][bin_array[z]];
+            int index = bin_array[z];
+            model[z]=target_model[kk][index];
+            candidate[z]=pdf_model[kk][index];
           }
 
           model_neon = vld4q_f32((const float32_t *)&model);
@@ -229,7 +230,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
           vst4q_f32(result,result_neon);
 
           for (int g = 0; g < size; g++) {
-            weight[i][j+g] *= result[g];
+            weight[i][j+g] *= sqrt3(result[g]);
           }
         }
         col_index += 16;
