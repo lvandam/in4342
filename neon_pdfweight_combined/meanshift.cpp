@@ -168,10 +168,11 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
   // Calculate pdf_representation
   cv::Vec3b pixel;
   row_index = target_Region.y;
-  for(int i = 0; i < rows; i++)
+  clo_index = target_Region.x;
+  for(int j = 0; j < cols; j += 16)
   {
-      clo_index = target_Region.x;
-      for(int j = 0;j < cols; j += 16)
+      row_index = target_Region.y;
+      for(int i = 0; i < rows; i++)
       {
         // pixel = next_frame.at<cv::Vec3b>(row_index, clo_index);
         for(int kk = 0; kk < 3; kk++)
@@ -189,17 +190,17 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
             pdf_model[kk][bin_array[k]] += kernel[i][j + k];
           }
         }
-        clo_index += 16;
+        row_index++;
       }
-      row_index++;
+      clo_index += 16;
   }
 
   // Calculate weight (CalWeight)
-  row_index = target_Region.y;
-  for(int i = 0; i < rows; i++)
+  col_index = target_Region.x;
+  for(int j = 0; j < cols; j+=16)
   {
-      col_index = target_Region.x;
-      for(int j = 0; j < cols; j+=16)
+      row_index = target_Region.y;
+      for(int i = 0; i < rows; i++)
       {
         for(int kk = 0; kk < 3; kk++)
         {
@@ -233,9 +234,9 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
             weight[i][j+g] *= sqrt3(result[g]);
           }
         }
-        col_index += 16;
+        row_index++;
       }
-      row_index++;
+      col_index += 16;
   }
 
   return weight;
@@ -273,9 +274,9 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         delta_x_temp = vmovq_n_f32(0.000000001);
         delta_y_temp = vmovq_n_f32(0.000000001);
 
-        for(size_t i = 0; i < weight.size(); i++)
+        for(size_t j = 0; j < weight[0].size(); j+=4)
         {
-            for(size_t j = 0; j < weight[0].size(); j+=4)
+            for(size_t i = 0; i < weight.size(); i++)
             {
                 if(norm_i_j[i][j] <= 1.0)
                 {

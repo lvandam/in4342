@@ -53,11 +53,11 @@ cv::Mat MeanShift::pdf_representation(const cv::Mat &frame, const cv::Rect &rect
     int row_index = rect.y;
     int clo_index = rect.x;
 
+    for(int i=0;i<rect.height;i++)
+    {
+        clo_index = rect.x;
         for(int j=0;j<rect.width;j++)
         {
-            for(int i=0;i<rect.height;i++)
-            {
-                clo_index = rect.x;
             curr_pixel_value = frame.at<cv::Vec3b>(row_index,clo_index);
             bin_value[0] = (curr_pixel_value[0]/bin_width);
             bin_value[1] = (curr_pixel_value[1]/bin_width);
@@ -65,9 +65,9 @@ cv::Mat MeanShift::pdf_representation(const cv::Mat &frame, const cv::Rect &rect
             pdf_model.at<float>(0,bin_value[0]) += kernel.at<float>(i,j)*normalized_C;
             pdf_model.at<float>(1,bin_value[1]) += kernel.at<float>(i,j)*normalized_C;
             pdf_model.at<float>(2,bin_value[2]) += kernel.at<float>(i,j)*normalized_C;
-            row_index++;
+            clo_index++;
         }
-        clo_index++;
+        row_index++;
     }
 
     return pdf_model;
