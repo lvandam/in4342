@@ -249,31 +249,56 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         // Combined pdf_representation and CalWeight
         MatrixFloat weight = PdfWeight();
 
-        float delta_x = 0.0;
-        float delta_y = 0.0;
-        float sum_wij = 0.0;
+        float32_t delta_x = 0.0;
+        float32_t delta_y = 0.0;
+        float32_t sum_wij = 0.0;
 
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
-        // TODO: Speed this up!
-        for (size_t i = 0; i < weight.size(); ++i)
+
+        float32x4_t norm_i_neon, norm_j_neon, weight_neon, delta_x_temp, delta_y_temp, sum_wij_temp;
+        float32x2_t delta_x_sumtemp1, delta_y_sumtemp1, sum_wij_temp1;
+        float32x2_t delta_x_sumtemp2, delta_y_sumtemp2, sum_wij_temp2;
+
+        sum_wij_temp = vmovq_n_f32(0.000000001);
+        delta_x_temp = vmovq_n_f32(0.000000001);
+        delta_y_temp = vmovq_n_f32(0.000000001);
+
+        for(size_t i = 0; i < weight.size(); i++)
         {
-          for (size_t j = 0; j < weight[0].size(); ++j)
-          {
-            if(norm_i_j[i][j] <= 1.0)
+            for(size_t j = 0; j < weight[0].size(); j+=4)
             {
-              delta_x += static_cast<float>(norm_j[j]*weight[i][j]);
-              delta_y += static_cast<float>(norm_i[i]*weight[i][j]);
-              sum_wij += static_cast<float>(weight[i][j]);
+                if(norm_i_j[i][j] <= 1.0)
+                {
+                  norm_j_neon = vld1q_f32 ((const float32_t *)&norm_j[j]);
+                  norm_i_neon = vld1q_f32 ((const float32_t *)&norm_i[i]);
+                  weight_neon = vld1q_f32 ((const float32_t *)&weight[i][j]);
+
+                  //delta_x_temp = vmulq_f32(norm_j_neon,weight_neon);
+                  delta_x_temp = vmlaq_f32(delta_x_temp, norm_j_neon, weight_neon);
+                  delta_y_temp = vmlaq_f32(delta_y_temp, norm_i_neon, weight_neon);
+                  sum_wij_temp = vaddq_f32(sum_wij_temp, weight_neon);
+                }
             }
-          }
         }
 
-        // multTimer.Pause();
-        // multTimer.Print();
+        // vadd adds two 32x2 values together. vget_high and low get 32x2 high/low values from a 32x4 value.
+        delta_x_sumtemp1 = vadd_f32(vget_high_f32(delta_x_temp), vget_low_f32(delta_x_temp));
+        // Add these values to one another in a pairwise manner.
+        delta_x_sumtemp2 = vpadd_f32(delta_x_sumtemp1, delta_x_sumtemp1);
+
+        vst1_lane_f32(&delta_x, delta_x_sumtemp2,0);
+
+        delta_y_sumtemp1 = vadd_f32(vget_high_f32(delta_y_temp), vget_low_f32(delta_y_temp));
+        delta_y_sumtemp2 = vpadd_f32(delta_y_sumtemp1, delta_y_sumtemp1);
+        vst1_lane_f32(&delta_y, delta_y_sumtemp2,0);
+
+        sum_wij_temp1 = vadd_f32(vget_high_f32(sum_wij_temp), vget_low_f32(sum_wij_temp));
+        sum_wij_temp2 = vpadd_f32(sum_wij_temp1, sum_wij_temp1);
+        vst1_lane_f32(&sum_wij, sum_wij_temp2,0);
 
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
