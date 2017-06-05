@@ -40,7 +40,7 @@ class MeanShift
     MatrixFloat norm_i_j;
     float centre;
     std::vector<cv::Mat> bgr_planes;
-    MatrixFloat PdfWeight();
+    MatrixFloat PdfWeight(const cv::Mat &next_frame);
 
     struct config{
         int num_bins;

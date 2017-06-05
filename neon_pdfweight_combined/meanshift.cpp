@@ -118,7 +118,7 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
     return pdf_model;
 }
 
-MatrixFloat MeanShift::PdfWeight()
+MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
   MatrixFloat pdf_model(3, RowFloat(16));
 
@@ -128,80 +128,84 @@ MatrixFloat MeanShift::PdfWeight()
   int row_index = target_Region.y;
   int clo_index = target_Region.x;
 
-    int rows = target_Region.height;
-    int cols = target_Region.width;
-      MatrixFloat weight(rows, RowFloat(cols, 1));
-    int col_index = target_Region.x;
-    float32_t model[16], candidate[16], result[16];
-    float32x4x4_t model_neon, candidate_neon, result_neon;
+  int rows = target_Region.height;
+  int cols = target_Region.width;
+  MatrixFloat weight(rows, RowFloat(cols, 1));
+  int col_index = target_Region.x;
+  float32_t model[16], candidate[16], result[16];
+  float32x4x4_t model_neon, candidate_neon, result_neon;
 
-    // Calculate pdf_representation
-    for(int kk = 0; kk < 3; kk++)
-    {
-      row_index = target_Region.y;
-      for(int i = 0; i < rows; i++)
+  // Calculate pdf_representation
+  cv::Vec3b pixel;
+  row_index = target_Region.y;
+  for(int i = 0; i < rows; i++)
+  {
+      clo_index = target_Region.x;
+      for(int j = 0;j < cols; j += 16)
       {
-          clo_index = target_Region.x;
-          for(int j = 0;j < cols; j += 16)
+        // pixel = next_frame.at<cv::Vec3b>(row_index, clo_index);
+        for(int kk = 0; kk < 3; kk++)
+        {
+          // printf("%d\n", pixel[2]);
+
+          int size = cols - j < 16 ? cols - j : 16;
+          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,clo_index)+kk));//next_frame.ptr(row_index,clo_index,kk));//bgr_planes[kk].ptr(row_index,clo_index));
+          bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+          vst1q_u8(bin_array, bin_value_neon);
+
+          for(int k = 0; k < size; k++)
           {
-              int size = cols - j < 16 ? cols - j : 16;
-              curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) bgr_planes[kk].ptr(row_index,clo_index));
-              bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
-              vst1q_u8(bin_array, bin_value_neon);
-
-              for(int k = 0; k < size; k++)
-              {
-                // Dividing by 30000 gives a correct results. Figure out uints!
-                pdf_model[kk][bin_array[k]] += kernel[i][j + k];
-              }
-
-              clo_index += 16;
+            // Dividing by 30000 gives a correct results. Figure out uints!
+            pdf_model[kk][bin_array[k]] += kernel[i][j + k];
           }
-          row_index++;
+        }
+        clo_index += 16;
       }
-    }
+      row_index++;
+  }
 
-    // Calculate weight (CalWeight)
-    for(int kk = 0; kk < 3; kk++)
-    {
-      row_index = target_Region.y;
-      for(int i = 0; i < rows; i++)
+  // Calculate weight (CalWeight)
+  row_index = target_Region.y;
+  for(int i = 0; i < rows; i++)
+  {
+      col_index = target_Region.x;
+      for(int j = 0; j < cols; j+=16)
       {
-          col_index = target_Region.x;
-          for(int j = 0; j < cols; j+=16)
-          {
-             // Compute bin values of 16 pixels
-              int size = target_Region.width - j<16? target_Region.width -j : 16;
-              curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) bgr_planes[kk].ptr(row_index,col_index));
-              bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
-              vst1q_u8(bin_array, bin_value_neon);
+        for(int kk = 0; kk < 3; kk++)
+        {
+          // Compute bin values of 16 pixels
+          // printf("%d\n", pixel[kk]);
+          int size = target_Region.width - j<16? target_Region.width -j : 16;
+          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,col_index)+kk));//next_frame.ptr(row_index,col_index,kk));//bgr_planes[kk].ptr(row_index,col_index))
+          bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
+          vst1q_u8(bin_array, bin_value_neon);
 
-              // Read in 16 model values, store as 32x4x4 float
-              // Read in 16 candidate values, store as 32x4x4 float
-              for (int z =0;z<16;z++) {
-                model[z]=target_model[kk][bin_array[z]];
-                candidate[z]=pdf_model[kk][bin_array[z]];
-              }
-
-              model_neon = vld4q_f32((const float32_t *)&model);
-              candidate_neon = vld4q_f32((const float32_t *)&candidate);
-
-              // Divide model by candidate
-              for (int z = 0; z < 4; z++) {
-                result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]);
-              }
-
-              // Store result in weight matrix
-              vst4q_f32(result,result_neon);
-
-              for (int g = 0; g < size; g++) {
-                weight[i][j+g] *= result[g];
-              }
-              col_index += 16;
+          // Read in 16 model values, store as 32x4x4 float
+          // Read in 16 candidate values, store as 32x4x4 float
+          for (int z =0;z<16;z++) {
+            model[z]=target_model[kk][bin_array[z]];
+            candidate[z]=pdf_model[kk][bin_array[z]];
           }
-          row_index++;
+
+          model_neon = vld4q_f32((const float32_t *)&model);
+          candidate_neon = vld4q_f32((const float32_t *)&candidate);
+
+          // Divide model by candidate
+          for (int z = 0; z < 4; z++) {
+            result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]);
+          }
+
+          // Store result in weight matrix
+          vst4q_f32(result,result_neon);
+
+          for (int g = 0; g < size; g++) {
+            weight[i][j+g] *= result[g];
+          }
+        }
+        col_index += 16;
       }
-    }
+      row_index++;
+  }
 
   return weight;
 }
@@ -213,12 +217,12 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // trackTimer.Start();
 
     cv::Rect next_rect;
-    cv::split(next_frame, bgr_planes);
+    // cv::split(next_frame, bgr_planes);
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
         // Combined pdf_representation and CalWeight
-        MatrixFloat weight = PdfWeight();
+        MatrixFloat weight = PdfWeight(next_frame);
 
         float32_t delta_x = 0.0;
         float32_t delta_y = 0.0;
@@ -274,7 +278,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
-        if(abs(next_rect.x-target_Region.x)<15 && abs(next_rect.y-target_Region.y)<15)
+        if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
         {
             break;
         }
