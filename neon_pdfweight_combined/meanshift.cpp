@@ -7,6 +7,22 @@
 #include "arm_neon.h"
 #include "Timer.h"
 
+/*float32x4_t vectorsqrt( float32x4_t q_x )
+{
+    const float32x4_t q_step_0 = vrsqrteq_f32( q_x );
+    // step
+    const float32x4_t q_step_parm0 = vmulq_f32( q_x, q_step_0 );
+    const float32x4_t q_step_result0 = vrsqrtsq_f32( q_step_parm0, q_step_0 );
+    // step
+    const float32x4_t q_step_1 = vmulq_f32( q_step_0, q_step_result0 );
+    const float32x4_t q_step_parm1 = vmulq_f32( q_x, q_step_1 );
+    const float32x4_t q_step_result1 = vrsqrtsq_f32( q_step_parm1, q_step_1 );
+    // take the res
+    const float32x4_t q_step_2 = vmulq_f32( q_step_1, q_step_result1 );
+    // mul by x to get sqrt, not rsqrt
+    return vmulq_f32( q_x, q_step_2 );
+}*/
+
 MeanShift::MeanShift()
 {
     cfg.MaxIter = 8;
@@ -27,7 +43,7 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 	return vmulq_f32(value_a,reciprocal);
 }
 
-float32x4_t vectorsqrt (float32x4_t input) {
+/*float32x4_t vectorsqrt (float32x4_t input) {
 
 	//TODO should be made a bit more accurate
 	//return vmulq_f32(vrsqrteq_f32(input), input); //-> more inaccurate but faster!
@@ -36,7 +52,7 @@ float32x4_t vectorsqrt (float32x4_t input) {
     float32x4_t temp = vrsqrtsq_f32(input * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal;
     return input * temp;
 
-}
+}*/
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
@@ -117,7 +133,19 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
     }
     return pdf_model;
 }
+float sqrt3(const float x)  
+{
+	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+  union
+  {
+    int i;
+    float x;
+  } u;
 
+  u.x = x;
+  u.i = (1<<29) + (u.i >> 1) - (1<<22); 
+  return u.x;
+} 
 MatrixFloat MeanShift::PdfWeight()
 {
   MatrixFloat pdf_model(3, RowFloat(16));
@@ -179,8 +207,9 @@ MatrixFloat MeanShift::PdfWeight()
               // Read in 16 model values, store as 32x4x4 float
               // Read in 16 candidate values, store as 32x4x4 float
               for (int z =0;z<16;z++) {
-                model[z]=target_model[kk][bin_array[z]];
-                candidate[z]=pdf_model[kk][bin_array[z]];
+              	int index = bin_array[z];
+                model[z]=target_model[kk][index];
+                candidate[z]=pdf_model[kk][index];
               }
 
               model_neon = vld4q_f32((const float32_t *)&model);
@@ -188,14 +217,14 @@ MatrixFloat MeanShift::PdfWeight()
 
               // Divide model by candidate
               for (int z = 0; z < 4; z++) {
-                result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]);
+                result_neon.val[z] = (vectordivide(model_neon.val[z], candidate_neon.val[z]));
               }
 
               // Store result in weight matrix
               vst4q_f32(result,result_neon);
 
               for (int g = 0; g < size; g++) {
-                weight[i][j+g] *= result[g];
+                weight[i][j+g] *= sqrt3(result[g]);
               }
               col_index += 16;
           }
