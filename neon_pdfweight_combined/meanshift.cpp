@@ -7,6 +7,22 @@
 #include "arm_neon.h"
 #include "Timer.h"
 
+/*float32x4_t vectorsqrt( float32x4_t q_x )
+{
+    const float32x4_t q_step_0 = vrsqrteq_f32( q_x );
+    // step
+    const float32x4_t q_step_parm0 = vmulq_f32( q_x, q_step_0 );
+    const float32x4_t q_step_result0 = vrsqrtsq_f32( q_step_parm0, q_step_0 );
+    // step
+    const float32x4_t q_step_1 = vmulq_f32( q_step_0, q_step_result0 );
+    const float32x4_t q_step_parm1 = vmulq_f32( q_x, q_step_1 );
+    const float32x4_t q_step_result1 = vrsqrtsq_f32( q_step_parm1, q_step_1 );
+    // take the res
+    const float32x4_t q_step_2 = vmulq_f32( q_step_1, q_step_result1 );
+    // mul by x to get sqrt, not rsqrt
+    return vmulq_f32( q_x, q_step_2 );
+}*/
+
 MeanShift::MeanShift()
 {
     cfg.MaxIter = 8;
@@ -27,7 +43,7 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 	return vmulq_f32(value_a,reciprocal);
 }
 
-float32x4_t vectorsqrt (float32x4_t input) {
+/*float32x4_t vectorsqrt (float32x4_t input) {
 
 	//TODO should be made a bit more accurate
 	//return vmulq_f32(vrsqrteq_f32(input), input); //-> more inaccurate but faster!
@@ -36,7 +52,7 @@ float32x4_t vectorsqrt (float32x4_t input) {
     float32x4_t temp = vrsqrtsq_f32(input * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal;
     return input * temp;
 
-}
+}*/
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
@@ -116,6 +132,20 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
         row_index++;
     }
     return pdf_model;
+}
+
+float sqrt3(const float x)
+{
+	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+  union
+  {
+    int i;
+    float x;
+  } u;
+
+  u.x = x;
+  u.i = (1<<29) + (u.i >> 1) - (1<<22);
+  return u.x;
 }
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
