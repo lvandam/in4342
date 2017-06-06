@@ -15,6 +15,10 @@ Timer calWeight("calweight");
 Timer trackTimer("track");
 Timer trackBody("track body");
 
+
+double timeValues [32];
+int n = 0;
+
 MeanShift::MeanShift()
 {
     cfg.MaxIter = 8;
@@ -114,8 +118,8 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
             bin_value[2] = curr_pixel_value[2] / bin_width;
 
             pdf_model[0][bin_value[0]] += kernel[i][j];
-            pdf_model[1][bin_value[0]] += kernel[i][j];
-            pdf_model[2][bin_value[0]] += kernel[i][j];
+            pdf_model[1][bin_value[1]] += kernel[i][j];
+            pdf_model[2][bin_value[2]] += kernel[i][j];
 
             clo_index++;
         }
@@ -144,13 +148,15 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
 
   //pdfRepresentation.Start();
+  int row_index = target_Region.y;
+  int clo_index = target_Region.x;
+  
+  // Calculate pdf_representation
   MatrixFloat pdf_model(3, RowFloat(16));
 
   uint8x16_t curr_pixel_value_neon, bin_value_neon;
   static uint8_t bin_array[16];
 
-  int row_index = target_Region.y;
-  int clo_index = target_Region.x;
 
   int rows = target_Region.height;
   int cols = target_Region.width;
@@ -188,8 +194,11 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       }
       clo_index += 16;
   }
-  //pdfRepresentation.Stop();
-  //pdfRepresentation.Print();
+	/*pdfRepresentation.Stop();
+	if (n<32) {
+		timeValues [n] = pdfRepresentation.GetTime();
+		n++;
+	}*/
   
   //calWeight.Start();
   // Calculate weight (CalWeight)
@@ -234,9 +243,13 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
         row_index++;
       }
       col_index += 16;
-  }
-  //calWeight.Stop();
-  //calWeight.Print();
+	}
+	/*calWeight.Stop();
+	if (n<32) {
+		timeValues [n] = calWeight.GetTime();
+		n++;
+	}*/
+
   return weight;
 }
 
@@ -310,10 +323,13 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
-        if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
+        if(abs(next_rect.x-target_Region.x)<1 && abs(next_rect.y-target_Region.y)<1)
         {
-        	//trackBody.Stop();
-        	//trackBody.Print();
+        	/*trackBody.Stop();
+			if (n<32) {
+				timeValues [n] = trackBody.GetTime();
+				n++;
+			}*/
             break;
         }
         else
@@ -323,8 +339,22 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         }
     }
 
-    //trackTimer.Stop();
-    //trackTimer.Print();
+
+    /*trackTimer.Stop();
+	if (n<32) {
+		timeValues [n] = trackTimer.GetTime();
+		n++;
+	}*/
+
+	// Just print it all the time, doesn't matter for the time you 
+	// are measuring in this way
+	
+	/*double sum = 0.0;
+	for (int i = 0; i<n; i++) {
+		sum += timeValues[i]*1000.0;
+	}	
+	printf("avrg values in msec: %f \n",sum/(float)n);
+	*/
 
     return next_rect;
 }

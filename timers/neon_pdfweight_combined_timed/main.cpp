@@ -24,7 +24,7 @@ void checkError(int x_pos [32], int y_pos [32]) {
 	printf("X Error (avg nr of pxls) = %.3f, Y Error (avg nr of pxls) = %.3f \n", x_avgerr, y_avgerr);
 	
 	// Not sure if this is needed too... 
-	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/86.0, 100.0*y_avgerr/58.0);
+	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/640.0, 100.0*y_avgerr/480.0);
 	
 }
 
@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
 
 	// If you want to check error of the code compared to original
 	// uncomment line below
-	//int x_pos[32], y_pos[32];
+	int x_pos[32], y_pos[32];
 	
 	
     totalTimer.Start();
@@ -91,8 +91,8 @@ int main(int argc, char ** argv)
 
 		// If you want to check error of code compared to original
 		// uncomment lines below
-        //x_pos[fcount] = ms_rect.x;
-        //y_pos[fcount] = ms_rect.y;
+        x_pos[fcount] = ms_rect.x;
+        y_pos[fcount] = ms_rect.y;
 
         // mark the tracked object in frame
         cv::rectangle(frame,ms_rect,cv::Scalar(0,0,255),3);
@@ -109,7 +109,7 @@ int main(int argc, char ** argv)
 
 	// If you want to check error of code compared to original 
 	// uncomment line below
-	//checkError(x_pos,y_pos);
+	checkError(x_pos,y_pos);
 
     std::cout << "Processed " << fcount << " frames" << std::endl;
     std::cout << "Time: " << totalTimer.GetTime() <<" sec\nFPS : " << fcount/totalTimer.GetTime() << std::endl;
