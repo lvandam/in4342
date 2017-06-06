@@ -17,7 +17,7 @@
 #define RED                2
 
 // DSP status
-    
+
 #define DSP_BUSY           0
 #define DSP_READY          1
 #define DSP_DONE           2
@@ -43,7 +43,9 @@ Void isDspDone ( Void );
 
 Void dspCommand( Uint8 command);
 
-Void poolColor( Uint8 *newColor );
+Void copyToBuffer (Uint8 *ptr, Uint8 *buffer, Uint8 color, Uint8 length);
+
+Void poolColor(Uint8 ColorIndex, Uint8 *newColor );
 
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectHeight, Uint16 rectWidth);
 
@@ -67,7 +69,7 @@ Void setDspState (Uint8 state);
  *              Number of iterations a data buffer is transferred between
  *              GPP and DSP in string format.
  *  @arg    processorId
- *             Id of the DSP Processor. 
+ *             Id of the DSP Processor.
  *
  *  @ret    DSP_SOK
  *              Operation successfully completed.
@@ -87,6 +89,33 @@ dspComInit (IN Char8 * dspExecutable, IN Uint8   processorId) ;
 
 
 /** ============================================================================
+ *  @func   dspComExec
+ *
+ *  @desc   This function implements the execute phase for this application.
+ *
+ *  @arg    numIterations
+ *              Number of times to send the message to the DSP.
+ *  @arg    processorId
+ *             Id of the DSP Processor.
+ *
+ *  @ret    DSP_SOK
+ *              Operation successfully completed.
+ *          DSP_EFAIL
+ *              MESSAGE execution failed.
+ *
+ *  @enter  None
+ *
+ *  @leave  None
+ *
+ *  @see    dspComTerminate , dspComInit
+ *  ============================================================================
+ */
+NORMAL_API
+DSP_STATUS
+dspComExec (Void) ;
+
+
+/** ============================================================================
  *  @func   dspComTerminate
  *
  *  @desc   This function releases resources allocated earlier by call to
@@ -96,7 +125,7 @@ dspComInit (IN Char8 * dspExecutable, IN Uint8   processorId) ;
  *          against return values for robustness.
  *
  *  @arg    processorId
- *             Id of the DSP Processor. 
+ *             Id of the DSP Processor.
  *
  *  @ret    DSP_SOK
  *              Operation successfully completed.
@@ -113,6 +142,36 @@ dspComInit (IN Char8 * dspExecutable, IN Uint8   processorId) ;
 NORMAL_API
 Void
 dspComTerminate (Void) ;
+
+
+/** ============================================================================
+ *  @func   pool_notify_Main
+ *
+ *  @desc   The OS independent driver function for the MESSAGE sample
+ *          application.
+ *
+ *  @arg    dspExecutable
+ *              Name of the DSP executable file.
+ *  @arg    strBufferSize
+ *              Buffer size to be used for data-transfer in string format.
+ *  @arg    strNumIterations
+ *              Number of iterations a data buffer is transferred between
+ *              GPP and DSP in string format.
+ *  @arg    strProcessorId
+ *             ID of the DSP Processor in string format.
+ *
+ *  @ret    None
+ *
+ *  @enter  None
+ *
+ *  @leave  None
+ *
+ *  @see    dspComInit, dspComExec, dspComTerminate
+ *  ============================================================================
+ */
+NORMAL_API
+Void
+dspInter_Main (IN Char8 * dspExecutable) ;
 
 
 #endif /* !defined (pool_notify_H) */

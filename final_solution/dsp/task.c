@@ -51,21 +51,21 @@ Int Task_create (Task_TransferInfo ** infoPtr)
 
     /* Allocate Task_TransferInfo structure that will be initialized
      * and passed to other phases of the application */
-    if (status == SYS_OK) 
+    if (status == SYS_OK)
 	{
         *infoPtr = MEM_calloc (DSPLINK_SEGID, sizeof (Task_TransferInfo), 0) ; /* No alignment restriction */
-        if (*infoPtr == NULL) 
+        if (*infoPtr == NULL)
 		{
             status = SYS_EALLOC ;
         }
-        else 
+        else
 		{
             info = *infoPtr ;
         }
     }
 
     /* Fill up the transfer info structure */
-    if (status == SYS_OK) 
+    if (status == SYS_OK)
 	{
         info->dataBuf       = NULL ; /* Set through notification callback. */
         //info->bufferSize    = MPCSXFER_BufferSize ;
@@ -77,24 +77,24 @@ Int Task_create (Task_TransferInfo ** infoPtr)
      *  Register notification for the event callback to get control and data
      *  buffer pointers from the GPP-side.
      */
-    if (status == SYS_OK) 
+    if (status == SYS_OK)
 	{
         status = NOTIFY_register (ID_GPP,
                                   MPCSXFER_IPS_ID,
                                   MPCSXFER_IPS_EVENTNO,
                                   (FnNotifyCbck) Init_notify,
                                   info) ;
-        if (status != SYS_OK) 
+        if (status != SYS_OK)
 		{
             return status;
         }
-        
+
         status = NOTIFY_register (ID_GPP,
                                   MPCSXFER_IPS_ID,
                                   6,
                                   (FnNotifyCbck) Command_notify,
                                   info) ;
-        if (status != SYS_OK) 
+        if (status != SYS_OK)
 		{
             return status;
         }
@@ -104,13 +104,13 @@ Int Task_create (Task_TransferInfo ** infoPtr)
      *  Send notification to the GPP-side that the application has completed its
      *  setup and is ready for further execution.
      */
-    if (status == SYS_OK) 
+    if (status == SYS_OK)
 	{
         status = NOTIFY_notify (ID_GPP,
                                 MPCSXFER_IPS_ID,
                                 MPCSXFER_IPS_EVENTNO,
                                 (Uint32) DSP_DONE) ; /* No payload to be sent. */
-        if (status != SYS_OK) 
+        if (status != SYS_OK)
 		{
             return status;
         }
@@ -129,13 +129,13 @@ Int Task_create (Task_TransferInfo ** infoPtr)
 void mult_dsp()
 {
     Uint32 i;
-    
+
     #pragma UNROLL(32)
-    for(i=0;i<MPCSXFER_BufferSize;i++) 
+    for(i=0;i<MPCSXFER_BufferSize;i++)
 	{
         if( i%2 == 0)  dspResFrame[i]+= 2 + dspColor[i];
         else dspResFrame[i]+= 4 + dspColor[i] ;
-    }                
+    }
 }
 
 Int Task_execute (Task_TransferInfo * info)
@@ -144,14 +144,14 @@ Int Task_execute (Task_TransferInfo * info)
     float *flres;
     flres = (float *) dspResFrame;
     TSCL=0;
-    
+
     start = TSCL;
     initTarget(MODEL);
     HC_Epanechnikov_kernel();
     stop = TSCL;
     //total += stop - start;
     Update_State(DSP_READY);
-    
+
     //SEM_pend (&(info->notifySemObj), SYS_FOREVER);
     while(function != STOP_DSP)
     {
@@ -163,10 +163,10 @@ Int Task_execute (Task_TransferInfo * info)
         {
             case STOP_DSP:
                 break;
-                
+
             case IDLE:
                 break;
-                    
+
             case LOAD_COLOR:
                 Get_Color();
                 function = IDLE;
@@ -193,7 +193,7 @@ Int Task_execute (Task_TransferInfo * info)
                 //total += stop - start;
                 function = IDLE;
                 break;
-                
+
             case INIT_GREEN:
                 Get_Color();
                 start = TSCL;
@@ -202,7 +202,7 @@ Int Task_execute (Task_TransferInfo * info)
                 //total += stop - start;
                 function = IDLE;
                 break;
-                
+
             case INIT_RED:
                 Get_Color();
                 start = TSCL;
@@ -224,7 +224,7 @@ Int Task_execute (Task_TransferInfo * info)
                 Return_Result();
                 function = IDLE;
                 break;
-                
+
             case REPRESENT:
                 Get_Rectangle();
                 Get_Color();
@@ -236,10 +236,10 @@ Int Task_execute (Task_TransferInfo * info)
                 Return_Result();
                 function = IDLE;
                 break;
-                
+
             case WEIGHT_BLUE:
                 Get_Color();
-                Update_State(DSP_DONE);
+                //Update_State(DSP_DONE);
                 Get_Rectangle();
                 initWeight(flres);
                 start = TSCL;
@@ -251,10 +251,10 @@ Int Task_execute (Task_TransferInfo * info)
                 //function = IDLE;
                 function = IDLE;
                 break;
-                
+
             case WEIGHT_GREEN:
                 Get_Color();
-                Update_State(DSP_DONE);
+                //Update_State(DSP_DONE);
                 //Get_Rectangle();
                 start = TSCL;
                 pdf_representation(dspColor, dspRectangle);
@@ -264,7 +264,7 @@ Int Task_execute (Task_TransferInfo * info)
                 total += stop - start;
                 function = IDLE;
                 break;
-            
+
             case WEIGHT_RED:
                 Get_Color();
                 //Get_Rectangle();
@@ -276,7 +276,7 @@ Int Task_execute (Task_TransferInfo * info)
                 total += stop - start;
                 function = IDLE;
                 break;
-                
+
             case WEIGHT_ALL:
                 Get_Color();
                 Update_State(DSP_DONE);
@@ -304,11 +304,11 @@ Int Task_execute (Task_TransferInfo * info)
                 total += stop - start;
                 function = IDLE;
                 break;
-                
+
         }
         Update_State(DSP_DONE);
     }
-    
+
     //total = stop - start;
     Update_State(total);
 
@@ -327,7 +327,7 @@ Int Task_delete (Task_TransferInfo * info)
                                 MPCSXFER_IPS_EVENTNO,
                                 (FnNotifyCbck) Init_notify,
                                 info) ;
-    
+
     status = NOTIFY_unregister (ID_GPP,
                                 MPCSXFER_IPS_ID,
                                 6,
@@ -346,12 +346,12 @@ Int Task_delete (Task_TransferInfo * info)
 
 static Void Get_Color(Void)
 {
-    BCACHE_inv ((Ptr)dspColor, MPCSXFER_BufferSize, TRUE) ; 
+    BCACHE_inv ((Ptr)dspColor, MPCSXFER_BufferSize, TRUE) ;
 }
 
 static Void Get_Rectangle(Void)
 {
-    BCACHE_inv ((Ptr)dspRectangle, 8, FALSE) ; 
+    BCACHE_inv ((Ptr)dspRectangle, 8, FALSE) ;
 }
 
 static Void Return_Result(Void)
@@ -379,7 +379,7 @@ static Void Init_notify (Uint32 eventNo, Ptr arg, Ptr info)
             dspRectangle = (Uint16 *) info;
             dspResFrame = (Uint8 *) ((Uint32)info + 8) ;
         }
-    
+
     SEM_post(&(mpcsInfo->notifySemObj));
 }
 
@@ -387,7 +387,7 @@ static Void Command_notify (Uint32 eventNo, Ptr arg, Ptr info)
 {
     Task_TransferInfo * mpcsInfo = (Task_TransferInfo *) arg ;
     function = (Uint8) info;
-    
+
     SEM_post(&(mpcsInfo->notifySemObj));
-    
+
 }

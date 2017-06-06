@@ -59,12 +59,25 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     target_model = pdf_representation_target(frame, target_Region);
 
-
-    poolColor(bgr_planes[BLUE].ptr<Uint8>(0));
+    poolColor(BLUE, (Uint8*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_BLUE);
+        isDspDone();
+    }
+    poolColor(GREEN,(Uint8*) frame.ptr(0,0));
+    if(isDspReady())
+    {
+        setDspState(DSP_BUSY);
+        dspCommand(INIT_GREEN);
+        isDspDone();
+    }
+    poolColor(RED, (Uint8*) frame.ptr(0,0));
+    if(isDspReady())
+    {
+        setDspState(DSP_BUSY);
+        dspCommand(INIT_RED);
         isDspDone();
     }
 }
@@ -246,13 +259,18 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         // Send rectangle to DSP
         poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
 
-        if(isDspReady())
-        {
-            poolColor(bgr_planes[BLUE].ptr<Uint8>(0));
-            setDspState(DSP_BUSY);
-            dspCommand(WEIGHT_BLUE);
-            //isDspDone();
-        }
+        // if(isDspReady())
+        // {
+        //     // poolColor(BLUE, (Uint8*) next_frame.ptr(0,0));
+        //     poolColor(BLUE, (Uint8*) next_frame.ptr(0,0));
+        //     setDspState(DSP_BUSY);
+        //     dspCommand(WEIGHT_BLUE);
+        //     isDspDone();
+        // }
+
+        poolColor(RED,(Uint8*) next_frame.ptr(0,0));
+        dspCommand(WEIGHT_RED);
+        // isDspDone();
 
         // Combined pdf_representation and CalWeight
         MatrixFloat weight12 = PdfWeight(next_frame);
