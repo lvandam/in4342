@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Tue Jun  6 11:30:30 2017                                *
+;* Date/Time created: Tue Jun  6 10:44:09 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -31,7 +31,7 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("dspMeanshift.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/part2/code/dsp")
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/data/home/in4342-08/xlaurens/final_solution/dsp")
 ;*****************************************************************************
 ;* CINIT RECORDS                                                             *
 ;*****************************************************************************
@@ -201,7 +201,7 @@ $C$DW$31	.dwtag  DW_TAG_variable, DW_AT_name("target_candidate")
 	.dwattr $C$DW$31, DW_AT_location[DW_OP_addr _target_candidate]
 	.dwattr $C$DW$31, DW_AT_type(*$C$DW$T$52)
 	.dwattr $C$DW$31, DW_AT_external
-;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/06544TOenSD /tmp/06544h6VkjB 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/17779mTSZgl /tmp/17779EasnuH 
 	.sect	".text"
 	.clink
 	.global	_retModel
@@ -853,7 +853,7 @@ $C$DW$34	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |74| 
 
 $C$DW$35	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$35, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L4:1:1496741430")
+	.dwattr $C$DW$35, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L4:1:1496745850")
 	.dwattr $C$DW$35, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$35, DW_AT_TI_begin_line(0x49)
 	.dwattr $C$DW$35, DW_AT_TI_end_line(0x49)
@@ -864,7 +864,7 @@ $C$DW$36	.dwtag  DW_TAG_TI_loop_range
 
 
 $C$DW$37	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$37, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L2:1:1496741430")
+	.dwattr $C$DW$37, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L2:1:1496745850")
 	.dwattr $C$DW$37, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$37, DW_AT_TI_begin_line(0x49)
 	.dwattr $C$DW$37, DW_AT_TI_end_line(0x49)
@@ -1286,7 +1286,7 @@ $C$DW$L$_retEpan$7$E:
            ; BRANCH OCCURS {B3}              ; |88| 
 
 $C$DW$42	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$42, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L7:1:1496741430")
+	.dwattr $C$DW$42, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L7:1:1496745850")
 	.dwattr $C$DW$42, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$42, DW_AT_TI_begin_line(0x56)
 	.dwattr $C$DW$42, DW_AT_TI_end_line(0x58)
@@ -1298,7 +1298,7 @@ $C$DW$44	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$44, DW_AT_high_pc($C$DW$L$_retEpan$7$E)
 
 $C$DW$45	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$45, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L9:2:1496741430")
+	.dwattr $C$DW$45, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L9:2:1496745850")
 	.dwattr $C$DW$45, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$45, DW_AT_TI_begin_line(0x57)
 	.dwattr $C$DW$45, DW_AT_TI_end_line(0x57)
@@ -1574,7 +1574,7 @@ $C$DW$49	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |81| 
 
 $C$DW$50	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$50, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L12:1:1496741430")
+	.dwattr $C$DW$50, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L12:1:1496745850")
 	.dwattr $C$DW$50, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$50, DW_AT_TI_begin_line(0x50)
 	.dwattr $C$DW$50, DW_AT_TI_end_line(0x50)
@@ -1927,7 +1927,7 @@ $C$DW$57	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |119| 
 
 $C$DW$58	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$58, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L14:1:1496741430")
+	.dwattr $C$DW$58, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L14:1:1496745850")
 	.dwattr $C$DW$58, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$58, DW_AT_TI_begin_line(0x6a)
 	.dwattr $C$DW$58, DW_AT_TI_end_line(0x76)
@@ -1945,7 +1945,7 @@ $C$DW$62	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$62, DW_AT_high_pc($C$DW$L$_pdf_representation_target$10$E)
 
 $C$DW$63	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$63, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L16:2:1496741430")
+	.dwattr $C$DW$63, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L16:2:1496745850")
 	.dwattr $C$DW$63, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$63, DW_AT_TI_begin_line(0x6d)
 	.dwattr $C$DW$63, DW_AT_TI_end_line(0x74)
@@ -2290,7 +2290,7 @@ $C$DW$69	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |167| 
 
 $C$DW$70	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$70, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L20:1:1496741430")
+	.dwattr $C$DW$70, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L20:1:1496745850")
 	.dwattr $C$DW$70, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$70, DW_AT_TI_begin_line(0x9a)
 	.dwattr $C$DW$70, DW_AT_TI_end_line(0xa6)
@@ -2308,7 +2308,7 @@ $C$DW$74	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$74, DW_AT_high_pc($C$DW$L$_pdf_representation$10$E)
 
 $C$DW$75	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$75, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L22:2:1496741430")
+	.dwattr $C$DW$75, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L22:2:1496745850")
 	.dwattr $C$DW$75, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$75, DW_AT_TI_begin_line(0x9d)
 	.dwattr $C$DW$75, DW_AT_TI_end_line(0xa4)
@@ -2729,7 +2729,7 @@ $C$DW$79	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |227| 
 
 $C$DW$80	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$80, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L27:1:1496741430")
+	.dwattr $C$DW$80, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L27:1:1496745850")
 	.dwattr $C$DW$80, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$80, DW_AT_TI_begin_line(0xdc)
 	.dwattr $C$DW$80, DW_AT_TI_end_line(0xe2)
@@ -3041,7 +3041,7 @@ $C$DW$85	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |213| 
 
 $C$DW$86	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$86, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L34:1:1496741430")
+	.dwattr $C$DW$86, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L34:1:1496745850")
 	.dwattr $C$DW$86, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$86, DW_AT_TI_begin_line(0xc8)
 	.dwattr $C$DW$86, DW_AT_TI_end_line(0xcc)
@@ -3052,7 +3052,7 @@ $C$DW$87	.dwtag  DW_TAG_TI_loop_range
 
 
 $C$DW$88	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$88, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L30:1:1496741430")
+	.dwattr $C$DW$88, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L30:1:1496745850")
 	.dwattr $C$DW$88, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$88, DW_AT_TI_begin_line(0xd0)
 	.dwattr $C$DW$88, DW_AT_TI_end_line(0xd3)
@@ -3385,7 +3385,7 @@ $C$DW$94	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |143| 
 
 $C$DW$95	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$95, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L36:1:1496741430")
+	.dwattr $C$DW$95, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L36:1:1496745850")
 	.dwattr $C$DW$95, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$95, DW_AT_TI_begin_line(0x82)
 	.dwattr $C$DW$95, DW_AT_TI_end_line(0x8d)
@@ -3394,7 +3394,7 @@ $C$DW$96	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$96, DW_AT_high_pc($C$DW$L$_HC_pdf_representation_target$3$E)
 
 $C$DW$97	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$97, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L38:2:1496741430")
+	.dwattr $C$DW$97, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L38:2:1496745850")
 	.dwattr $C$DW$97, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$97, DW_AT_TI_begin_line(0x85)
 	.dwattr $C$DW$97, DW_AT_TI_end_line(0x8c)
@@ -3760,7 +3760,7 @@ $C$DW$102	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |66| 
 
 $C$DW$103	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$103, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L40:1:1496741430")
+	.dwattr $C$DW$103, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L40:1:1496745850")
 	.dwattr $C$DW$103, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$103, DW_AT_TI_begin_line(0x38)
 	.dwattr $C$DW$103, DW_AT_TI_end_line(0x41)
@@ -3772,7 +3772,7 @@ $C$DW$105	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$105, DW_AT_high_pc($C$DW$L$_HC_Epanechnikov_kernel$6$E)
 
 $C$DW$106	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$106, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L41:2:1496741430")
+	.dwattr $C$DW$106, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L41:2:1496745850")
 	.dwattr $C$DW$106, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$106, DW_AT_TI_begin_line(0x3a)
 	.dwattr $C$DW$106, DW_AT_TI_end_line(0x40)
@@ -4158,7 +4158,7 @@ $C$DW$114	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |43| 
 
 $C$DW$115	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$115, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L42:1:1496741430")
+	.dwattr $C$DW$115, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L42:1:1496745850")
 	.dwattr $C$DW$115, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$115, DW_AT_TI_begin_line(0x21)
 	.dwattr $C$DW$115, DW_AT_TI_end_line(0x2a)
@@ -4173,7 +4173,7 @@ $C$DW$118	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$118, DW_AT_high_pc($C$DW$L$_Epanechnikov_kernel$8$E)
 
 $C$DW$119	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$119, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L43:2:1496741430")
+	.dwattr $C$DW$119, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L43:2:1496745850")
 	.dwattr $C$DW$119, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$119, DW_AT_TI_begin_line(0x23)
 	.dwattr $C$DW$119, DW_AT_TI_end_line(0x29)
@@ -4556,7 +4556,7 @@ $C$DW$131	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |191| 
 
 $C$DW$132	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$132, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L46:1:1496741430")
+	.dwattr $C$DW$132, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L46:1:1496745850")
 	.dwattr $C$DW$132, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$132, DW_AT_TI_begin_line(0xb4)
 	.dwattr $C$DW$132, DW_AT_TI_end_line(0xbe)
@@ -4571,7 +4571,7 @@ $C$DW$135	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$135, DW_AT_high_pc($C$DW$L$_CalcWeight$9$E)
 
 $C$DW$136	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$136, DW_AT_name("/home/constantinos/embLab/part2/code/dsp/dspMeanshift.asm:$C$L47:2:1496741430")
+	.dwattr $C$DW$136, DW_AT_name("/data/home/in4342-08/xlaurens/final_solution/dsp/dspMeanshift.asm:$C$L47:2:1496745850")
 	.dwattr $C$DW$136, DW_AT_TI_begin_file("dspMeanshift.c")
 	.dwattr $C$DW$136, DW_AT_TI_begin_line(0xb7)
 	.dwattr $C$DW$136, DW_AT_TI_end_line(0xbc)

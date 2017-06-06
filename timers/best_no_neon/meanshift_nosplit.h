@@ -5,13 +5,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
-using namespace std;
-
-typedef vector< vector<unsigned short> > Matrix;
-typedef vector<unsigned short> Row;
-
-typedef vector< vector<float> > MatrixFloat;
-typedef vector<float> RowFloat;
 
 #define PI 3.1415926
 class MeanShift
@@ -20,12 +13,6 @@ class MeanShift
     float bin_width;
     cv::Mat target_model;
     cv::Rect target_Region;
-    std::vector<float> norm_i;
-    std::vector<float> norm_j;
-    MatrixFloat  norm_i_j;
-    float centre;
-    cv::Mat kernel;
-    float normalized_C;
 
     struct config{
         int num_bins;

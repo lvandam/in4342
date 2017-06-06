@@ -7,11 +7,6 @@
 #include "arm_neon.h"
 #include "Timer.h"
 
-extern "C" {
-#include "dspInter.h"
-#include "dsplink.h"
-}
-
 MeanShift::MeanShift()
 {
     cfg.MaxIter = 8;
@@ -34,8 +29,6 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
-    DSP_STATUS status = DSP_SOK ;
-
     target_Region = rect;
 
     centre = static_cast<float>((rect.height - 1) / 2.0);
@@ -58,15 +51,6 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     Epanechnikov_kernel(kernel);
 
     target_model = pdf_representation_target(frame, target_Region);
-
-
-    poolColor(bgr_planes[BLUE].ptr<Uint8>(0));
-    if(isDspReady())
-    {
-        setDspState(DSP_BUSY);
-        dspCommand(INIT_BLUE);
-        isDspDone();
-    }
 }
 
 void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
@@ -164,7 +148,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       for(int i = 0; i < rows; i++)
       {
         // pixel = next_frame.at<cv::Vec3b>(row_index, clo_index);
-        for(int kk = 1; kk < 3; kk++)
+        for(int kk = 0; kk < 3; kk++)
         {
           // printf("%d\n", pixel[2]);
 
@@ -191,7 +175,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       row_index = target_Region.y;
       for(int i = 0; i < rows; i++)
       {
-        for(int kk = 1; kk < 3; kk++)
+        for(int kk = 0; kk < 3; kk++)
         {
           // Compute bin values of 16 pixels
           // printf("%d\n", pixel[kk]);
@@ -238,43 +222,12 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // trackTimer.Start();
 
     cv::Rect next_rect;
-    DSP_STATUS status = DSP_SOK ;
     // cv::split(next_frame, bgr_planes);
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
-        // Send rectangle to DSP
-        poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
-
-        if(isDspReady())
-        {
-            poolColor(bgr_planes[BLUE].ptr<Uint8>(0));
-            setDspState(DSP_BUSY);
-            dspCommand(WEIGHT_BLUE);
-            //isDspDone();
-        }
-
         // Combined pdf_representation and CalWeight
-        MatrixFloat weight12 = PdfWeight(next_frame);
-
-        MatrixFloat weight;
-
-        isDspDone();
-        float* weight0 = (float*) pointToResult();
-
-        size_t weightSize = weight.size();
-        for(size_t i = 0; i < weightSize; i++)
-        {
-          for(size_t j = 0; j < weight[0].size(); j++)
-          {
-            weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
-          }
-        }
-
-        //cv::Mat weight0(target_Region.height, target_Region.width, CV_32F, (void*) pointToResult());
-        //cv::Mat weight12(target_Region.height, target_Region.width, CV_32F, weight12_matrix);
-
-        // cv::Mat weight = weight0.mul(weight12);
+        MatrixFloat weight = PdfWeight(next_frame);
 
         float32_t delta_x = 0.0;
         float32_t delta_y = 0.0;

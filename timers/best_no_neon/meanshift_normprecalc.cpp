@@ -33,9 +33,6 @@ void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
       }
     }
 
-    kernel = cv::Mat(rect.height,rect.width,CV_32F,cv::Scalar(0));
-    normalized_C = 1.0 / Epanechnikov_kernel(kernel);
-
     target_model = pdf_representation(frame,target_Region);
 }
 
@@ -62,6 +59,9 @@ float  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
 }
 cv::Mat MeanShift::pdf_representation(const cv::Mat &frame, const cv::Rect &rect)
 {
+  cv::Mat kernel(rect.height,rect.width,CV_32F,cv::Scalar(0));
+    float normalized_C = 1.0 / Epanechnikov_kernel(kernel);
+
     cv::Mat pdf_model(8,16,CV_32F,cv::Scalar(1e-10));
 
     cv::Vec3f curr_pixel_value;
@@ -100,6 +100,8 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
     int col_index = rec.x;
 
     cv::Mat weight(rows,cols,CV_32F,cv::Scalar(1.0000));
+    std::vector<cv::Mat> bgr_planes;
+    cv::split(frame, bgr_planes);
 
     for(int k = 0; k < 3;  k++)
     {
@@ -109,7 +111,7 @@ cv::Mat MeanShift::CalWeight(const cv::Mat &frame, cv::Mat &target_model,
             col_index = rec.x;
             for(int j=0;j<cols;j++)
             {
-                int curr_pixel = frame.at<cv::Vec3b>(row_index, col_index)[k];
+                int curr_pixel = (bgr_planes[k].at<uchar>(row_index,col_index));
                 int bin_value = curr_pixel/bin_width;
                 weight.at<float>(i,j) *= static_cast<float>((sqrt(target_model.at<float>(k, bin_value)/target_candidate.at<float>(k, bin_value))));
                 col_index++;

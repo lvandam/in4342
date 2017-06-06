@@ -24,8 +24,6 @@ class MeanShift
     std::vector<float> norm_j;
     MatrixFloat  norm_i_j;
     float centre;
-    cv::Mat kernel;
-    float normalized_C;
 
     struct config{
         int num_bins;
