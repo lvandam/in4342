@@ -268,8 +268,8 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(RED,(Uint8*) next_frame.ptr(0,0));
-        dspCommand(WEIGHT_RED);
+        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
+        dspCommand(COMBINE_BLUE);
         // isDspDone();
 
         // Combined pdf_representation and CalWeight

@@ -214,14 +214,18 @@ Int Task_execute (Task_TransferInfo * info)
                 function = IDLE;
                 break;
 
-            case EPAN:
+            case COMBINE_BLUE:
+                Get_Color();
+                //Update_State(DSP_DONE);
                 Get_Rectangle();
+                initWeight(flres);
                 start = TSCL;
-                Epanechnikov_kernel(dspRectangle);
+                pdf_representation(dspColor, dspRectangle);
+                CalcWeight(BLUE, dspColor, dspRectangle, flres);
                 stop = TSCL;
-                total += stop - start;
-                retEpan(flres);
                 Return_Result();
+                total += stop - start;
+                //function = IDLE;
                 function = IDLE;
                 break;
 
