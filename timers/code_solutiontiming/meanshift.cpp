@@ -16,6 +16,23 @@ MeanShift::MeanShift()
 void  MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
+
+    centre = static_cast<float>((rect.height - 1) / 2.0);
+
+    norm_i = std::vector<float>(rect.height);
+    norm_j = std::vector<float>(rect.width);
+    norm_i_j = MatrixFloat(rect.height, RowFloat(rect.width));
+
+    for(int i = 0; i < rect.height; i++)
+    {
+      norm_i[i] = static_cast<float>(i-centre)/centre;
+      for(int j = 0; j < rect.width; j++)
+      {
+        norm_j[j] = static_cast<float>(j-centre)/centre;
+        norm_i_j[i][j] = norm_i[i]*norm_i[i] + norm_j[j]*norm_j[j];
+      }
+    }
+
     target_model = pdf_representation(frame,target_Region);
 }
 
@@ -42,7 +59,7 @@ float  MeanShift::Epanechnikov_kernel(cv::Mat &kernel)
 }
 cv::Mat MeanShift::pdf_representation(const cv::Mat &frame, const cv::Rect &rect)
 {
-    cv::Mat kernel(rect.height,rect.width,CV_32F,cv::Scalar(0));
+  cv::Mat kernel(rect.height,rect.width,CV_32F,cv::Scalar(0));
     float normalized_C = 1.0 / Epanechnikov_kernel(kernel);
 
     cv::Mat pdf_model(8,16,CV_32F,cv::Scalar(1e-10));
@@ -117,7 +134,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         float delta_x = 0.0;
         float sum_wij = 0.0;
         float delta_y = 0.0;
-        float centre = static_cast<float>((weight.rows-1)/2.0);
+        // float centre = static_cast<float>((weight.rows-1)/2.0);
         double mult = 0.0;
 
         next_rect.x = target_Region.x;
@@ -129,11 +146,12 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         {
             for(int j=0;j<weight.cols;j++)
             {
-                float norm_i = static_cast<float>(i-centre)/centre;
-                float norm_j = static_cast<float>(j-centre)/centre;
-                mult = pow(norm_i,2)+pow(norm_j,2)>1.0?0.0:1.0;
-                delta_x += static_cast<float>(norm_j*weight.at<float>(i,j)*mult);
-                delta_y += static_cast<float>(norm_i*weight.at<float>(i,j)*mult);
+                // float norm_i = static_cast<float>(i-centre)/centre;
+                // float norm_j = static_cast<float>(j-centre)/centre;
+
+                mult = norm_i_j[i][j]>1.0?0.0:1.0;
+                delta_x += static_cast<float>(norm_j[j]*weight.at<float>(i,j)*mult);
+                delta_y += static_cast<float>(norm_i[i]*weight.at<float>(i,j)*mult);
                 sum_wij += static_cast<float>(weight.at<float>(i,j)*mult);
             }
         }

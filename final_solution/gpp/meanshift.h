@@ -7,23 +7,40 @@
 #include "opencv2/highgui/highgui.hpp"
 using namespace std;
 
+
 typedef vector< vector<unsigned short> > Matrix;
 typedef vector<unsigned short> Row;
 
 typedef vector< vector<float> > MatrixFloat;
 typedef vector<float> RowFloat;
 
+template<typename T>
+ostream& operator<< (ostream& out, const vector<T>& v) {
+    out << "[";
+    size_t last = v.size() - 1;
+    for(size_t i = 0; i < v.size(); ++i) {
+        out << v[i];
+        if (i != last)
+            out << ", ";
+    }
+    out << "]" << endl;
+    return out;
+}
+
 #define PI 3.1415926
 class MeanShift
 {
  private:
     float bin_width;
-    cv::Mat target_model;
+    MatrixFloat target_model;
     cv::Rect target_Region;
+    MatrixFloat kernel;
     std::vector<float> norm_i;
     std::vector<float> norm_j;
-    MatrixFloat  norm_i_j;
+    MatrixFloat norm_i_j;
     float centre;
+    std::vector<cv::Mat> bgr_planes;
+    MatrixFloat PdfWeight(const cv::Mat &next_frame);
 
     struct config{
         int num_bins;
@@ -34,10 +51,12 @@ class MeanShift
 public:
     MeanShift();
     void Init_target_frame(const cv::Mat &frame,const cv::Rect &rect);
-    float Epanechnikov_kernel(cv::Mat &kernel);
-    cv::Mat pdf_representation(const cv::Mat &frame,const cv::Rect &rect);
-    cv::Mat CalWeight(const cv::Mat &frame, cv::Mat &target_model, cv::Mat &target_candidate, cv::Rect &rec);
-    cv::Mat CalWeight_opt(const cv::Mat &frame, cv::Mat &target_model, cv::Mat &target_candidate, cv::Rect &rec);
+    void Epanechnikov_kernel(MatrixFloat &kernel);
+    MatrixFloat pdf_representation_target(const cv::Mat &frame,const cv::Rect &rect);
+    // MatrixFloat pdf_representation(int k);
+    // MatrixFloat CalWeight(int k, MatrixFloat &target_candidate);
+    MatrixFloat pdf_representation();
+    MatrixFloat CalWeight(MatrixFloat &target_candidate);
     cv::Rect track(const cv::Mat &next_frame);
 };
 
