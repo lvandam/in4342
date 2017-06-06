@@ -212,7 +212,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         // Combined pdf_representation and CalWeight
         MatrixFloat weight = PdfWeight(next_frame);
 		
-		//trackBody.Start();
+		trackBody.Start();
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
         next_rect.width = target_Region.width;
@@ -243,8 +243,8 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
         if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
         {	
-        	//trackBody.Stop();
-        	//trackBody.Print();
+        	trackBody.Stop();
+        	trackBody.Print();
             break;
         }
         else
