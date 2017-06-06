@@ -34,7 +34,7 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
-    DSP_STATUS status = DSP_SOK ;
+    // DSP_STATUS status = DSP_SOK ;
 
     target_Region = rect;
 
@@ -204,7 +204,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       row_index = target_Region.y;
       for(int i = 0; i < rows; i++)
       {
-        for(int kk = 1; kk < 3; kk++)
+        for(int kk =1; kk < 3; kk++)
         {
           // Compute bin values of 16 pixels
           // printf("%d\n", pixel[kk]);
@@ -251,7 +251,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // trackTimer.Start();
 
     cv::Rect next_rect;
-    DSP_STATUS status = DSP_SOK ;
+    // DSP_STATUS status = DSP_SOK ;
     // cv::split(next_frame, bgr_planes);
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
@@ -268,22 +268,22 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(RED,(Uint8*) next_frame.ptr(0,0));
-        dspCommand(WEIGHT_RED);
+        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
+        dspCommand(COMBINE_BLUE);
         // isDspDone();
 
         // Combined pdf_representation and CalWeight
         MatrixFloat weight12 = PdfWeight(next_frame);
 
-        MatrixFloat weight;
+        MatrixFloat weight = MatrixFloat(weight12.size(), RowFloat(weight12[0].size()));
 
         isDspDone();
         float* weight0 = (float*) pointToResult();
 
-        size_t weightSize = weight.size();
+        size_t weightSize = weight12.size();
         for(size_t i = 0; i < weightSize; i++)
         {
-          for(size_t j = 0; j < weight[0].size(); j++)
+          for(size_t j = 0; j < weight12[0].size(); j++)
           {
             weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
           }
@@ -294,15 +294,14 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
         // cv::Mat weight = weight0.mul(weight12);
 
-        float32_t delta_x = 0.0;
-        float32_t delta_y = 0.0;
-        float32_t sum_wij = 0.0;
-
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
 
+        float32_t delta_x = 0.0;
+        float32_t delta_y = 0.0;
+        float32_t sum_wij = 0.0;
 
         float32x4_t norm_i_neon, norm_j_neon, weight_neon, delta_x_temp, delta_y_temp, sum_wij_temp;
         float32x2_t delta_x_sumtemp1, delta_y_sumtemp1, sum_wij_temp1;

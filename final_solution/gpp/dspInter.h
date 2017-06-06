@@ -26,7 +26,7 @@
 #define IDLE               1
 #define LOAD_COLOR         2
 #define RETURN_RESULT      3
-#define EPAN               4
+#define COMBINE_BLUE       4
 #define INIT_BLUE          5
 #define INIT_GREEN         6
 #define INIT_RED           7
