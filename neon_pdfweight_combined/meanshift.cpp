@@ -124,8 +124,8 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
             bin_value[2] = curr_pixel_value[2] / bin_width;
 
             pdf_model[0][bin_value[0]] += kernel[i][j];
-            pdf_model[1][bin_value[0]] += kernel[i][j];
-            pdf_model[2][bin_value[0]] += kernel[i][j];
+            pdf_model[1][bin_value[1]] += kernel[i][j];
+            pdf_model[2][bin_value[2]] += kernel[i][j];
 
             clo_index++;
         }

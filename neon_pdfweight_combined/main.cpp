@@ -24,7 +24,7 @@ void checkError(int x_pos [32], int y_pos [32]) {
 	printf("X Error (avg nr of pxls) = %.3f, Y Error (avg nr of pxls) = %.3f \n", x_avgerr, y_avgerr);
 	
 	// Not sure if this is needed too... 
-	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/86.0, 100.0*y_avgerr/58.0);
+	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/640.0, 100.0*y_avgerr/480.0);
 	
 }
 
