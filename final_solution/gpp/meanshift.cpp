@@ -281,11 +281,33 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         float* weight0 = (float*) pointToResult();
 
         size_t weightSize = weight12.size();
+        size_t weightSize0 = weight12[0].size();
+        
+        float32x4_t weight12_neon, weight0_neon;
+        
         for(size_t i = 0; i < weightSize; i++)
         {
-          for(size_t j = 0; j < weight12[0].size(); j++)
+          int index = weightSize * i;
+          for(size_t j = 0; j < weightSize0; j+=4)
           {
-            weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
+            // Make sure j doesn't go out of bounds
+            size_t size = weightSize0 -j > 4? 4:weightSize0 -j;
+          
+          	// Read in neon vector values from weight matrices 0 and 12 
+          	weight12_neon = vld1q_f32((const float32_t*)&(weight12[i][j]));
+          	weight0_neon = vld1q_f32((const float32_t*)&(weight0[index + j]));
+            
+            // Store multiplied weight values back in weight matrix
+            if (size == 4) {
+	            vst1q_f32((float32_t *) &(weight[i][j]),vmulq_f32(weight12_neon,weight0_neon));
+    		} else {
+				// Since weight has 86 columns, size will be either 4 or 2
+    			vst1q_lane_f32((float32_t *) &(weight[i][j]),vmulq_f32(weight12_neon,weight0_neon),0);
+    			vst1q_lane_f32((float32_t *) &(weight[i][j+1]),vmulq_f32(weight12_neon,weight0_neon),1);
+    		}        
+    		
+            //weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
+            
           }
         }
 
