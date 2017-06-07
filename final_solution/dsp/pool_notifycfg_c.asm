@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Tue Jun  6 20:04:29 2017                                *
+;* Date/Time created: Wed Jun  7 13:50:48 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -31,8 +31,8 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("pool_notifycfg_c.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/data/home/in4342-08/xlaurens/final_solution/dsp")
-;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/30658bhzlll /tmp/30658bwcgIH 
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/merge/dsp")
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/09846IEIme3 /tmp/09846wgshnP 
 
 ;******************************************************************************
 ;* TYPE INFORMATION                                                           *
