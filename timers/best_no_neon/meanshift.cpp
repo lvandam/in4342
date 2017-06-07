@@ -119,7 +119,7 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
     return pdf_model;
 }
 
-float sqrt3(const float x)
+inline float sqrt3(const float x)
 {
 	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
   union
@@ -130,8 +130,52 @@ float sqrt3(const float x)
 
   u.x = x;
   u.i = (1<<29) + (u.i >> 1) - (1<<22);
+
   return u.x;
 }
+
+float sqrt1(const float x)  
+ {
+ 	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+   union
+   {
+     int i;
+     float x;
+   } u;
+   u.x = x;
+   u.i = (1<<29) + (u.i >> 1) - (1<<22); 
+    
+   u.x =       u.x + x/u.x;
+   u.x = 0.25f*u.x + x/u.x;
+ 
+   return u.x;
+}
+
+
+
+// This is InvSqrt, fast inverse sqrt algorithm
+float sqrt2a(float x){
+	// source: https://betterexplained.com/articles/understanding-quakes-fast-inverse-square-root/
+	float input = x;
+    float xhalf = 0.5f * x;
+    int i = *(int*)&x;            // store floating-point bits in integer
+    i = 0x5f3759df - (i >> 1);    // initial guess for Newton's method
+    x = *(float*)&i;              // convert new bits into float
+    x = x*(1.5f - xhalf*x*x);     // One round of Newton's method
+    return x * input;
+}
+
+float sqrt2b(float x){
+	// source: https://betterexplained.com/articles/understanding-quakes-fast-inverse-square-root/
+	float input = x;
+    float xhalf = 0.5f * x;
+    int i = *(int*)&x;            // store floating-point bits in integer
+    i = 0x5f3759df - (i >> 1);    // initial guess for Newton's method
+    x = *(float*)&i;              // convert new bits into float
+    //x = x*(1.5f - xhalf*x*x);     // One round of Newton's method
+    return x * input;
+}
+
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
@@ -191,7 +235,8 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
     
                 int curr_pixel = next_frame.at<cv::Vec3b>(row_index, col_index)[k];
                 int bin_val = curr_pixel/bin_width;
-                weight[i][j] *= static_cast<float>(sqrt3((float)target_model[k][bin_val]/(float)pdf_model[k][bin_val]));
+                                
+               	weight[i][j] *= sqrt3((float)target_model[k][bin_val]/(float)pdf_model[k][bin_val]);
 
             }
             row_index++;
@@ -241,7 +286,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
                 	delta_x += static_cast<float>(norm_j[j]*weight[i][j]*mult);
                 	delta_y += static_cast<float>(norm_i[i]*weight[i][j]*mult);
                 	sum_wij += static_cast<float>(weight[i][j]*mult);
-
             }
         }
 
