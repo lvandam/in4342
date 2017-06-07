@@ -38,7 +38,25 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 	return vmulq_f32(value_a,reciprocal);
 }
+static inline float32x4_t vectorsqrt(float32x4_t x) {
 
+	// Compute reciprocal square root estimate
+    float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
+
+	// Refine extimate and convert to non reciprocal root
+    float32x4_t result = vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal * x;
+
+	// If x has a zero entry, result will be NaN,
+	// convert such values to zero
+    result = vreinterpretq_f32_u32(
+                vbicq_u32(
+                    vreinterpretq_u32_f32(result),
+                    vmvnq_u32(vceqq_f32(result,result))
+                ));
+    
+    return result;
+
+}
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
 
@@ -118,8 +136,8 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
             bin_value[2] = curr_pixel_value[2] / bin_width;
 
             pdf_model[0][bin_value[0]] += kernel[i][j];
-            pdf_model[1][bin_value[1]] += kernel[i][j];
-            pdf_model[2][bin_value[2]] += kernel[i][j];
+            pdf_model[1][bin_value[0]] += kernel[i][j];
+            pdf_model[2][bin_value[0]] += kernel[i][j];
 
             clo_index++;
         }
@@ -174,13 +192,12 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       row_index = target_Region.y;
       for(int i = 0; i < rows; i++)
       {
-        // pixel = next_frame.at<cv::Vec3b>(row_index, clo_index);
+        
         for(int kk = 0; kk < 3; kk++)
         {
-          // printf("%d\n", pixel[2]);
-
+          
           int size = cols - j < 16 ? cols - j : 16;
-          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,clo_index)+kk));//next_frame.ptr(row_index,clo_index,kk));//bgr_planes[kk].ptr(row_index,clo_index));
+          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,clo_index)+kk));
           bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
           vst1q_u8(bin_array, bin_value_neon);
 
@@ -201,7 +218,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 	}*/
   
   //calWeight.Start();
-  // Calculate weight (CalWeight)
+  //Calculate weight (CalWeight)
   col_index = target_Region.x;
   for(int j = 0; j < cols; j+=16)
   {
@@ -211,9 +228,8 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
         for(int kk = 0; kk < 3; kk++)
         {
           // Compute bin values of 16 pixels
-          // printf("%d\n", pixel[kk]);
           int size = target_Region.width - j<16? target_Region.width -j : 16;
-          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,col_index)+kk));//next_frame.ptr(row_index,col_index,kk));//bgr_planes[kk].ptr(row_index,col_index))
+          curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,col_index)+kk));
           bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
           vst1q_u8(bin_array, bin_value_neon);
 
@@ -236,8 +252,26 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
           // Store result in weight matrix
           vst4q_f32(result,result_neon);
 
+			// If you use the vectorsqrt function on vectordivide above:
+			// Store values in weight. Size is either 16 or 6
+			/*if (size ==16) {
+				vst4q_f32((float32_t *)&(weight[i][j]),result_neon);
+			
+			} else {
+				// Maybe first transpose then store whole reg?
+				float32_t * ptr =(float32_t *)&(weight[i][j]);
+				vst1q_lane_f32(ptr,result_neon.val[0],0);
+				vst1q_lane_f32(ptr+1,result_neon.val[1],0);
+				vst1q_lane_f32(ptr+2,result_neon.val[2],0);
+				vst1q_lane_f32(ptr+3,result_neon.val[3],0);
+				vst1q_lane_f32(ptr+4,result_neon.val[0],1);
+				vst1q_lane_f32(ptr+5,result_neon.val[1],1);
+			}*/
+		
           for (int g = 0; g < size; g++) {
             weight[i][j+g] *= sqrt3(result[g]);
+
+            
           }
         }
         row_index++;

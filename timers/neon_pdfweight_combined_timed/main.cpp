@@ -1,6 +1,8 @@
 #include "meanshift.h"
 #include "Timer.h"
 #include <iostream>
+#include <sys/time.h>
+#include <numeric>
 
 #ifndef ARMCC
 #include "markers.h"
@@ -31,9 +33,13 @@ void checkError(int x_pos [32], int y_pos [32]) {
 int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
+    Timer initTimer("Initialization Time");
     // Timer trackTimer("Track Time");
 
-
+    Timer kernelTimer("Kernel Time");
+    std::vector<float> kernelTimes;
+    
+    
     cv::VideoCapture frame_capture;
     if(argc<2)
     {
@@ -53,7 +59,9 @@ int main(int argc, char ** argv)
     frame_capture.read(frame);
 
     MeanShift ms; // creat meanshift obj
+    initTimer.Start();
     ms.Init_target_frame(frame,rect); // init the meanshift
+	initTimer.Stop();
 
     int codec = CV_FOURCC('F', 'L', 'V', '1');
     // int codec = CV_FOURCC('I','4','2','0');
@@ -71,6 +79,8 @@ int main(int argc, char ** argv)
     #endif
     int TotalFrames = 32;
     int fcount;
+    struct timeval kerneltpstop;
+	struct timeval kerneltpstart;
     for(fcount=0; fcount<TotalFrames; ++fcount)
     {
         // read a frame
@@ -82,12 +92,17 @@ int main(int argc, char ** argv)
         // MCPROF_START();
         #endif
         // trackTimer.Start();
+        gettimeofday(&kerneltpstart, NULL);
         cv::Rect ms_rect =  ms.track(frame);
+        gettimeofday(&kerneltpstop, NULL);
+        
+       
         // trackTimer.Stop();
         // trackTimer.Print();
         #ifndef ARMCC
         // MCPROF_STOP();
         #endif
+		kernelTimes.push_back(kerneltpstop.tv_sec * 1000 + kerneltpstop.tv_usec / 1000 - kerneltpstart.tv_sec * 1000 - kerneltpstart.tv_usec / 1000);
 
 		// If you want to check error of code compared to original
 		// uncomment lines below
@@ -100,12 +115,19 @@ int main(int argc, char ** argv)
         // write the frame
         writer << frame;
     }
+     totalTimer.Stop();
+     
+     initTimer.Print();
+    totalTimer.Print();
+    float averageKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0)/kernelTimes.size();
+    float sumKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0);
+    std::cout << "Average kernel time: " << averageKernel << " msec" << std::endl;
+    std::cout << "Total kernel time: " << sumKernel << " msec" << std::endl;
+    
     #ifndef ARMCC
     MCPROF_STOP();
     #endif
-    totalTimer.Pause();
-
-    totalTimer.Print();
+    
 
 	// If you want to check error of code compared to original 
 	// uncomment line below
