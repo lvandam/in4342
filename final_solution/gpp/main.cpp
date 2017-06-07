@@ -1,6 +1,7 @@
 #include "meanshift.h"
 #include "Timer.h"
 #include <iostream>
+#include <sys/time.h>
 #include <numeric>
 
 #ifndef ARMCC
@@ -133,7 +134,6 @@ int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
     Timer initTimer("Initialization Time");
-    Timer kernelTimer("Kernel Time");
     std::vector<float> kernelTimes;
     Char8 * dspExecutable = NULL ;
     DSP_STATUS status = DSP_SOK ;
@@ -193,7 +193,7 @@ int main(int argc, char ** argv)
     MeanShift ms; // creat meanshift obj
     initTimer.Start();
     ms.Init_target_frame(frame,rect); // init the meanshift
-    initTimer.Pause();
+    initTimer.Stop();
 
     int codec = CV_FOURCC('F', 'L', 'V', '1');
     cv::VideoWriter writer("tracking_result.avi", codec, 20, cv::Size(frame.cols,frame.rows));
@@ -210,6 +210,8 @@ int main(int argc, char ** argv)
     #endif
     int TotalFrames = 32;
     int fcount;
+		struct timeval kerneltpstop;
+		struct timeval kerneltpstart;
     //for(fcount=0; fcount<1; ++fcount)
     for(fcount=0; fcount<TotalFrames; ++fcount)
     {
@@ -218,16 +220,16 @@ int main(int argc, char ** argv)
         if( 0 == status ) break;
 
         // track object
-				kernelTimer.Start();
         #ifndef ARMCC
         // MCPROF_START();
         #endif
+				gettimeofday(&kerneltpstart, NULL);
         cv::Rect ms_rect =  ms.track(frame);
+				gettimeofday(&kerneltpstop, NULL);
         #ifndef ARMCC
         // MCPROF_STOP();
         #endif
-				kernelTimer.Stop();
-				kernelTimes.push_back(kernelTimer.GetTime()*1000.0);
+				kernelTimes.push_back(kerneltpstop.tv_sec * 1000 + kerneltpstop.tv_usec / 1000 - kerneltpstart.tv_sec * 1000 - kerneltpstart.tv_usec / 1000);
 
 				// If you want to check error of code compared to original
 				// uncomment lines below
@@ -244,7 +246,7 @@ int main(int argc, char ** argv)
     #ifndef ARMCC
     MCPROF_STOP();
     #endif
-    totalTimer.Pause();
+    totalTimer.Stop();
     dspComTerminate () ;
 
     initTimer.Print();
