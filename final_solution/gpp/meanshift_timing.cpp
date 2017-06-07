@@ -12,6 +12,18 @@ extern "C" {
 #include "dsplink.h"
 }
 
+Timer initTargetFrame("Init target frame");
+Timer epanechnikovKernel("epanechnikov kernel");
+Timer pdfRepresentationTarget("pdf representation target");
+Timer pdfRepresentation("pdf representation");
+Timer calWeight("calweight");
+Timer trackTimer("track");
+Timer trackBody("track body");
+
+
+double timeValues [32];
+int n = 0;
+
 MeanShift::MeanShift()
 {
     cfg.MaxIter = 8;
@@ -47,7 +59,7 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     // DSP_STATUS status = DSP_SOK ;
-
+	//initTargetFrame.Start();
     target_Region = rect;
 
     centre = static_cast<float>((rect.height - 1) / 2.0);
@@ -92,10 +104,13 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
         dspCommand(INIT_RED);
         isDspDone();
     }
+    //initTargetFrame.Stop();
+    //initTargetFrame.Print();
 }
 
 void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
 {
+	//epanechnikovKernel.Start();
     int h = kernel.size();
     int w = kernel[0].size();
 
@@ -114,10 +129,13 @@ void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
             kernel[i][j] = result;
         }
     }
+    //epanechnikovKernel.Stop();
+    //epanechnikovKernel.Print();
 }
 
 MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
 {
+	//pdfRepresentationTarget.Start();
     MatrixFloat pdf_model(3, RowFloat(16));
 
     cv::Vec3b curr_pixel_value;
@@ -145,6 +163,8 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
         }
         row_index++;
     }
+    //pdfRepresentationTarget.Stop();
+    //pdfRepresentationTarget.Print();
     return pdf_model;
 }
 
@@ -164,6 +184,7 @@ float sqrt3(const float x)
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
+	//pdfRepresentation.Start();
   MatrixFloat pdf_model(3, RowFloat(16));
 
   uint8x16_t curr_pixel_value_neon, bin_value_neon;
@@ -208,7 +229,13 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       }
       clo_index += 16;
   }
-
+	/*pdfRepresentation.Stop();
+	if (n<32) {
+		timeValues [n] = pdfRepresentation.GetTime();
+		n++;
+	}*/
+	
+	//calWeight.Start();
   // Calculate weight (CalWeight)
   col_index = target_Region.x;
   for(int j = 0; j < cols; j+=16)
@@ -252,7 +279,11 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       }
       col_index += 16;
   }
-
+	/*calWeight.Stop();
+	if (n<32) {
+		timeValues [n] = calWeight.GetTime();
+		n++;
+	}*/
   return weight;
 }
 
@@ -260,7 +291,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 {
     // Timer multTimer("Mult Time");
     // Timer trackTimer("Track Time");
-    // trackTimer.Start();
+    //trackTimer.Start();
 
     cv::Rect next_rect;
     // DSP_STATUS status = DSP_SOK ;
@@ -268,6 +299,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
+    	//trackBody.Start();
         // Send rectangle to DSP
         poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
 
@@ -384,6 +416,11 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
         if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
         {
+            /*trackBody.Stop();
+			if (n<32) {
+				timeValues [n] = trackBody.GetTime();
+				n++;
+			}*/
             break;
         }
         else
@@ -393,8 +430,22 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         }
     }
 
-    // trackTimer.Pause();
-    // trackTimer.Print();
+
+    /*trackTimer.Stop();
+	if (n<32) {
+		timeValues [n] = trackTimer.GetTime();
+		n++;
+	}*/
+	
+	// Just print it all the time, doesn't matter for the time you 
+	// are measuring in this way
+	
+	double sum = 0.0;
+	for (int i = 0; i<n; i++) {
+		sum += timeValues[i]*1000.0;
+	}	
+	printf("avrg values in msec: %f \n",sum/(float)n);
+	
 
     return next_rect;
 }
