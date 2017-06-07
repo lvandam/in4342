@@ -59,21 +59,21 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     target_model = pdf_representation_target(frame, target_Region);
 
-    poolColor(BLUE, (Uint8*) frame.ptr(0,0));
+    poolColor(BLUE, (Uint32*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_BLUE);
         isDspDone();
     }
-    poolColor(GREEN,(Uint8*) frame.ptr(0,0));
+    poolColor(GREEN,(Uint32*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_GREEN);
         isDspDone();
     }
-    poolColor(RED, (Uint8*) frame.ptr(0,0));
+    poolColor(RED, (Uint32*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
@@ -268,7 +268,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
+        poolColor(BLUE,(Uint32*) next_frame.ptr(0,0));
         dspCommand(COMBINE_BLUE);
         // isDspDone();
 

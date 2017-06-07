@@ -651,13 +651,75 @@ Void dspCommand( Uint8 command )
     NOTIFY_notify (processorId, pool_notify_IPS_ID, 6, (Uint32) command);
 }
 
-Void poolColor(Uint8 ColorIndex, Uint8 *newColor )
+Void poolColor(Uint8 colorIndex, Uint32 *newColor )
 {
     Uint32 i,j=0;
-    for(i=0; i<FRAME_SIZE; i++)
+    register Uint32 temp;
+    /*for(i=0; i<FRAME_SIZE; i++)
     {
-        color[i]= newColor[3*i+j];
+        color[i]= newColor[3*i+ColorIndex];
+    }*/
+    switch(colorIndex)
+    {
+        case(BLUE):
+            for(i=0;i<3*FRAME_SIZE/4;i++)
+            {
+                temp = newColor[i];
+                switch(4*i%3)
+                {
+                    case 0:
+                        color[j++]=temp;
+                        color[j++]=temp>>(3*8);
+                        break;
+                    case 1:
+                        color[j++]=temp>>(2*8);
+                        break;
+                    case 2:
+                        color[j++]=temp>>8;
+                        break;
+                }
+            }
+            break;
+        case(GREEN):
+            for(i=0;i<3*FRAME_SIZE/4;i++)
+            {
+                temp = newColor[i];
+                switch(4*i%3)
+                {
+                    case 0:
+                        color[j++]=temp>>8;
+                        break;                        
+                    case 1:
+                        color[j++]=temp;
+                        color[j++]=temp>>(3*8);
+                        break;
+                    case 2:
+                        color[j++]=temp>>(2*8);
+                        break;
+                }
+            }
+            break;
+        case(RED):
+            for(i=0;i<3*FRAME_SIZE/4;i++)
+            {
+                temp = newColor[i];
+                switch(4*i%3)
+                {
+                    case 0:
+                        color[j++]=temp>>(2*8);
+                        break;
+                    case 1:
+                        color[j++]=temp>>8;
+                        break;                        
+                    case 2:
+                        color[j++]=temp;
+                        color[j++]=temp>>(3*8);
+                        break;
+                }
+            }
+            break;
     }
+    
     POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), color, poolBufferSize);
 }
 

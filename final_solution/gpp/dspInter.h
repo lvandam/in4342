@@ -45,7 +45,7 @@ Void dspCommand( Uint8 command);
 
 Void copyToBuffer (Uint8 *ptr, Uint8 *buffer, Uint8 color, Uint8 length);
 
-Void poolColor(Uint8 ColorIndex, Uint8 *newColor );
+Void poolColor(Uint8 colorIndex, Uint32 *newColor );
 
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectHeight, Uint16 rectWidth);
 
