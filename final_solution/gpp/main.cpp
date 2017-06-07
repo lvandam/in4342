@@ -1,6 +1,7 @@
 #include "meanshift.h"
 #include "Timer.h"
 #include <iostream>
+#include <numeric>
 
 #ifndef ARMCC
 #include "markers.h"
@@ -132,6 +133,8 @@ int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
     Timer initTimer("Initialization Time");
+    Timer kernelTimer("Kernel Time");
+    std::vector<float> kernelTimes;
     Char8 * dspExecutable = NULL ;
     DSP_STATUS status = DSP_SOK ;
 
@@ -215,6 +218,7 @@ int main(int argc, char ** argv)
         if( 0 == status ) break;
 
         // track object
+				kernelTimer.Start();
         #ifndef ARMCC
         // MCPROF_START();
         #endif
@@ -222,6 +226,8 @@ int main(int argc, char ** argv)
         #ifndef ARMCC
         // MCPROF_STOP();
         #endif
+				kernelTimer.Stop();
+				kernelTimes.push_back(kernelTimer.GetTime()*1000.0);
 
 				// If you want to check error of code compared to original
 				// uncomment lines below
@@ -243,6 +249,11 @@ int main(int argc, char ** argv)
 
     initTimer.Print();
     totalTimer.Print();
+
+    float averageKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0)/kernelTimes.size();
+    float sumKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0);
+    std::cout << "Average kernel time: " << averageKernel << " msec" << std::endl;
+    std::cout << "Total kernel time: " << sumKernel << " msec" << std::endl;
 
 
 		// If you want to check error of code compared to original
