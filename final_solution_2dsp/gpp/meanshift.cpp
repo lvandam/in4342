@@ -20,17 +20,24 @@ MeanShift::MeanShift()
     bin_width = cfg.piexl_range / cfg.num_bins;
 }
 
-/*// approximative quadword float inverse square root
-static inline float32x4_t invsqrtv(float32x4_t x) {
+
+static inline float32x4_t vectorsqrt(float32x4_t x) {
+
+	// Compute reciprocal square root estimate
     float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
 
-    return vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal;
-}
+	// Refine extimate and convert to non reciprocal root
+    float32x4_t result = vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal * x;
+    
+    result = vreinterpretq_f32_u32(
+                vbicq_u32(
+                    vreinterpretq_u32_f32(result),
+                    vmvnq_u32(vceqq_f32(result,result))
+                ));
+    
+    return result;
 
-// approximative quadword float square root
-static inline float32x4_t sqrtv(float32x4_t x) {
-    return x * invsqrtv(x);
-}*/
+}
 
 float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
@@ -166,7 +173,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
   MatrixFloat pdf_model(3, RowFloat(16));
 
-  uint8x16_t curr_pixel_value_neon, bin_value_neon;
+  
   static uint8_t bin_array[16];
 
   int row_index = target_Region.y;
@@ -174,17 +181,16 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 
   int rows = target_Region.height;
   int cols = target_Region.width;
-  MatrixFloat weight(rows, RowFloat(cols, 1));
   int col_index = target_Region.x;
-  float32_t model[16], candidate[16], result[16];
-  float32x4x4_t model_neon, candidate_neon, result_neon;
-
+  
+	uint8x16_t curr_pixel_value_neon, bin_value_neon;
   // Calculate pdf_representation
   cv::Vec3b pixel;
   row_index = target_Region.y;
   clo_index = target_Region.x;
   for(int j = 0; j < cols; j += 16)
   {
+  	  
       row_index = target_Region.y;
       for(int i = 0; i < rows; i++)
       {
@@ -214,6 +220,12 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
   }
 
   // Calculate weight (CalWeight)
+  
+  MatrixFloat weight(rows, RowFloat(cols, 1));
+  float32_t model[16], candidate[16], result[16];
+  float32x4x4_t model_neon, candidate_neon, result_neon;
+	float32x4_t compare;
+  
   col_index = target_Region.x;
   for(int j = 0; j < cols; j+=16)
   {
@@ -227,7 +239,6 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
         // {
 
           // Compute bin values of 16 pixels
-          // printf("%d\n", pixel[kk]);
           int size = target_Region.width - j<16? target_Region.width -j : 16;
           curr_pixel_value_neon = vld1q_u8 ((const uint8_t*) (next_frame.ptr(row_index,col_index)+kk));
           bin_value_neon = vshrq_n_u8(curr_pixel_value_neon, 4);
@@ -243,12 +254,26 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 
           model_neon = vld4q_f32((const float32_t *)&model);
           candidate_neon = vld4q_f32((const float32_t *)&candidate);
-
+			
           // Divide model by candidate
-          for (int z = 0; z < 4; z++) {
+          for (int z = 0; z < 4; z++) {     
             result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]);
           }
-
+          
+			// If you use neon sqrt function:
+			// Store values in weight. Size is either 16 or 6
+			/*if (size ==16) {
+				vst4q_f32((float32_t *)&(weight[i][j]),result_neon);			
+			} else {
+				float32_t * ptr =(float32_t *)&(weight[i][j]);
+				vst1q_lane_f32(ptr,result_neon.val[0],0);
+				vst1q_lane_f32(ptr+1,result_neon.val[1],0);
+				vst1q_lane_f32(ptr+2,result_neon.val[2],0);
+				vst1q_lane_f32(ptr+3,result_neon.val[3],0);
+				vst1q_lane_f32(ptr+4,result_neon.val[0],1);
+				vst1q_lane_f32(ptr+5,result_neon.val[1],1);
+			}*/
+			
           // Store result in weight matrix
           vst4q_f32(result,result_neon);
 
@@ -392,7 +417,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
-        if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
+        if(abs(next_rect.x-target_Region.x)<1 && abs(next_rect.y-target_Region.y)<1)
         {
             break;
         }
