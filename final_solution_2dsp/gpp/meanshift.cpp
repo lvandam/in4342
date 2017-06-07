@@ -275,6 +275,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // DSP_STATUS status = DSP_SOK ;
     // cv::split(next_frame, bgr_planes);
 
+    poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
         // Send rectangle to DSP
@@ -288,8 +289,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
-        setDspState(DSP_BUSY);
         dspCommand(COMBINE_BLUE);
         // isDspDone();
 
