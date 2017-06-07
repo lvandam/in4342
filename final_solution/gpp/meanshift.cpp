@@ -23,10 +23,10 @@ MeanShift::MeanShift()
 /*// approximative quadword float inverse square root
 static inline float32x4_t invsqrtv(float32x4_t x) {
     float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
-    
+
     return vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal;
 }
-        
+
 // approximative quadword float square root
 static inline float32x4_t sqrtv(float32x4_t x) {
     return x * invsqrtv(x);
@@ -238,12 +238,12 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 
           // Divide model by candidate
           for (int z = 0; z < 4; z++) {
-            result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]); 
+            result_neon.val[z] = vectordivide(model_neon.val[z], candidate_neon.val[z]);
           }
 
           // Store result in weight matrix
           vst4q_f32(result,result_neon);
-		  
+
           for (int g = 0; g < size; g++) {
             weight[i][j+g] *= sqrt3(result[g]);
           }
@@ -266,6 +266,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // DSP_STATUS status = DSP_SOK ;
     // cv::split(next_frame, bgr_planes);
 
+    poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
         // Send rectangle to DSP
@@ -280,7 +281,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
         dspCommand(COMBINE_BLUE);
         // isDspDone();
 
@@ -294,9 +294,9 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 
         size_t weightSize = weight12.size();
         size_t weightSize0 = weight12[0].size();
-        
+
         float32x4_t weight12_neon, weight0_neon;
-        
+
         for(size_t i = 0; i < weightSize; i++)
         {
           int index = weightSize * i;
@@ -304,11 +304,11 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
           {
             // Make sure j doesn't go out of bounds
             size_t size = weightSize0 -j > 4? 4:weightSize0 -j;
-          
-          	// Read in neon vector values from weight matrices 0 and 12 
+
+          	// Read in neon vector values from weight matrices 0 and 12
           	weight12_neon = vld1q_f32((const float32_t*)&(weight12[i][j]));
           	weight0_neon = vld1q_f32((const float32_t*)&(weight0[index + j]));
-            
+
             // Store multiplied weight values back in weight matrix
             if (size == 4) {
 	            vst1q_f32((float32_t *) &(weight[i][j]),vmulq_f32(weight12_neon,weight0_neon));
@@ -317,10 +317,10 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
 				// Since weight has 86 columns, size will be either 4 or 2
     			vst1q_lane_f32((float32_t *) &(weight[i][j]),temp,0);
     			vst1q_lane_f32((float32_t *) &(weight[i][j+1]),temp,1);
-    		}        
-    		
+    		}
+
             //weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
-            
+
           }
         }
 
