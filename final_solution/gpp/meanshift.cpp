@@ -150,7 +150,7 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
     return pdf_model;
 }
 
-float sqrt3(const float x)
+inline float sqrt3(const float x)
 {
 	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
   union
@@ -162,6 +162,24 @@ float sqrt3(const float x)
   u.x = x;
   u.i = (1<<29) + (u.i >> 1) - (1<<22);
   return u.x;
+}
+
+static inline float32x4_t vectorsqrt(float32x4_t x) {
+
+	// Compute reciprocal square root estimate
+    float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
+
+	// Refine extimate and convert to non reciprocal root
+    float32x4_t result = vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal * x;
+    
+    result = vreinterpretq_f32_u32(
+                vbicq_u32(
+                    vreinterpretq_u32_f32(result),
+                    vmvnq_u32(vceqq_f32(result,result))
+                ));
+    
+    return result;
+
 }
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
@@ -249,6 +267,22 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
           for (int g = 0; g < size; g++) {
             weight[i][j+g] *= sqrt3(result[g]);
           }
+          
+          // If you use neon sqrt function:
+		    // Store values in weight. Size is either 16 or 6
+			/*if (size ==16) {
+				vst4q_f32((float32_t *)&(weight[i][j]),result_neon);			
+			} else {
+				float32_t * ptr =(float32_t *)&(weight[i][j]);
+				vst1q_lane_f32(ptr,result_neon.val[0],0);
+				vst1q_lane_f32(ptr+1,result_neon.val[1],0);
+				vst1q_lane_f32(ptr+2,result_neon.val[2],0);
+				vst1q_lane_f32(ptr+3,result_neon.val[3],0);
+				vst1q_lane_f32(ptr+4,result_neon.val[0],1);
+				vst1q_lane_f32(ptr+5,result_neon.val[1],1);
+			}*/
+          
+          
         }
         row_index++;
       }
@@ -402,7 +436,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
-        if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
+        if(abs(next_rect.x-target_Region.x)<1 && abs(next_rect.y-target_Region.y)<1)
         {
             break;
         }
