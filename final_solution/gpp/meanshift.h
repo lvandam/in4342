@@ -42,6 +42,7 @@ class MeanShift
     std::vector<cv::Mat> bgr_planes;
     MatrixFloat PdfWeight(const cv::Mat &next_frame);
 
+
     struct config{
         int num_bins;
         int piexl_range;

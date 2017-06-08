@@ -651,15 +651,16 @@ Void dspCommand( Uint8 command )
     NOTIFY_notify (processorId, pool_notify_IPS_ID, 6, (Uint32) command);
 }
 
-Void poolColor(Uint8 colorIndex, Uint32 *newColor )
+Void poolColor(Uint8 colorIndex, Uint8 *newColor )
 {
     Uint32 i,j=0;
+    Uint32* quadColor = (Uint32*) color;
     register Uint32 temp;
     /*for(i=0; i<FRAME_SIZE; i++)
     {
         color[i]= newColor[3*i+ColorIndex];
     }*/
-    switch(colorIndex)
+    /*switch(colorIndex)
     {
         case(BLUE):
             for(i=0;i<3*FRAME_SIZE/4;i++)
@@ -718,7 +719,28 @@ Void poolColor(Uint8 colorIndex, Uint32 *newColor )
                 }
             }
             break;
+    }*/
+    for(i=0;i<FRAME_SIZE/4;i++)
+    {
+        temp = ((Uint32) newColor[3*(j+3) + colorIndex])<<(3*8) | ((Uint32) newColor[3*(j+2) + colorIndex])<<(2*8) | ((Uint32) newColor[3*(j+1) + colorIndex])<<(1*8) | ((Uint32) newColor[3*j + colorIndex]);
+        quadColor[i]=temp;
+        j+=4;
     }
+    
+    /*for(i=FRAME_SIZE-100;i<FRAME_SIZE;i+=4)
+    {
+        printf("%d\t",(Uint8) quadColor[i]);
+        printf("%d\t",(Uint8) (quadColor[i]>>8));
+        printf("%d\t",(Uint8) (quadColor[i]>>16));
+        printf("%d\t",(Uint8) (quadColor[i]>>24));
+    }
+    printf("\n");*/
+    
+    /*for(i=0;i<FRAME_SIZE/4;i+=4)
+    {
+        temp = ((Uint32) newColor[3*i + colorIndex])<<(3*8) | ((Uint32) newColor[3*(i+1) + colorIndex])<<(2*8) | ((Uint32) newColor[3*(i+2) + colorIndex])<<(1*8) | ((Uint32) newColor[3*(i+3) + colorIndex]);
+        quadColor[i]=temp;
+    }*/
     
     POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), color, poolBufferSize);
 }

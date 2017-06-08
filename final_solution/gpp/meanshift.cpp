@@ -37,6 +37,8 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     // DSP_STATUS status = DSP_SOK ;
 
     target_Region = rect;
+    
+    Uint8* test;
 
     centre = static_cast<float>((rect.height - 1) / 2.0);
 
@@ -58,28 +60,40 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     Epanechnikov_kernel(kernel);
 
     target_model = pdf_representation_target(frame, target_Region);
+    test=(Uint8*) frame.ptr(0,0);
 
-    poolColor(BLUE, (Uint32*) frame.ptr(0,0));
+    poolColor(BLUE, (Uint8*) frame.ptr(0,0));    
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_BLUE);
         isDspDone();
     }
-    poolColor(GREEN,(Uint32*) frame.ptr(0,0));
+    
+    //for(int i=640*480-100;i<640*480;i++) cout<< (int) test[3*i] <<"\t";
+    //cout<< endl;
+    
+    poolColor(GREEN,(Uint8*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_GREEN);
         isDspDone();
     }
-    poolColor(RED, (Uint32*) frame.ptr(0,0));
+    
+    //for(int i=640*480-100;i<640*480;i++) cout<< (int) test[3*i+1] <<"\t";
+    //cout<< endl;
+    
+    poolColor(RED, (Uint8*) frame.ptr(0,0));
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_RED);
         isDspDone();
     }
+    
+    //for(int i=640*480-100;i<640*480;i++) cout<<(int) test[3*i+2] <<"\t";
+    //cout<< endl;
 }
 
 void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
@@ -250,15 +264,42 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // Timer trackTimer("Track Time");
     // trackTimer.Start();
 
+    static int trackCalls = 0;
+    static Timer timePoolRect("Total time for pooling the rectangle");
+    static Timer timePoolColor("Total time for pooling the colors");
+    static Timer timeDspCommand("Total time for sending commands");
+    static Timer timeWaiting("Total time waiting");
+    static Timer timeMerging("Total time needed for merging");
+    static Timer timeTracking("Total time needed for tracking");
+    static Timer timeWeight("Total time calculating the weights");
+    
+    static double PoolRect = 0; 
+    static double PoolColor = 0;
+    static double DspCommand = 0;
+    static double Waiting = 0;
+    static double Merging = 0;
+    static double Tracking = 0;
+    static double Weight = 0;
+    
+    trackCalls++;
+    
     cv::Rect next_rect;
     // DSP_STATUS status = DSP_SOK ;
     // cv::split(next_frame, bgr_planes);
+    
+    timePoolColor.Start();
+    poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
+    timePoolColor.Stop();
+    PoolColor+= timePoolColor.GetTime();
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
+        timePoolRect.Start();
         // Send rectangle to DSP
         poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
-
+        timePoolRect.Stop();
+        PoolRect+= timePoolRect.GetTime();
+        
         // if(isDspReady())
         // {
         //     // poolColor(BLUE, (Uint8*) next_frame.ptr(0,0));
@@ -268,16 +309,26 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         //     isDspDone();
         // }
 
-        poolColor(BLUE,(Uint32*) next_frame.ptr(0,0));
+        timeDspCommand.Start();
         dspCommand(COMBINE_BLUE);
+        timeDspCommand.Stop();
+        DspCommand+= timeDspCommand.GetTime();
         // isDspDone();
 
         // Combined pdf_representation and CalWeight
+        timeWeight.Start();
         MatrixFloat weight12 = PdfWeight(next_frame);
-
+        timeWeight.Stop();
+        Weight+= timeWeight.GetTime();
+        
         MatrixFloat weight = MatrixFloat(weight12.size(), RowFloat(weight12[0].size()));
 
+        timeWaiting.Start();
         isDspDone();
+        timeWaiting.Stop();
+        Waiting+= timeWaiting.GetTime();
+        
+        timeMerging.Start();
         float* weight0 = (float*) pointToResult();
 
         size_t weightSize = weight12.size();
@@ -288,6 +339,10 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
             weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
           }
         }
+        timeMerging.Stop();
+        Merging+= timeMerging.GetTime();
+        
+        timeTracking.Start();
 
         //cv::Mat weight0(target_Region.height, target_Region.width, CV_32F, (void*) pointToResult());
         //cv::Mat weight12(target_Region.height, target_Region.width, CV_32F, weight12_matrix);
@@ -356,6 +411,19 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
             target_Region.x = next_rect.x;
             target_Region.y = next_rect.y;
         }
+        timeTracking.Stop();
+        Tracking+= timeTracking.GetTime();
+    }
+    
+    if(trackCalls == 32)
+    {
+        cout<< "Total time for pooling the rectangle " << PoolRect <<" sec" << endl;
+        cout<< "Total time for pooling the colors " << PoolColor <<" sec" << endl;
+        cout<< "Total time for sending commands " << DspCommand <<" sec" << endl;
+        cout<< "Total time calculating the weights " << Weight <<" sec" << endl;
+        cout<< "Total time waiting " << Waiting <<" sec" << endl;
+        cout<< "Total time needed for merging " << Merging <<" sec" << endl;
+        cout<< "Total time needed for tracking " << Tracking <<" sec" << endl;        
     }
 
     // trackTimer.Pause();

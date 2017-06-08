@@ -215,6 +215,7 @@ Int Task_execute (Task_TransferInfo * info)
                 break;
 
             case COMBINE_BLUE:
+                //initTarget(CANDIDATE);
                 Get_Color();
                 //Update_State(DSP_DONE);
                 Get_Rectangle();
