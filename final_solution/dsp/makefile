@@ -19,7 +19,7 @@ DSPLINK := /opt/bbToolChain/usr/local/share/bbframework/platform/beagle-linux/to
 #   This variable can be used to set all source/BIOS/object filenames
 #   For clarity, in this example it sets only the .OUT .CMD and .MAP filenames
 #   ----------------------------------------------------------------------------
-PROJNAME := dspMean
+PROJNAME := pool_notify
 
 #   ----------------------------------------------------------------------------
 #   Global variables for building mpcsxfer
