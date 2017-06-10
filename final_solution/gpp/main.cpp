@@ -1,8 +1,6 @@
 #include "meanshift.h"
 #include "Timer.h"
 #include <iostream>
-#include <sys/time.h>
-#include <numeric>
 
 #ifndef ARMCC
 #include "markers.h"
@@ -12,6 +10,8 @@ extern "C" {
 #include "dspInter.h"
 #include "dsplink.h"
 }
+
+//#define DET_TIMING
 
 void checkError(int x_pos [32], int y_pos [32]) {
 
@@ -31,110 +31,17 @@ void checkError(int x_pos [32], int y_pos [32]) {
 	printf("X Error (avg nr of pxls) = %.3f, Y Error (avg nr of pxls) = %.3f \n", x_avgerr, y_avgerr);
 
 	// Not sure if this is needed too...
-	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/640.0, 100.0*y_avgerr/480.0);
+	printf("X Error (prcnt of width) = %.3f, Y Error (prcnt of height) = %.3f \n", 100.0*x_avgerr/86.0, 100.0*y_avgerr/58.0);
 
 }
-//
-// int main(int argc, char ** argv)
-// {
-//     Timer totalTimer("Total Time");
-//     // Timer trackTimer("Track Time");
-//
-//
-//     cv::VideoCapture frame_capture;
-//     if(argc<2)
-//     {
-//         std::cout <<"specifiy an input video file to track" << std::endl;
-//         std::cout <<"Usage:  ./" << argv[0] << " car.avi" << std::endl;
-//         return -1;
-//     }
-//     else
-//     {
-//         frame_capture = cv::VideoCapture( argv[1] );
-//     }
-//
-//     // this is used for testing the car video
-//     // instead of selection of object of interest using mouse
-//     cv::Rect rect(228,367,86,58);
-//     cv::Mat frame;
-//     frame_capture.read(frame);
-//
-//     MeanShift ms; // creat meanshift obj
-//     ms.Init_target_frame(frame,rect); // init the meanshift
-//
-//     int codec = CV_FOURCC('F', 'L', 'V', '1');
-//     // int codec = CV_FOURCC('I','4','2','0');
-//     // int codec = CV_FOURCC('I','Y','U','V');
-//     cv::VideoWriter writer("tracking_result.avi", codec, 20, cv::Size(frame.cols,frame.rows));
-//
-// 	// If you want to check error of the code compared to original
-// 	// uncomment line below
-// 	int x_pos[32], y_pos[32];
-//
-//
-//     totalTimer.Start();
-//     #ifndef ARMCC
-//     MCPROF_START();
-//     #endif
-//     int TotalFrames = 32;
-//     int fcount;
-//     for(fcount=0; fcount<TotalFrames; ++fcount)
-//     {
-//         // read a frame
-//         int status = frame_capture.read(frame);
-//         if( 0 == status ) break;
-//
-//         // track object
-//         #ifndef ARMCC
-//         // MCPROF_START();
-//         #endif
-//         // trackTimer.Start();
-//         cv::Rect ms_rect =  ms.track(frame);
-//         // trackTimer.Stop();
-//         // trackTimer.Print();
-//         #ifndef ARMCC
-//         // MCPROF_STOP();
-//         #endif
-//
-// 		// If you want to check error of code compared to original
-// 		// uncomment lines below
-//         x_pos[fcount] = ms_rect.x;
-//         y_pos[fcount] = ms_rect.y;
-//
-//         // mark the tracked object in frame
-//         cv::rectangle(frame,ms_rect,cv::Scalar(0,0,255),3);
-//
-//         // write the frame
-//         writer << frame;
-//     }
-//     #ifndef ARMCC
-//     MCPROF_STOP();
-//     #endif
-//     totalTimer.Pause();
-//
-//     totalTimer.Print();
-//
-// 	// If you want to check error of code compared to original
-// 	// uncomment line below
-// 	checkError(x_pos,y_pos);
-//
-//     std::cout << "Processed " << fcount << " frames" << std::endl;
-//     std::cout << "Time: " << totalTimer.GetTime() <<" sec\nFPS : " << fcount/totalTimer.GetTime() << std::endl;
-//
-//     return 0;
-// }
-
-
-
-
-
 
 
 int main(int argc, char ** argv)
 {
     Timer totalTimer("Total Time");
+    #ifdef DET_TIMING
     Timer initTimer("Initialization Time");
-    std::vector<float> kernelTimes;
+    #endif
     Char8 * dspExecutable = NULL ;
     DSP_STATUS status = DSP_SOK ;
 
@@ -143,7 +50,7 @@ int main(int argc, char ** argv)
     if(argc<3)
     {
         std::cout <<"specifiy an input video file to track" << std::endl;
-        std::cout <<"Usage:  ./" << argv[0] << " car.avi" << std::endl;
+        std::cout <<"Usage:  ./" << argv[0] << "DSP '.out' file" << " video '.avi' file" << std::endl;
         return -1;
     }
     else
@@ -160,8 +67,7 @@ int main(int argc, char ** argv)
     else
 	{
         status = DSP_EINVALIDARG ;
-        printf ("ERROR! Invalid arguments specified for  "
-                         "pool_notify application\n") ;
+        printf ("ERROR! Invalid arguments specified\n") ;
     }
 
     // this is used for testing the car video
@@ -170,30 +76,14 @@ int main(int argc, char ** argv)
     cv::Mat frame;
     frame_capture.read(frame);
 
-    /*Uint8 *tempb;
-    Uint8 *tempg;
-    Uint8 *tempr;
-    std::vector<cv::Mat> bgr_planes;
-    cv::split(frame, bgr_planes);
-
-
-    tempb = bgr_planes[0].ptr<Uint8>(0);
-    tempg = bgr_planes[1].ptr<Uint8>(0);
-    tempr = bgr_planes[2].ptr<Uint8>(0);
-
-    for (int i = 100; i<110; i++) if(bgr_planes[0].isContinuous()) std::cout << (int) tempb[2560 + i] << (int) tempg[2560 + i] << (int) tempr[2560 + i] << std::endl;
-
-    poolColor(tempb);*/
-    /*if (DSP_SUCCEEDED (status))
-    {
-        if(isDspReady()) status = dspComExec () ;
-        else printf("DSP not ready");
-    }*/
-
     MeanShift ms; // creat meanshift obj
+    #ifdef DET_TIMING
     initTimer.Start();
+    #endif
     ms.Init_target_frame(frame,rect); // init the meanshift
-    initTimer.Stop();
+    #ifdef DET_TIMING
+    initTimer.Pause();
+    #endif
 
     int codec = CV_FOURCC('F', 'L', 'V', '1');
     cv::VideoWriter writer("tracking_result.avi", codec, 20, cv::Size(frame.cols,frame.rows));
@@ -210,9 +100,7 @@ int main(int argc, char ** argv)
     #endif
     int TotalFrames = 32;
     int fcount;
-		struct timeval kerneltpstop;
-		struct timeval kerneltpstart;
-    //for(fcount=0; fcount<1; ++fcount)
+    
     for(fcount=0; fcount<TotalFrames; ++fcount)
     {
         // read a frame
@@ -221,15 +109,12 @@ int main(int argc, char ** argv)
 
         // track object
         #ifndef ARMCC
-        // MCPROF_START();
+        MCPROF_START();
         #endif
-				gettimeofday(&kerneltpstart, NULL);
         cv::Rect ms_rect =  ms.track(frame);
-				gettimeofday(&kerneltpstop, NULL);
         #ifndef ARMCC
-        // MCPROF_STOP();
+        MCPROF_STOP();
         #endif
-				kernelTimes.push_back(kerneltpstop.tv_sec * 1000 + kerneltpstop.tv_usec / 1000 - kerneltpstart.tv_sec * 1000 - kerneltpstart.tv_usec / 1000);
 
 				// If you want to check error of code compared to original
 				// uncomment lines below
@@ -246,16 +131,13 @@ int main(int argc, char ** argv)
     #ifndef ARMCC
     MCPROF_STOP();
     #endif
-    totalTimer.Stop();
+    totalTimer.Pause();
     dspComTerminate () ;
 
+    #ifdef DET_TIMING
     initTimer.Print();
+    #endif
     totalTimer.Print();
-
-    float averageKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0)/kernelTimes.size();
-    float sumKernel = std::accumulate( kernelTimes.begin(), kernelTimes.end(), 0.0);
-    std::cout << "Average kernel time: " << averageKernel << " msec" << std::endl;
-    std::cout << "Total kernel time: " << sumKernel << " msec" << std::endl;
 
 
 		// If you want to check error of code compared to original

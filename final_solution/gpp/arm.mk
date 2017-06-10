@@ -11,6 +11,7 @@ C_OBJDIR=./ofiles
 C_OBJS=$(SRCS:%.c=%.o)
 C_CFLAGS= -DDSP -DDEBUG
 C_DEBUG= -g -DDDSP_DEBUG -D__DEBUG
+
 C_LIBS= $(DSPLINK)/gpp/BUILD/EXPORT/DEBUG/dsplink.lib
 
 C_INCLUDES= -I$(DSPLINK)/gpp/inc                   \
@@ -57,6 +58,7 @@ C_DEFS=        -DOS_LINUX            \
                -DCHNL_ZCPY_LINK      \
                -DZCPY_LINK           \
                -DKFILE_DEFAULT       \
+			   -DDET_TIMING          \
                -DDA8XXGEM            \
                -DDA8XXGEM_PHYINTERFACE=SHMEM_INTERFACE
 
@@ -68,8 +70,8 @@ LDFLAGS=-lpthread -lm --sysroot=/opt/rootfs
 LIBS=-lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video \
 	-lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
 
-DEFS=    -DARMCC \
-         -DOS_LINUX            \
+DEFS=    	   -DARMCC \
+         	   -DOS_LINUX            \
                -DMAX_DSPS=1          \
                -DMAX_PROCESSORS=2    \
                -DID_GPP=1            \
@@ -86,6 +88,7 @@ DEFS=    -DARMCC \
                -DCHNL_ZCPY_LINK      \
                -DZCPY_LINK           \
                -DKFILE_DEFAULT       \
+			   -DDET_TIMING          \
                -DDA8XXGEM            \
                -DDA8XXGEM_PHYINTERFACE=SHMEM_INTERFACE
 

@@ -20,18 +20,6 @@ MeanShift::MeanShift()
     bin_width = cfg.piexl_range / cfg.num_bins;
 }
 
-/*// approximative quadword float inverse square root
-static inline float32x4_t invsqrtv(float32x4_t x) {
-    float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
-
-    return vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal;
-}
-
-// approximative quadword float square root
-static inline float32x4_t sqrtv(float32x4_t x) {
-    return x * invsqrtv(x);
-}*/
-
 float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 	// SOURCE: https://stackoverflow.com/questions/6759897/how-to-divide-in-neon-intrinsics-by-a-float-number
@@ -46,8 +34,6 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
-    // DSP_STATUS status = DSP_SOK ;
-
     target_Region = rect;
 
     centre = static_cast<float>((rect.height - 1) / 2.0);
@@ -71,21 +57,25 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     target_model = pdf_representation_target(frame, target_Region);
 
-    poolColor(BLUE, (Uint8*) frame.ptr(0,0));
+    poolRectangle(rect.x, rect.y, rect.width, rect.height);
+    
+    poolColor(BLUE, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);    
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_BLUE);
         isDspDone();
     }
-    poolColor(GREEN,(Uint8*) frame.ptr(0,0));
+    
+    poolColor(GREEN,(Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_GREEN);
         isDspDone();
     }
-    poolColor(RED, (Uint8*) frame.ptr(0,0));
+    
+    poolColor(RED, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
@@ -138,8 +128,8 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
             bin_value[2] = curr_pixel_value[2] / bin_width;
 
             pdf_model[0][bin_value[0]] += kernel[i][j];
-            pdf_model[1][bin_value[0]] += kernel[i][j];
-            pdf_model[2][bin_value[0]] += kernel[i][j];
+            pdf_model[1][bin_value[1]] += kernel[i][j];
+            pdf_model[2][bin_value[2]] += kernel[i][j];
 
             clo_index++;
         }
@@ -148,7 +138,7 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
     return pdf_model;
 }
 
-float sqrt3(const float x)
+inline float sqrt3(const float x)
 {
 	// Source: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
   union
@@ -161,6 +151,24 @@ float sqrt3(const float x)
   u.i = (1<<29) + (u.i >> 1) - (1<<22);
   return u.x;
 }
+
+static inline float32x4_t vectorsqrt(float32x4_t x) {
+    
+	// Compute reciprocal square root estimate
+    float32x4_t sqrt_reciprocal = vrsqrteq_f32(x);
+
+    // Refine extimate and convert to non reciprocal root
+     float32x4_t result = vrsqrtsq_f32(x * sqrt_reciprocal, sqrt_reciprocal) * sqrt_reciprocal * x;
+     
+     result = vreinterpretq_f32_u32(
+                 vbicq_u32(
+                     vreinterpretq_u32_f32(result),
+                     vmvnq_u32(vceqq_f32(result,result))
+                 ));
+     
+     return result;
+ 
+ }
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
@@ -247,6 +255,21 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
           for (int g = 0; g < size; g++) {
             weight[i][j+g] *= sqrt3(result[g]);
           }
+          
+            // If you use neon sqrt function:
+ 		    // Store values in weight. Size is either 16 or 6
+ 			/*if (size ==16) {
+ 				vst4q_f32((float32_t *)&(weight[i][j]),result_neon);			
+ 			} else {
+ 				float32_t * ptr =(float32_t *)&(weight[i][j]);
+ 				vst1q_lane_f32(ptr,result_neon.val[0],0);
+ 				vst1q_lane_f32(ptr+1,result_neon.val[1],0);
+ 				vst1q_lane_f32(ptr+2,result_neon.val[2],0);
+ 				vst1q_lane_f32(ptr+3,result_neon.val[3],0);
+ 				vst1q_lane_f32(ptr+4,result_neon.val[0],1);
+ 				vst1q_lane_f32(ptr+5,result_neon.val[1],1);
+ 			}*/
+            
         }
         row_index++;
       }
@@ -262,72 +285,124 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     // Timer trackTimer("Track Time");
     // trackTimer.Start();
 
+    #ifdef DET_TIMING
+    static int trackCalls = 0;
+    static Timer timePoolRect("pooling the rectangle");
+    static Timer timePoolColor("pooling the colors");
+    static Timer timeDspCommand("sending commands");
+    static Timer timeWaiting("waiting");
+    static Timer timeMerging("merging");
+    static Timer timeTracking("tracking");
+    static Timer timeWeight("GPP weights");
+    
+    static double tPoolRect = 0; 
+    static double tPoolColor = 0;
+    static double tDspCommand = 0;
+    static double tWaiting = 0;
+    static double tMerging = 0;
+    static double tTracking = 0;
+    static double tWeight = 0;
+    
+    trackCalls++;
+    #endif
+    
     cv::Rect next_rect;
-    // DSP_STATUS status = DSP_SOK ;
-    // cv::split(next_frame, bgr_planes);
+    
 
-    poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
+        #ifdef DET_TIMING
+        timePoolRect.Start();
+        #endif
         // Send rectangle to DSP
         poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
+        #ifdef DET_TIMING
+        timePoolRect.Stop();
+        tPoolRect+= timePoolRect.GetTime();
+        #endif
+        
+        #ifdef DET_TIMING
+        timePoolColor.Start();
+        #endif
+        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0), target_Region.x, target_Region.y, target_Region.width, target_Region.height);
+        #ifdef DET_TIMING
+        timePoolColor.Stop();
+        tPoolColor+= timePoolColor.GetTime();
+        #endif
 
-        // if(isDspReady())
-        // {
-        //     // poolColor(BLUE, (Uint8*) next_frame.ptr(0,0));
-        //     poolColor(BLUE, (Uint8*) next_frame.ptr(0,0));
-        //     setDspState(DSP_BUSY);
-        //     dspCommand(WEIGHT_BLUE);
-        //     isDspDone();
-        // }
-
+        #ifdef DET_TIMING
+        timeDspCommand.Start();
+        #endif
         dspCommand(COMBINE_BLUE);
-        // isDspDone();
+        #ifdef DET_TIMING
+        timeDspCommand.Stop();
+        tDspCommand+= timeDspCommand.GetTime();
+        #endif
 
         // Combined pdf_representation and CalWeight
+        #ifdef DET_TIMING
+        timeWeight.Start();
+        #endif
         MatrixFloat weight12 = PdfWeight(next_frame);
-
+        #ifdef DET_TIMING
+        timeWeight.Stop();
+        tWeight+= timeWeight.GetTime();
+        #endif
+        
         MatrixFloat weight = MatrixFloat(weight12.size(), RowFloat(weight12[0].size()));
 
+        #ifdef DET_TIMING
+        timeWaiting.Start();
+        #endif
         isDspDone();
+        #ifdef DET_TIMING
+        timeWaiting.Stop();
+        tWaiting+= timeWaiting.GetTime();
+        #endif
+        
+        #ifdef DET_TIMING
+        timeMerging.Start();
+        #endif
         float* weight0 = (float*) pointToResult();
 
+		float32x4_t weight0_neon, weight12_neon;
+		
         size_t weightSize = weight12.size();
         size_t weightSize0 = weight12[0].size();
-
-        float32x4_t weight12_neon, weight0_neon;
-
+        
         for(size_t i = 0; i < weightSize; i++)
         {
-          int index = weightSize * i;
           for(size_t j = 0; j < weightSize0; j+=4)
           {
-            // Make sure j doesn't go out of bounds
-            size_t size = weightSize0 -j > 4? 4:weightSize0 -j;
+          
+          	// Make sure j doesn't go out of bounds
+            size_t size = weightSize0 - j > 4? 4:weightSize0 -j;
 
           	// Read in neon vector values from weight matrices 0 and 12
+          	weight0_neon = vld1q_f32((const float32_t*)&(weight0[i * weightSize + j]));
           	weight12_neon = vld1q_f32((const float32_t*)&(weight12[i][j]));
-          	weight0_neon = vld1q_f32((const float32_t*)&(weight0[index + j]));
-
+          	
             // Store multiplied weight values back in weight matrix
             if (size == 4) {
-	            vst1q_f32((float32_t *) &(weight[i][j]),vmulq_f32(weight12_neon,weight0_neon));
+	            vst1q_f32((float32_t *) &(weight[i][j]),vmulq_f32(weight0_neon,weight12_neon));
     		} else {
-    			float32x4_t temp = vmulq_f32(weight12_neon,weight0_neon);
+    			float32x4_t temp = vmulq_f32(weight0_neon,weight12_neon);
 				// Since weight has 86 columns, size will be either 4 or 2
     			vst1q_lane_f32((float32_t *) &(weight[i][j]),temp,0);
     			vst1q_lane_f32((float32_t *) &(weight[i][j+1]),temp,1);
-    		}
-
-            //weight[i][j] = weight12[i][j] * weight0[i * weightSize + j];
-
+    		}          	
           }
         }
-
-        //cv::Mat weight0(target_Region.height, target_Region.width, CV_32F, (void*) pointToResult());
-        //cv::Mat weight12(target_Region.height, target_Region.width, CV_32F, weight12_matrix);
-
-        // cv::Mat weight = weight0.mul(weight12);
+        
+        
+        #ifdef DET_TIMING
+        timeMerging.Stop();
+        tMerging+= timeMerging.GetTime();
+        #endif
+        
+        #ifdef DET_TIMING
+        timeTracking.Start();
+        #endif
 
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
@@ -382,7 +457,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         next_rect.x += static_cast<int>((delta_x/sum_wij)*centre);
         next_rect.y += static_cast<int>((delta_y/sum_wij)*centre);
 
-        if(abs(next_rect.x-target_Region.x)<10 && abs(next_rect.y-target_Region.y)<10)
+        if(abs(next_rect.x-target_Region.x)<1 && abs(next_rect.y-target_Region.y)<1)
         {
             break;
         }
@@ -391,7 +466,24 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
             target_Region.x = next_rect.x;
             target_Region.y = next_rect.y;
         }
+        #ifdef DET_TIMING
+        timeTracking.Stop();
+        tTracking+= timeTracking.GetTime();
+        #endif
     }
+    
+    #ifdef DET_TIMING
+    if(trackCalls == 32)
+    {
+        cout<< "Total time for copying the rectangle to the pool " << tPoolRect <<" sec" << endl;
+        cout<< "Total time for copying the layer to the pool " << tPoolColor <<" sec" << endl;
+        cout<< "Total time for sending commands to the DSP " << tDspCommand <<" sec" << endl;
+        cout<< "Total time calculating the weights on the GPP " << tWeight <<" sec" << endl;
+        cout<< "Total time waiting for the result to be returned by the DSP " << tWaiting <<" sec" << endl;
+        cout<< "Total time needed for merging the Weights produced by the two processors " << tMerging <<" sec" << endl;
+        cout<< "Total time needed for tracking " << tTracking <<" sec" << endl;        
+    }
+    #endif
 
     // trackTimer.Pause();
     // trackTimer.Print();

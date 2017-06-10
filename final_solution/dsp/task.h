@@ -15,17 +15,13 @@
 #define STOP_DSP           0
 #define IDLE               1
 #define LOAD_COLOR         2
-#define RETURN_RESULT      3
 #define COMBINE_BLUE       4
 #define INIT_BLUE          5
 #define INIT_GREEN         6
 #define INIT_RED           7
-#define REPRESENT          8
-#define WEIGHT_BLUE        9
-#define WEIGHT_GREEN      10
-#define WEIGHT_RED        11
-#define WEIGHT_ALL        12
-
+#define WEIGHT_BLUE        8
+#define WEIGHT_GREEN       9
+#define WEIGHT_RED         10
 
 typedef struct Task_TransferInfo_tag {
     Uint16 *        dataBuf ;

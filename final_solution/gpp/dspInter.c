@@ -25,41 +25,24 @@ extern "C" {
 #endif /* defined (__cplusplus) */
 
 
-/*  ============================================================================
- *  @const   NUM_ARGS
- *
- *  @desc   Number of arguments specified to the DSP application.
- *  ============================================================================
- */
+// Number of arguments specified to the DSP application.
 #define NUM_ARGS                       1
 
-/** ============================================================================
- *  @name   SAMPLE_POOL_ID
- *
- *  @desc   ID of the POOL used for the sample.
- *  ============================================================================
- */
+// ID of the POOL used.
+
 #define SAMPLE_POOL_ID                 0
 
-/** ============================================================================
- *  @name   NUM_BUF_SIZES
- *
- *  @desc   Number of buffer pools to be configured for the allocator.
- *  ============================================================================
- */
+// Number of buffer pools to be configured for the allocator.
+
 #define NUM_BUF_SIZES                  1
 
-/** ============================================================================
- *  @const  NUM_BUF_POOL0
- *
- *  @desc   Number of buffers in first buffer pool.
- *  ============================================================================
- */
+// Number of buffers in first buffer pool.
+
 #define NUM_BUF_POOL0                  2
+    
+// Frame size of the video.
 
 #define FRAME_SIZE                     640 * 480
-
-#define BUF_SIZE                       1280
 
 /*  ============================================================================
  *  @const   pool_notify_INVALID_ID
@@ -95,29 +78,20 @@ extern "C" {
  */
 STATIC Uint32  poolBufferSize ;
 
-/*  ============================================================================
- *  @name   pool_notify_NumIterations
- *
- *  @desc   Number of iterations of data transfer.
- *  ============================================================================
- */
-STATIC Uint32  pool_notify_NumIterations ;
-
 /** ============================================================================
- *  @name   pool_notify_DataBuf
+ *  @name   colorBuf, resultBuf 
  *
- *  @desc   Pointer to the shared data buffer used by the pool_notify sample
- *          application.
+ *  @desc   Pointers to the shared data buffers used for the communication with
+ *          the DSP
  *  ============================================================================
  */
-Uint8 * color = NULL ;
 
-Uint8 * resFrame = NULL ;
+Uint8 * colorBuf = NULL ;
 
-float * flres = NULL;
+Uint8 * resultBuf = NULL ;
 
-Uint32 dspCycles = 0;
-
+float * flres = NULL; //float pointer to resultBuffer
+    
 Uint8 dspReady = 0;
 
 Uint8 processorId = 0;
@@ -179,12 +153,6 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
 
     processorId = procId;
 
-    printf("Pool buffer size = %d\n", poolBufferSize);
-
-    #ifdef DEBUG
-    printf ("Entered dspComInit ()\n");
-    #endif
-
     sem_init(&sem,0,0);
 
     /*
@@ -231,7 +199,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
     if (DSP_SUCCEEDED (status))
     {
         status = POOL_alloc (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                             (Void **) &color,
+                             (Void **) &colorBuf,
                              poolBufferSize) ;
 
         /* Get the translated DSP address to be sent to the DSP. */
@@ -241,26 +209,26 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
                                    POOL_makePoolId(processorId, SAMPLE_POOL_ID),
                                          &dspColor,
                                          AddrType_Dsp,
-                                         (Void *) color,
+                                         (Void *) colorBuf,
                                          AddrType_Usr) ;
 
             if (DSP_FAILED (status))
             {
-                printf ("POOL_translateAddr () for color failed."
+                printf ("POOL_translateAddr () for colorBuf failed."
                                  " Status = [0x%x]\n",
                                  (int)status) ;
             }
         }
         else
         {
-            printf ("POOL_alloc() for color failed. Status = [0x%x]\n",(int)status);
+            printf ("POOL_alloc() for colorBuf failed. Status = [0x%x]\n",(int)status);
         }
     }
 
     if (DSP_SUCCEEDED (status))
     {
         status = POOL_alloc (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                             (Void **) &resFrame,
+                             (Void **) &resultBuf,
                              poolBufferSize) ;
 
         /* Get the translated DSP address to be sent to the DSP. */
@@ -270,7 +238,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
                                    POOL_makePoolId(processorId, SAMPLE_POOL_ID),
                                          &dspResFrame,
                                          AddrType_Dsp,
-                                         (Void *) resFrame,
+                                         (Void *) resultBuf,
                                          AddrType_Usr) ;
 
             if (DSP_FAILED (status))
@@ -309,7 +277,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
      */
     if (DSP_SUCCEEDED (status)) {
 
-        sprintf(strFrameSize,"%d",poolBufferSize);
+        sprintf(strFrameSize,"%d",(int) poolBufferSize);
         args [0] = strFrameSize ;
 
         {
@@ -372,121 +340,8 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
 
     setDspState(DSP_BUSY);
 
-	#ifdef DEBUG
-    printf ("Leaving dspComInit ()\n") ;
-	#endif
-
     return status ;
 }
-
-void unit_init(void)
-{
-    Uint32 i;
-
-    for(i=0;i<poolBufferSize;i++)
-    {
-        color[i] = i%256;
-        resFrame[i] = 0;
-    }
-
-}
-
-#include <sys/time.h>
-
-long long get_usec(void);
-
-long long get_usec(void)
-{
-  long long r;
-  struct timeval t;
-  gettimeofday(&t,NULL);
-  r=t.tv_sec*1000000+t.tv_usec;
-  return r;
-}
-
-int mult_gpp(unsigned char* buf, int length)
-{
-    int a=0,i;
-    for(i=0;i<length;i++)
-	{
-       a=a+buf[i];
-    }
-    return a;
-}
-
-/** ============================================================================
- *  @func   dspComExec
- *
- *  @desc   This function implements the execute phase for this application.
- *
- *  @modif  None
- *  ============================================================================
- */
-NORMAL_API DSP_STATUS dspComExec (Void)
-{
-    DSP_STATUS  status    = DSP_SOK ;
-
-    Uint32 i;
-    Uint16 temp;
-    flres = (float *) resFrame;
-
-	#ifdef DEBUG
-    printf ("Entered dspComExec ()\n") ;
-	#endif
-
-	#if !defined(DSP)
-    printf(" Result is %d \n", sum_dsp(color,poolBufferSize));
-	#endif
-
-	#if defined(DSP)
-    /*POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                    color,
-                    poolBufferSize);*/
-
-    /*POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                    resFrame,
-                    poolBufferSize);*/
-
-
-    /*if(isDspReady())
-    {
-        dspCommand(INIT_BLUE);
-        isDspDone();
-    }
-
-    if(isDspReady())
-    {
-        dspCommand(RETURN_FRAME);
-        isDspDone();
-    }*/
-
-    /*if(isDspReady())
-    {
-        dspCommand(STOP_DSP);
-    }*/
-
-    /*for(i=640 * 480 - 8; i<640*480; i+=2)
-    {
-        temp = ((Uint16)resFrame[i+1])<< 8 | ((Uint16)resFrame[i]);
-        printf("%d\t", temp);
-    }
-    printf("\n\n");*/
-
-    //for(i=0; i<640*2+8; i++) printf("%d\t", resFrame[i]);
-    /*for(i=0; i<58*86; i++)
-    {
-        if(i%86==0) printf("\n");
-        printf("%f\t", flres[i+2]);
-    }*/
-    //printf("Data back OK");
-    //printf("\n\n");
-
-    printf("Computation time for fixed-point roots on DSP is %f msec\n", dspCycles * (double) 0.000001923);
-    #endif
-
-    return status ;
-}
-
 
 /** ============================================================================
  *  @func   dspComTerminate
@@ -504,10 +359,6 @@ NORMAL_API Void dspComTerminate ( Void )
 {
     DSP_STATUS status    = DSP_SOK ;
     DSP_STATUS tmpStatus = DSP_SOK ;
-
-	#ifdef DEBUG
-    printf ("Entered dspComTerminate ()\n") ;
-	#endif
 
     /*
      *  Stop execution on DSP.
@@ -535,7 +386,7 @@ NORMAL_API Void dspComTerminate ( Void )
      *  Free the memory allocated for the data buffer.
      */
     tmpStatus = POOL_free (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                           (Void *) color,
+                           (Void *) colorBuf,
                            poolBufferSize) ;
     if (DSP_SUCCEEDED (status) && DSP_FAILED (tmpStatus)) {
         status = tmpStatus ;
@@ -544,7 +395,7 @@ NORMAL_API Void dspComTerminate ( Void )
     }
 
     tmpStatus = POOL_free (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                           (Void *) resFrame,
+                           (Void *) resultBuf,
                            poolBufferSize) ;
     if (DSP_SUCCEEDED (status) && DSP_FAILED (tmpStatus)) {
         status = tmpStatus ;
@@ -578,57 +429,6 @@ NORMAL_API Void dspComTerminate ( Void )
         status = tmpStatus ;
         printf ("PROC_destroy () failed. Status = [0x%x]\n", (int)status) ;
     }
-
-	#ifdef DEBUG
-    printf ("Leaving dspComTerminate ()\n") ;
-	#endif
-}
-
-
-/** ============================================================================
- *  @func   dspInter_Main
- *
- *  @desc   Entry point for the application
- *
- *  @modif  None
- *  ============================================================================
- */
-NORMAL_API Void dspInter_Main (IN Char8 * dspExecutable)
-{
-    DSP_STATUS status       = DSP_SOK ;
-
-	#ifdef DEBUG
-    printf ("========== Sample Application : pool_notify ==========\n") ;
-	#endif
-
-        /*
-         *  Validate the buffer size and number of iterations specified.
-         */
-		#ifdef DEBUG
-        printf(" Allocated a buffer of %d bytes\n",(int)poolBufferSize );
-		#endif
-
-        if (poolBufferSize == 0)
-		{
-            status = DSP_EINVALIDARG ;
-            printf ("ERROR! Invalid arguments specified for  ");
-            printf ("     Buffer size    = %d\n", (int)poolBufferSize) ;
-        }
-
-        /*
-         *  Specify the dsp executable file name and the buffer size for
-         *  pool_notify creation phase.
-         */
-        status = dspComInit (dspExecutable, 0) ;
-
-        if (DSP_SUCCEEDED (status))
-		{
-            status = dspComExec () ;
-        }
-
-         dspComTerminate () ;
-
-    printf ("====================================================\n") ;
 }
 
 Uint8 isDspReady ( Void )
@@ -651,35 +451,48 @@ Void dspCommand( Uint8 command )
     NOTIFY_notify (processorId, pool_notify_IPS_ID, 6, (Uint32) command);
 }
 
-Void poolColor(Uint8 ColorIndex, Uint8 *newColor )
+    
+Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight )
 {
-    Uint32 i,j=0;
-    for(i=0; i<FRAME_SIZE; i++)
+    Uint32 k,j,i=0;
+    Uint32 startingPixel=0;
+    long long* octColor = (long long*) colorBuf;
+    register long long longTemp;
+    
+    for(k=rectY;k<rectY + rectHeight;k++)
     {
-        color[i]= newColor[3*i+j];
+        startingPixel = rectX + k*640;
+        j=startingPixel- startingPixel%8;
+        for(i=(startingPixel- startingPixel%8)/8;i<=(startingPixel + rectWidth)/8;i++)
+        {
+            if(k==rectY + rectHeight-1 && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 ) break;
+            longTemp = ((long long) newColor[3*(j+7) + colorIndex])<<(7*8) | ((long long) newColor[3*(j+6) + colorIndex])<<(6*8) | ((long long) newColor[3*(j+5) + colorIndex])<<(5*8) | ((long long) newColor[3*(j+4) + colorIndex]) | ((long long) newColor[3*(j+3) + colorIndex])<<(3*8) | ((long long) newColor[3*(j+2) + colorIndex])<<(2*8) | ((long long) newColor[3*(j+1) + colorIndex])<<(1*8) | ((long long) newColor[3*j + colorIndex]);
+        
+            octColor[i]=longTemp;
+            j+=8;
+        }
     }
-    POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), color, poolBufferSize);
+    
+    if(k==rectY + rectHeight && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 )
+    {
+        for(i=(rectY+rectHeight-1)*640 +rectX + rectWidth - (rectX+rectWidth)%8;i<(rectY+rectHeight-1)*640 +rectX+rectWidth;i++)
+            colorBuf[i]=newColor[i];
+    }
+    
+    POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), colorBuf+rectY*640+rectX, rectHeight*640-rectX);
 }
 
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight)
 {
-    Uint16 *rectangle = (Uint16*) resFrame;
-    rectangle[0] = rectX;
-    rectangle[1] = rectY;
-    rectangle[2] = rectWidth;
-    rectangle[3] = rectHeight;
+    long long *rectangle = (long long*) resultBuf;
+    rectangle[0] = ((long long) rectHeight)<<48 | ((long long) rectWidth)<<32 | ((long long) rectY)<<16 | ((long long) rectX);
 
-    POOL_writeback (POOL_makePoolId(processorId, SAMPLE_POOL_ID), resFrame, 8);
-}
-
-Void kernelWB(float* krn, int size)
-{
-    memcpy(krn, flres, size * sizeof(float));
+    POOL_writeback (POOL_makePoolId(processorId, SAMPLE_POOL_ID), resultBuf, 8);
 }
 
 Uint8* pointToResult(Void)
 {
-    return resFrame+8;
+    return resultBuf+8;
 }
 
 /** ----------------------------------------------------------------------------
@@ -694,22 +507,30 @@ Uint8* pointToResult(Void)
  */
 STATIC Void gppSideCB (Uint32 eventNo, Pvoid arg, Pvoid info)
 {
-	#ifdef DEBUG
-    //printf("Notification %8d \n", (int)info);
-	#endif
-    /* Post the semaphore. */
-    if ((Uint32) info > 4)  dspCycles = (Uint32) info;
+    #ifdef DET_TIMING
+    Uint32 dspCycles = 0;
+    static Uint8 count = 0;
+    
+    if ((Uint32) info > 4)
+    {
+        count++;
+        dspCycles = (Uint32) info;
+        if(count==1) printf("Initialization time on DSP is %f msec\n", dspCycles * (double) 0.000001923);
+        if(count==2) printf("Kernel time on DSP is %f msec\n", dspCycles * (double) 0.000001923);
+    }
     else
     {
-        if( ((Uint8) info) == DSP_DONE )
+        #endif
+        if( ((Uint32) info) == DSP_DONE )
         {
             sem_post(&sem);
             dspReady = DSP_READY;
         }
-        else dspReady = (Uint8) info;
+        else dspReady = (Uint32) info;
+    #ifdef DET_TIMING
     }
+    #endif
 }
-
 
 #if defined (__cplusplus)
 }
