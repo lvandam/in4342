@@ -25,41 +25,24 @@ extern "C" {
 #endif /* defined (__cplusplus) */
 
 
-/*  ============================================================================
- *  @const   NUM_ARGS
- *
- *  @desc   Number of arguments specified to the DSP application.
- *  ============================================================================
- */
+// Number of arguments specified to the DSP application.
 #define NUM_ARGS                       1
 
-/** ============================================================================
- *  @name   SAMPLE_POOL_ID
- *
- *  @desc   ID of the POOL used for the sample.
- *  ============================================================================
- */
+// ID of the POOL used.
+
 #define SAMPLE_POOL_ID                 0
 
-/** ============================================================================
- *  @name   NUM_BUF_SIZES
- *
- *  @desc   Number of buffer pools to be configured for the allocator.
- *  ============================================================================
- */
+// Number of buffer pools to be configured for the allocator.
+
 #define NUM_BUF_SIZES                  1
 
-/** ============================================================================
- *  @const  NUM_BUF_POOL0
- *
- *  @desc   Number of buffers in first buffer pool.
- *  ============================================================================
- */
+// Number of buffers in first buffer pool.
+
 #define NUM_BUF_POOL0                  2
+    
+// Frame size of the video.
 
 #define FRAME_SIZE                     640 * 480
-
-#define BUF_SIZE                       1280
 
 /*  ============================================================================
  *  @const   pool_notify_INVALID_ID
@@ -96,18 +79,19 @@ extern "C" {
 STATIC Uint32  poolBufferSize ;
 
 /** ============================================================================
- *  @name   pool_notify_DataBuf
+ *  @name   colorBuf, resultBuf 
  *
- *  @desc   Pointer to the shared data buffer used by the pool_notify sample
- *          application.
+ *  @desc   Pointers to the shared data buffers used for the communication with
+ *          the DSP
  *  ============================================================================
  */
-Uint8 * color = NULL ;
 
-Uint8 * resFrame = NULL ;
+Uint8 * colorBuf = NULL ;
 
-float * flres = NULL;
+Uint8 * resultBuf = NULL ;
 
+float * flres = NULL; //float pointer to resultBuffer
+    
 Uint8 dspReady = 0;
 
 Uint8 processorId = 0;
@@ -215,7 +199,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
     if (DSP_SUCCEEDED (status))
     {
         status = POOL_alloc (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                             (Void **) &color,
+                             (Void **) &colorBuf,
                              poolBufferSize) ;
 
         /* Get the translated DSP address to be sent to the DSP. */
@@ -225,26 +209,26 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
                                    POOL_makePoolId(processorId, SAMPLE_POOL_ID),
                                          &dspColor,
                                          AddrType_Dsp,
-                                         (Void *) color,
+                                         (Void *) colorBuf,
                                          AddrType_Usr) ;
 
             if (DSP_FAILED (status))
             {
-                printf ("POOL_translateAddr () for color failed."
+                printf ("POOL_translateAddr () for colorBuf failed."
                                  " Status = [0x%x]\n",
                                  (int)status) ;
             }
         }
         else
         {
-            printf ("POOL_alloc() for color failed. Status = [0x%x]\n",(int)status);
+            printf ("POOL_alloc() for colorBuf failed. Status = [0x%x]\n",(int)status);
         }
     }
 
     if (DSP_SUCCEEDED (status))
     {
         status = POOL_alloc (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                             (Void **) &resFrame,
+                             (Void **) &resultBuf,
                              poolBufferSize) ;
 
         /* Get the translated DSP address to be sent to the DSP. */
@@ -254,7 +238,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
                                    POOL_makePoolId(processorId, SAMPLE_POOL_ID),
                                          &dspResFrame,
                                          AddrType_Dsp,
-                                         (Void *) resFrame,
+                                         (Void *) resultBuf,
                                          AddrType_Usr) ;
 
             if (DSP_FAILED (status))
@@ -402,7 +386,7 @@ NORMAL_API Void dspComTerminate ( Void )
      *  Free the memory allocated for the data buffer.
      */
     tmpStatus = POOL_free (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                           (Void *) color,
+                           (Void *) colorBuf,
                            poolBufferSize) ;
     if (DSP_SUCCEEDED (status) && DSP_FAILED (tmpStatus)) {
         status = tmpStatus ;
@@ -411,7 +395,7 @@ NORMAL_API Void dspComTerminate ( Void )
     }
 
     tmpStatus = POOL_free (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
-                           (Void *) resFrame,
+                           (Void *) resultBuf,
                            poolBufferSize) ;
     if (DSP_SUCCEEDED (status) && DSP_FAILED (tmpStatus)) {
         status = tmpStatus ;
@@ -467,36 +451,67 @@ Void dspCommand( Uint8 command )
     NOTIFY_notify (processorId, pool_notify_IPS_ID, 6, (Uint32) command);
 }
 
-Void poolColor(Uint8 colorIndex, Uint8 *newColor )
+/*Void poolColor(Uint8 colorIndex, Uint8 *newColor )
 {
     Uint32 i,j=0;
-    Uint32* quadColor = (Uint32*) color;
-    register Uint32 temp;
+    long long* octColor = (long long*) colorBuf;
+    register long long longTemp;
     
-    for(i=0;i<FRAME_SIZE/4;i++)
+    for(i=0;i<FRAME_SIZE/8;i++)
     {
-        temp = ((Uint32) newColor[3*(j+3) + colorIndex])<<(3*8) | ((Uint32) newColor[3*(j+2) + colorIndex])<<(2*8) | ((Uint32) newColor[3*(j+1) + colorIndex])<<(1*8) | ((Uint32) newColor[3*j + colorIndex]);
-        quadColor[i]=temp;
-        j+=4;
+        longTemp = ((long long) newColor[3*(j+7) + colorIndex])<<(7*8) | ((long long) newColor[3*(j+6) + colorIndex])<<(6*8) | ((long long) newColor[3*(j+5) + colorIndex])<<(5*8) | ((long long) newColor[3*(j+4) + colorIndex]) | ((long long) newColor[3*(j+3) + colorIndex])<<(3*8) | ((long long) newColor[3*(j+2) + colorIndex])<<(2*8) | ((long long) newColor[3*(j+1) + colorIndex])<<(1*8) | ((long long) newColor[3*j + colorIndex]);
+        
+        octColor[i]=longTemp;
+        j+=8;
     }
     
-    POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), color, poolBufferSize);
+    POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), colorBuf, poolBufferSize);
+}*/
+    
+Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight )
+{
+    Uint32 k,j,i=0;
+    Uint32 startingPixel=0;
+    long long* octColor = (long long*) colorBuf;
+    register long long longTemp;
+    
+    for(k=rectY;k<rectY + rectHeight;k++)
+    {
+        startingPixel = rectX + k*640;
+        j=startingPixel- startingPixel%8;
+        for(i=(startingPixel- startingPixel%8)/8;i<=(startingPixel + rectWidth)/8;i++)
+        {
+            if(k==rectY + rectHeight-1 && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 ) break;
+            longTemp = ((long long) newColor[3*(j+7) + colorIndex])<<(7*8) | ((long long) newColor[3*(j+6) + colorIndex])<<(6*8) | ((long long) newColor[3*(j+5) + colorIndex])<<(5*8) | ((long long) newColor[3*(j+4) + colorIndex]) | ((long long) newColor[3*(j+3) + colorIndex])<<(3*8) | ((long long) newColor[3*(j+2) + colorIndex])<<(2*8) | ((long long) newColor[3*(j+1) + colorIndex])<<(1*8) | ((long long) newColor[3*j + colorIndex]);
+        
+            octColor[i]=longTemp;
+            j+=8;
+        }
+    }
+    
+    if(k==rectY + rectHeight && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 )
+    {
+        for(i=(rectY+rectHeight-1)*640 +rectX + rectWidth - (rectX+rectWidth)%8;i<(rectY+rectHeight-1)*640 +rectX+rectWidth;i++)
+            colorBuf[i]=newColor[i];
+    }
+    
+    POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), colorBuf+rectY*640+rectX, rectHeight*640-rectX);
 }
 
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight)
 {
-    Uint16 *rectangle = (Uint16*) resFrame;
-    rectangle[0] = rectX;
-    rectangle[1] = rectY;
+    long long *rectangle = (long long*) resultBuf;
+    rectangle[0] = ((long long) rectHeight)<<48 | ((long long) rectWidth)<<32 | ((long long) rectY)<<16 | ((long long) rectX);
+    /*rectangle[1] = rectY;
     rectangle[2] = rectWidth;
-    rectangle[3] = rectHeight;
+    rectangle[3] = rectHeight;*/
 
-    POOL_writeback (POOL_makePoolId(processorId, SAMPLE_POOL_ID), resFrame, 8);
+    POOL_writeback (POOL_makePoolId(processorId, SAMPLE_POOL_ID), resultBuf, 8);
 }
 
 Uint8* pointToResult(Void)
 {
-    return resFrame+8;
+    return resultBuf+8;
 }
 
 /** ----------------------------------------------------------------------------

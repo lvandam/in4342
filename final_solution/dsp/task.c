@@ -145,8 +145,8 @@ Int Task_execute (Task_TransferInfo * info)
     while(function != STOP_DSP)
     {
         start = TSCL;
-        initTarget(CANDIDATE);
         initWeight(flres);
+        initTarget(CANDIDATE);
         stop = TSCL;
         tkernel += stop - start;
         SEM_pend (&(info->notifySemObj), SYS_FOREVER);
@@ -165,6 +165,7 @@ Int Task_execute (Task_TransferInfo * info)
                 break;
 
             case INIT_BLUE:
+                Get_Rectangle();
                 Get_Color();
                 start = TSCL;
                 HC_pdf_representation_target(BLUE, dspColor);
@@ -174,6 +175,7 @@ Int Task_execute (Task_TransferInfo * info)
                 break;
 
             case INIT_GREEN:
+                Get_Rectangle();
                 Get_Color();
                 start = TSCL;
                 HC_pdf_representation_target(GREEN, dspColor);
@@ -183,6 +185,7 @@ Int Task_execute (Task_TransferInfo * info)
                 break;
 
             case INIT_RED:
+                Get_Rectangle();
                 Get_Color();
                 start = TSCL;
                 HC_pdf_representation_target(RED, dspColor);
@@ -192,11 +195,48 @@ Int Task_execute (Task_TransferInfo * info)
                 break;
 
             case COMBINE_BLUE:
-                Get_Color();
                 Get_Rectangle();
+                Get_Color();
                 start = TSCL;
                 pdf_representation(dspColor, dspRectangle);
                 CalcWeight(BLUE, dspColor, dspRectangle, flres);
+                stop = TSCL;
+                Return_Result();
+                tkernel += stop - start;
+                function = IDLE;
+                break;
+                
+            case WEIGHT_BLUE:
+                initWeight(flres);
+                Get_Rectangle();
+                Get_Color();
+                start = TSCL;
+                pdf_representation(dspColor, dspRectangle);
+                CalcWeight(BLUE, dspColor, dspRectangle, flres);
+                stop = TSCL;
+                //Return_Result();
+                tkernel += stop - start;
+                function = IDLE;
+                break;
+                
+            case WEIGHT_GREEN:
+                Get_Rectangle();
+                Get_Color();
+                start = TSCL;
+                pdf_representation(dspColor, dspRectangle);
+                CalcWeight(GREEN, dspColor, dspRectangle, flres);
+                stop = TSCL;
+                //Return_Result();
+                tkernel += stop - start;
+                function = IDLE;
+                break;
+                
+            case WEIGHT_RED:
+                Get_Rectangle();
+                Get_Color();
+                start = TSCL;
+                pdf_representation(dspColor, dspRectangle);
+                CalcWeight(RED, dspColor, dspRectangle, flres);
                 stop = TSCL;
                 Return_Result();
                 tkernel += stop - start;
@@ -243,7 +283,11 @@ Int Task_delete (Task_TransferInfo * info)
 
 static Void Get_Color(Void)
 {
-    BCACHE_inv ((Ptr)dspColor, MPCSXFER_BufferSize, TRUE) ;
+    Uint16 rectX=dspRectangle[0];
+    Uint16 rectY=dspRectangle[1];
+    Uint16 rectWidth=dspRectangle[2];
+    Uint16 rectHeight=dspRectangle[3];
+    BCACHE_inv ((Ptr)(dspColor+rectY*640+rectX), rectWidth*rectHeight, TRUE) ;
 }
 
 static Void Get_Rectangle(Void)

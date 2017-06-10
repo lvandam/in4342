@@ -19,6 +19,9 @@
 #define INIT_BLUE          5
 #define INIT_GREEN         6
 #define INIT_RED           7
+#define WEIGHT_BLUE        8
+#define WEIGHT_GREEN       9
+#define WEIGHT_RED         10
 
 typedef struct Task_TransferInfo_tag {
     Uint16 *        dataBuf ;

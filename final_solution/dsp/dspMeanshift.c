@@ -13,9 +13,10 @@
 Uint16 binWidth = 16;
 Uint16 cfgMaxIter = 8;
 
-_iq18 kernel[58][86] = {0};
+_iq11 kernel[58][86] = {0};
 _iq11 target_model[3][16];
 _iq11 target_candidate[16];
+Uint32 bin[58][86]={0};
 
 Void HC_Epanechnikov_kernel(Void)
 {
@@ -32,14 +33,14 @@ Void HC_Epanechnikov_kernel(Void)
             x =  (_IQ18(i) - (_IQ18(INITRECTHEIGHT >> 1)) ) ;
             y =    (_IQ18(j) - (_IQ18(INITRECTWIDTH >> 1)) )  ;
             norm_x = _IQ18div ( (_IQ18mpy(x,x) ) , (_IQ18mpy( iqRectHeight, (_IQ18(INITRECTHEIGHT >> 2) ))) ) + _IQ18div ( (_IQ18mpy(y,y)) , (_IQ18mpy(iqRectWidth, (_IQ18(INITRECTWIDTH >> 2) ) ) ) );  
-            kernel[i][j] = norm_x < _IQ18(1) ?( _IQ18mpy( epanechnikov_cd,(_IQ18(1)-norm_x)) ) : _IQ18(0); 
+            kernel[i][j] = norm_x < _IQ18(1) ?( _IQXtoIQY(_IQ18mpy( epanechnikov_cd,(_IQ18(1)-norm_x)),18,11) ) : _IQXtoIQY(_IQ18(0),18,11); 
         }
     }
 }
 
 void HC_pdf_representation_target(Uint8 colorIndex, Uint8* color)
 {    
-    int bin;
+    
     Uint16 i, j;
     
     register Uint16 row_index = INITRECTY;
@@ -51,9 +52,9 @@ void HC_pdf_representation_target(Uint8 colorIndex, Uint8* color)
         clo_index = INITRECTX;
         for (j=0; j<INITRECTWIDTH ; j++)
         {
-            bin = color[row_index * ROWLEN + clo_index] >> 4;
+            bin[i][j] = color[row_index * ROWLEN + clo_index] >> 4;
 
-            target_model[colorIndex][(bin)] += _IQXtoIQY(kernel[i][j], 18, 11);
+            target_model[colorIndex][(bin[i][j])] += kernel[i][j];
         
             clo_index++;
         }
@@ -64,7 +65,6 @@ void HC_pdf_representation_target(Uint8 colorIndex, Uint8* color)
 
 void pdf_representation(Uint8* color, Uint16* rect)
 {    
-    int bin;
     Uint16 i, j;
     register Uint16 row_index = rect[1];
     register Uint16 clo_index = rect[0];
@@ -75,9 +75,10 @@ void pdf_representation(Uint8* color, Uint16* rect)
         clo_index = rect[0];
         for (j=0; j<rect[2] ; j++)
         {
-            bin = (color[row_index * ROWLEN + clo_index]) >> 4;
 
-            target_candidate[(bin)] += _IQXtoIQY(kernel[i][j], 18, 11);
+            bin[i][j] = color[row_index * ROWLEN + clo_index] >> 4;
+
+            target_candidate[(bin[i][j])] += kernel[i][j];
         
             clo_index++;
         }
@@ -91,7 +92,6 @@ void CalcWeight(Uint8 colorIndex, Uint8* color, Uint16 *rect, float* CalWeight)
 	register Uint16 row_index = rect[1];
     register Uint16 rows = rect[3];
     register Uint16 cols = rect[2];
-    Uint16 bin = 0;
     Uint16 i,j;
     
     #pragma UNROLL(58);
@@ -100,8 +100,8 @@ void CalcWeight(Uint8 colorIndex, Uint8* color, Uint16 *rect, float* CalWeight)
  		clo_index = rect[0];
       	for(j=0;j<cols;j++)
       	{
-            bin = (color[row_index * ROWLEN + clo_index]) >> 4;
-            CalWeight[i * INITRECTWIDTH + j] = _IQ11toF(_IQ11mpy(_FtoIQ11(CalWeight[i * INITRECTWIDTH + j]),_IQ11sqrt(_IQ11div(target_model[colorIndex][bin],target_candidate[bin]))));
+            
+            CalWeight[i * INITRECTWIDTH + j] = _IQ11toF(_IQ11mpy(_FtoIQ11(CalWeight[i * INITRECTWIDTH + j]),_IQ11sqrt(_IQ11div(target_model[colorIndex][bin[i][j]],target_candidate[bin[i][j]]))));
             clo_index++;
      	}
      	row_index++;
@@ -111,7 +111,7 @@ void CalcWeight(Uint8 colorIndex, Uint8* color, Uint16 *rect, float* CalWeight)
 Void initTarget(Uint8 matIndex)
 {
     Uint16 i,j;
-    register _iq11 initValue = _IQ11(10000);
+    register _iq11 initValue = _IQ11(3700);
     
     if(matIndex == MODEL)
     {

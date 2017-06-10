@@ -29,6 +29,9 @@
 #define INIT_BLUE          5
 #define INIT_GREEN         6
 #define INIT_RED           7
+#define WEIGHT_BLUE        8
+#define WEIGHT_GREEN       9
+#define WEIGHT_RED         10
 
 Uint8 isDspReady ( Void );
 
@@ -38,7 +41,7 @@ Void dspCommand( Uint8 command);
 
 Void copyToBuffer (Uint8 *ptr, Uint8 *buffer, Uint8 color, Uint8 length);
 
-Void poolColor(Uint8 colorIndex, Uint8 *newColor );
+Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight );
 
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectHeight, Uint16 rectWidth);
 

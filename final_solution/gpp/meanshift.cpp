@@ -57,7 +57,9 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 
     target_model = pdf_representation_target(frame, target_Region);
 
-    poolColor(BLUE, (Uint8*) frame.ptr(0,0));    
+    poolRectangle(rect.x, rect.y, rect.width, rect.height);
+    
+    poolColor(BLUE, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);    
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
@@ -65,7 +67,7 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
         isDspDone();
     }
     
-    poolColor(GREEN,(Uint8*) frame.ptr(0,0));
+    poolColor(GREEN,(Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
@@ -73,7 +75,7 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
         isDspDone();
     }
     
-    poolColor(RED, (Uint8*) frame.ptr(0,0));
+    poolColor(RED, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
@@ -306,14 +308,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     
     cv::Rect next_rect;
     
-    #ifdef DET_TIMING
-    timePoolColor.Start();
-    #endif
-    poolColor(BLUE,(Uint8*) next_frame.ptr(0,0));
-    #ifdef DET_TIMING
-    timePoolColor.Stop();
-    tPoolColor+= timePoolColor.GetTime();
-    #endif
 
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
@@ -325,6 +319,15 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         #ifdef DET_TIMING
         timePoolRect.Stop();
         tPoolRect+= timePoolRect.GetTime();
+        #endif
+        
+        #ifdef DET_TIMING
+        timePoolColor.Start();
+        #endif
+        poolColor(BLUE,(Uint8*) next_frame.ptr(0,0), target_Region.x, target_Region.y, target_Region.width, target_Region.height);
+        #ifdef DET_TIMING
+        timePoolColor.Stop();
+        tPoolColor+= timePoolColor.GetTime();
         #endif
 
         #ifdef DET_TIMING
