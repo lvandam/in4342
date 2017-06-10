@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Tue Jun  6 11:30:33 2017                                *
+;* Date/Time created: Sat Jun 10 03:24:41 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -8,15 +8,14 @@
 ;* GLOBAL FILE PARAMETERS                                                     *
 ;*                                                                            *
 ;*   Architecture      : TMS320C64x+                                          *
-;*   Optimization      : Enabled at level 3                                   *
-;*   Optimizing for    : Speed                                                *
-;*                       Based on options: -o3, no -ms                        *
+;*   Optimization      : Disabled                                             *
+;*   Optimizing for    : Compile time, Ease of Development                    *
+;*                       Based on options: no -o, no -ms                      *
 ;*   Endian            : Little                                               *
 ;*   Interrupt Thrshld : Disabled                                             *
 ;*   Data Access Model : Far                                                  *
-;*   Pipelining        : Enabled                                              *
-;*   Speculate Loads   : Disabled                                             *
-;*   Memory Aliases    : Presume are aliases (pessimistic)                    *
+;*   Pipelining        : Disabled                                             *
+;*   Memory Aliases    : Presume not aliases (optimistic)                     *
 ;*   Debug Info        : DWARF Debug for Program Analysis w/Optimization      *
 ;*                                                                            *
 ;******************************************************************************
@@ -31,8 +30,8 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("pool_notifycfg_c.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/part2/code/dsp")
-;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/06583m1vB5d /tmp/06583YyCnWl 
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/test_dsp/dsp")
+;	/opt/bbToolChain/usr/local/share/c6000/bin/acp6x -@/tmp/16258x2pTuZ 
 
 ;******************************************************************************
 ;* TYPE INFORMATION                                                           *
