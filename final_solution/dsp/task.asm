@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Sat Jun 10 13:48:57 2017                                *
+;* Date/Time created: Sat Jun 10 18:12:07 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -278,7 +278,7 @@ $C$DW$62	.dwtag  DW_TAG_variable, DW_AT_name("function")
 	.dwattr $C$DW$62, DW_AT_type(*$C$DW$T$73)
 	.dwattr $C$DW$62, DW_AT_external
 _count$1:	.usect	".far",4,4
-;	/opt/bbToolChain/usr/local/share/c6000/bin/acp6x -@/tmp/03705OWQktO 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/acp6x -@/tmp/30573KV74Oe 
 	.sect	".text"
 	.clink
 
@@ -701,29 +701,28 @@ _Task_execute:
 ||         MVC     .S2     B4,TSCL           ; |136| 
 
            MVC     .S2     TSCL,B4           ; |138| 
-           MVKL    .S1     _initTarget,A3    ; |139| 
-           MVKH    .S1     _initTarget,A3    ; |139| 
+           MVKL    .S1     _HC_Epanechnikov_kernel,A3 ; |139| 
+           MVKH    .S1     _HC_Epanechnikov_kernel,A3 ; |139| 
            STW     .D2T2   B4,*+SP(8)        ; |138| 
 $C$DW$80	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$80, DW_AT_low_pc(0x00)
-	.dwattr $C$DW$80, DW_AT_name("_initTarget")
+	.dwattr $C$DW$80, DW_AT_name("_HC_Epanechnikov_kernel")
 	.dwattr $C$DW$80, DW_AT_TI_call
            CALL    .S2X    A3                ; |139| 
-           MVK     .L1     0x1,A4            ; |139| 
-           ADDKPC  .S2     $C$RL7,B3,3       ; |139| 
-$C$RL7:    ; CALL OCCURS {_initTarget} {0}   ; |139| 
+           ADDKPC  .S2     $C$RL7,B3,4       ; |139| 
+$C$RL7:    ; CALL OCCURS {_HC_Epanechnikov_kernel} {0}  ; |139| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 26
-           MVKL    .S1     _HC_Epanechnikov_kernel,A3 ; |140| 
-           MVKH    .S1     _HC_Epanechnikov_kernel,A3 ; |140| 
-           NOP             1
+           MVKL    .S1     _initTarget,A3    ; |140| 
+           MVKH    .S1     _initTarget,A3    ; |140| 
+           MVK     .L1     0x1,A4            ; |140| 
 $C$DW$81	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$81, DW_AT_low_pc(0x00)
-	.dwattr $C$DW$81, DW_AT_name("_HC_Epanechnikov_kernel")
+	.dwattr $C$DW$81, DW_AT_name("_initTarget")
 	.dwattr $C$DW$81, DW_AT_TI_call
            CALL    .S2X    A3                ; |140| 
            ADDKPC  .S2     $C$RL8,B3,4       ; |140| 
-$C$RL8:    ; CALL OCCURS {_HC_Epanechnikov_kernel} {0}  ; |140| 
+$C$RL8:    ; CALL OCCURS {_initTarget} {0}   ; |140| 
            MVC     .S2     TSCL,B4           ; |141| 
            STW     .D2T2   B4,*+SP(12)       ; |141| 
            LDW     .D2T2   *+SP(8),B4        ; |142| 
@@ -1614,7 +1613,7 @@ $C$DW$119	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |253| 
 
 $C$DW$120	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$120, DW_AT_name("/home/constantinos/embLab/neon_handing/dsp/task.asm:$C$L7:1:1497095337")
+	.dwattr $C$DW$120, DW_AT_name("/home/constantinos/embLab/neon_handing/dsp/task.asm:$C$L7:1:1497111127")
 	.dwattr $C$DW$120, DW_AT_TI_begin_file("task.c")
 	.dwattr $C$DW$120, DW_AT_TI_begin_line(0x91)
 	.dwattr $C$DW$120, DW_AT_TI_end_line(0xf7)

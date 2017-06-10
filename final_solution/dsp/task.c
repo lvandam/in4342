@@ -136,8 +136,8 @@ Int Task_execute (Task_TransferInfo * info)
     TSCL = 0;
 
     start = TSCL;
+	HC_Epanechnikov_kernel();
     initTarget(MODEL);
-    HC_Epanechnikov_kernel();
     stop = TSCL;
     tinit += stop - start;
     Update_State(DSP_READY);

@@ -32,6 +32,7 @@ class MeanShift
 {
  private:
     float bin_width;
+    float sumEpanechnikov;
     MatrixFloat target_model;
     cv::Rect target_Region;
     MatrixFloat kernel;
@@ -52,7 +53,7 @@ class MeanShift
 public:
     MeanShift();
     void Init_target_frame(const cv::Mat &frame,const cv::Rect &rect);
-    void Epanechnikov_kernel(MatrixFloat &kernel);
+    float Epanechnikov_kernel(MatrixFloat &kernel);
     MatrixFloat pdf_representation_target(const cv::Mat &frame,const cv::Rect &rect);
     // MatrixFloat pdf_representation(int k);
     // MatrixFloat CalWeight(int k, MatrixFloat &target_candidate);

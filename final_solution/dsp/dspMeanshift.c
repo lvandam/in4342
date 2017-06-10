@@ -12,6 +12,8 @@
 
 Uint16 binWidth = 16;
 Uint16 cfgMaxIter = 8;
+_iq11 epanechnikovSum=0;
+
 
 _iq11 kernel[58][86] = {0};
 _iq11 target_model[3][16];
@@ -34,8 +36,10 @@ Void HC_Epanechnikov_kernel(Void)
             y =    (_IQ18(j) - (_IQ18(INITRECTWIDTH >> 1)) )  ;
             norm_x = _IQ18div ( (_IQ18mpy(x,x) ) , (_IQ18mpy( iqRectHeight, (_IQ18(INITRECTHEIGHT >> 2) ))) ) + _IQ18div ( (_IQ18mpy(y,y)) , (_IQ18mpy(iqRectWidth, (_IQ18(INITRECTWIDTH >> 2) ) ) ) );  
             kernel[i][j] = norm_x < _IQ18(1) ?( _IQXtoIQY(_IQ18mpy( epanechnikov_cd,(_IQ18(1)-norm_x)),18,11) ) : _IQXtoIQY(_IQ18(0),18,11); 
+            epanechnikovSum+= _IQ11mpy(kernel[i][j],_IQ11(0.001));
         }
     }
+    epanechnikovSum = _IQ11mpy(epanechnikovSum,_IQ11(0.0000001));
 }
 
 void HC_pdf_representation_target(Uint8 colorIndex, Uint8* color)
@@ -111,7 +115,7 @@ void CalcWeight(Uint8 colorIndex, Uint8* color, Uint16 *rect, float* CalWeight)
 Void initTarget(Uint8 matIndex)
 {
     Uint16 i,j;
-    register _iq11 initValue = _IQ11(3700);
+    register _iq11 initValue = epanechnikovSum;
     
     if(matIndex == MODEL)
     {

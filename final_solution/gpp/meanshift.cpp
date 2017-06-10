@@ -35,6 +35,8 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
     target_Region = rect;
+    
+    //cout << "Init target"<< endl;
 
     centre = static_cast<float>((rect.height - 1) / 2.0);
 
@@ -53,7 +55,8 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     }
 
     kernel = MatrixFloat(rect.height, RowFloat(rect.width));
-    Epanechnikov_kernel(kernel);
+    sumEpanechnikov = Epanechnikov_kernel(kernel);
+    sumEpanechnikov = (double) sumEpanechnikov * (double) 0.0000000001;
 
     target_model = pdf_representation_target(frame, target_Region);
 
@@ -84,10 +87,11 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     }
 }
 
-void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
+float MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
 {
     int h = kernel.size();
     int w = kernel[0].size();
+    float sum = 0;
 
     unsigned short epanechnikov_cd = 0.1 * PI * h * w;
 
@@ -102,13 +106,16 @@ void MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
             float result = norm_x < 1 ? (epanechnikov_cd * (1-norm_x)) : 0;
 
             kernel[i][j] = result;
+            sum+= result;
         }
     }
+    
+    return sum;
 }
 
 MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
 {
-    MatrixFloat pdf_model(3, RowFloat(16));
+    MatrixFloat pdf_model(3, RowFloat(16, sumEpanechnikov));
 
     cv::Vec3b curr_pixel_value;
     cv::Vec3i bin_value;
@@ -172,7 +179,7 @@ static inline float32x4_t vectorsqrt(float32x4_t x) {
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
-  MatrixFloat pdf_model(3, RowFloat(16));
+  MatrixFloat pdf_model(3, RowFloat(16, sumEpanechnikov));
 
   uint8x16_t curr_pixel_value_neon, bin_value_neon;
   static uint8_t bin_array[16];
