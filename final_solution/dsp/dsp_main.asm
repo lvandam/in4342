@@ -1,21 +1,22 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Sat Jun 10 18:12:07 2017                                *
+;* Date/Time created: Sat Jun 10 19:47:29 2017                                *
 ;******************************************************************************
-	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
+	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=near --mem_model:const=data --mem_model:data=far_aggregates --quiet --silicon_version=6500 --symdebug:skeletal 
 
 ;******************************************************************************
 ;* GLOBAL FILE PARAMETERS                                                     *
 ;*                                                                            *
 ;*   Architecture      : TMS320C64x+                                          *
-;*   Optimization      : Disabled                                             *
-;*   Optimizing for    : Compile time, Ease of Development                    *
-;*                       Based on options: no -o, no -ms                      *
+;*   Optimization      : Enabled at level 3                                   *
+;*   Optimizing for    : Speed                                                *
+;*                       Based on options: -o3, no -ms                        *
 ;*   Endian            : Little                                               *
 ;*   Interrupt Thrshld : Disabled                                             *
-;*   Data Access Model : Far                                                  *
-;*   Pipelining        : Disabled                                             *
-;*   Memory Aliases    : Presume not aliases (optimistic)                     *
+;*   Data Access Model : Far Aggregate Data                                   *
+;*   Pipelining        : Enabled                                              *
+;*   Speculate Loads   : Disabled                                             *
+;*   Memory Aliases    : Presume are aliases (pessimistic)                    *
 ;*   Debug Info        : DWARF Debug for Program Analysis w/Optimization      *
 ;*                                                                            *
 ;******************************************************************************
@@ -30,17 +31,17 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("dsp_main.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/neon_handing/dsp")
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/lazaros_final/dsp")
 
 $C$DW$1	.dwtag  DW_TAG_subprogram, DW_AT_name("TSK_create")
 	.dwattr $C$DW$1, DW_AT_TI_symbol_name("_TSK_create")
-	.dwattr $C$DW$1, DW_AT_type(*$C$DW$T$57)
+	.dwattr $C$DW$1, DW_AT_type(*$C$DW$T$65)
 	.dwattr $C$DW$1, DW_AT_declaration
 	.dwattr $C$DW$1, DW_AT_external
 $C$DW$2	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$2, DW_AT_type(*$C$DW$T$44)
+	.dwattr $C$DW$2, DW_AT_type(*$C$DW$T$47)
 $C$DW$3	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$3, DW_AT_type(*$C$DW$T$59)
+	.dwattr $C$DW$3, DW_AT_type(*$C$DW$T$67)
 $C$DW$4	.dwtag  DW_TAG_unspecified_parameters
 	.dwendtag $C$DW$1
 
@@ -56,7 +57,7 @@ $C$DW$6	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_create")
 	.dwattr $C$DW$6, DW_AT_declaration
 	.dwattr $C$DW$6, DW_AT_external
 $C$DW$7	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$7, DW_AT_type(*$C$DW$T$47)
+	.dwattr $C$DW$7, DW_AT_type(*$C$DW$T$50)
 	.dwendtag $C$DW$6
 
 
@@ -66,7 +67,7 @@ $C$DW$8	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_execute")
 	.dwattr $C$DW$8, DW_AT_declaration
 	.dwattr $C$DW$8, DW_AT_external
 $C$DW$9	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$9, DW_AT_type(*$C$DW$T$46)
+	.dwattr $C$DW$9, DW_AT_type(*$C$DW$T$49)
 	.dwendtag $C$DW$8
 
 
@@ -76,7 +77,7 @@ $C$DW$10	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_delete")
 	.dwattr $C$DW$10, DW_AT_declaration
 	.dwattr $C$DW$10, DW_AT_external
 $C$DW$11	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$11, DW_AT_type(*$C$DW$T$46)
+	.dwattr $C$DW$11, DW_AT_type(*$C$DW$T$49)
 	.dwendtag $C$DW$10
 
 
@@ -86,24 +87,24 @@ $C$DW$12	.dwtag  DW_TAG_subprogram, DW_AT_name("atoi")
 	.dwattr $C$DW$12, DW_AT_declaration
 	.dwattr $C$DW$12, DW_AT_external
 $C$DW$13	.dwtag  DW_TAG_formal_parameter
-	.dwattr $C$DW$13, DW_AT_type(*$C$DW$T$53)
+	.dwattr $C$DW$13, DW_AT_type(*$C$DW$T$54)
 	.dwendtag $C$DW$12
 
 	.global	_MPCSXFER_BufferSize
-_MPCSXFER_BufferSize:	.usect	".far",4,4
+	.bss	_MPCSXFER_BufferSize,4,4
 $C$DW$14	.dwtag  DW_TAG_variable, DW_AT_name("MPCSXFER_BufferSize")
 	.dwattr $C$DW$14, DW_AT_TI_symbol_name("_MPCSXFER_BufferSize")
 	.dwattr $C$DW$14, DW_AT_location[DW_OP_addr _MPCSXFER_BufferSize]
 	.dwattr $C$DW$14, DW_AT_type(*$C$DW$T$34)
 	.dwattr $C$DW$14, DW_AT_external
 	.global	_MPCSXFER_NumIterations
-_MPCSXFER_NumIterations:	.usect	".far",4,4
+	.bss	_MPCSXFER_NumIterations,4,4
 $C$DW$15	.dwtag  DW_TAG_variable, DW_AT_name("MPCSXFER_NumIterations")
 	.dwattr $C$DW$15, DW_AT_TI_symbol_name("_MPCSXFER_NumIterations")
 	.dwattr $C$DW$15, DW_AT_location[DW_OP_addr _MPCSXFER_NumIterations]
 	.dwattr $C$DW$15, DW_AT_type(*$C$DW$T$34)
 	.dwattr $C$DW$15, DW_AT_external
-;	/opt/bbToolChain/usr/local/share/c6000/bin/acp6x -@/tmp/30587iGdpYM 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/08523OZincR /tmp/08523GZXsgf 
 	.sect	".text"
 	.clink
 	.global	_main
@@ -116,7 +117,7 @@ $C$DW$16	.dwtag  DW_TAG_subprogram, DW_AT_name("main")
 	.dwattr $C$DW$16, DW_AT_TI_begin_file("dsp_main.c")
 	.dwattr $C$DW$16, DW_AT_TI_begin_line(0x132)
 	.dwattr $C$DW$16, DW_AT_TI_begin_column(0x06)
-	.dwattr $C$DW$16, DW_AT_frame_base[DW_OP_breg31 24]
+	.dwattr $C$DW$16, DW_AT_frame_base[DW_OP_breg31 16]
 	.dwattr $C$DW$16, DW_AT_TI_skeletal
 	.dwpsn	file "dsp_main.c",line 307,column 1,is_stmt,address _main
 $C$DW$17	.dwtag  DW_TAG_formal_parameter, DW_AT_name("argc")
@@ -132,43 +133,44 @@ $C$DW$18	.dwtag  DW_TAG_formal_parameter, DW_AT_name("argv")
 ;* FUNCTION NAME: main                                                        *
 ;*                                                                            *
 ;*   Regs Modified     : A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B2,B3,B4,B5,B6,  *
-;*                           B7,B8,B9,SP,A16,A17,A18,A19,A20,A21,A22,A23,A24, *
-;*                           A25,A26,A27,A28,A29,A30,A31,B16,B17,B18,B19,B20, *
-;*                           B21,B22,B23,B24,B25,B26,B27,B28,B29,B30,B31      *
+;*                           B7,B8,B9,B10,B11,SP,A16,A17,A18,A19,A20,A21,A22, *
+;*                           A23,A24,A25,A26,A27,A28,A29,A30,A31,B16,B17,B18, *
+;*                           B19,B20,B21,B22,B23,B24,B25,B26,B27,B28,B29,B30, *
+;*                           B31                                              *
 ;*   Regs Used         : A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,B0,B1,B2,B3,B4,B5,B6,  *
-;*                           B7,B8,B9,SP,A16,A17,A18,A19,A20,A21,A22,A23,A24, *
-;*                           A25,A26,A27,A28,A29,A30,A31,B16,B17,B18,B19,B20, *
-;*                           B21,B22,B23,B24,B25,B26,B27,B28,B29,B30,B31      *
-;*   Local Frame Size  : 8 Args + 8 Auto + 4 Save = 20 byte                   *
+;*                           B7,B8,B9,B10,B11,DP,SP,A16,A17,A18,A19,A20,A21,  *
+;*                           A22,A23,A24,A25,A26,A27,A28,A29,A30,A31,B16,B17, *
+;*                           B18,B19,B20,B21,B22,B23,B24,B25,B26,B27,B28,B29, *
+;*                           B30,B31                                          *
+;*   Local Frame Size  : 8 Args + 0 Auto + 8 Save = 16 byte                   *
 ;******************************************************************************
 _main:
 ;** --------------------------------------------------------------------------*
-;          EXCLUSIVE CPU CYCLES: 9
-           MVKL    .S1     _DSPLINK_init,A3  ; |310| 
-           MVKH    .S1     _DSPLINK_init,A3  ; |310| 
-           STW     .D2T2   B3,*SP--(24)      ; |307| 
+;          EXCLUSIVE CPU CYCLES: 7
+
+           STW     .D2T2   B11,*SP--(16)     ; |307| 
+||         MV      .L2     B3,B11            ; |307| 
+
 $C$DW$19	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$19, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$19, DW_AT_name("_DSPLINK_init")
 	.dwattr $C$DW$19, DW_AT_TI_call
-           CALL    .S2X    A3                ; |310| 
-           STW     .D2T1   A4,*+SP(12)       ; |307| 
-           ADDKPC  .S2     $C$RL0,B3,2       ; |310| 
-           STW     .D2T2   B4,*+SP(16)       ; |307| 
+
+           CALLP   .S2     _DSPLINK_init,B3
+||         STW     .D2T2   B10,*+SP(12)      ; |307| 
+||         MV      .L2     B4,B10            ; |307| 
+
 $C$RL0:    ; CALL OCCURS {_DSPLINK_init} {0}  ; |310| 
 ;** --------------------------------------------------------------------------*
-;          EXCLUSIVE CPU CYCLES: 26
-           LDW     .D2T2   *+SP(16),B4       ; |313| 
-           MVKL    .S1     _atoi,A3          ; |313| 
-           MVKH    .S1     _atoi,A3          ; |313| 
-           NOP             1
+;          EXCLUSIVE CPU CYCLES: 20
 $C$DW$20	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$20, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$20, DW_AT_name("_atoi")
 	.dwattr $C$DW$20, DW_AT_TI_call
-           CALL    .S2X    A3                ; |313| 
-           LDW     .D2T1   *B4,A4            ; |313| 
-           ADDKPC  .S2     $C$RL1,B3,3       ; |313| 
+
+           CALLP   .S2     _atoi,B3
+||         LDW     .D2T1   *B10,A4           ; |313| 
+
 $C$RL1:    ; CALL OCCURS {_atoi} {0}         ; |313| 
            MVK     .S1     127,A3            ; |313| 
            ADD     .L1     A3,A4,A3          ; |313| 
@@ -177,40 +179,37 @@ $C$RL1:    ; CALL OCCURS {_atoi} {0}         ; |313|
            ADD     .L1     A4,A3,A3          ; |313| 
 
            SHR     .S1     A3,7,A3           ; |313| 
-||         MVKL    .S2     _MPCSXFER_BufferSize,B4
-
-           SHL     .S1     A3,7,A3           ; |313| 
-||         MVKH    .S2     _MPCSXFER_BufferSize,B4
-
-           STW     .D2T1   A3,*B4            ; |313| 
 ||         ZERO    .L2     B4                ; |316| 
 
-           STW     .D2T2   B4,*+SP(8)        ; |316| 
-||         MVKL    .S2     _TSK_create,B4    ; |316| 
+           MVKL    .S1     _Task,A4          ; |316| 
+||         STW     .D2T2   B4,*+SP(8)        ; |316| 
 
-           MVKH    .S2     _TSK_create,B4    ; |316| 
+           SHL     .S1     A3,7,A3           ; |313| 
+||         STW     .D2T2   B4,*+SP(4)        ; |316| 
+
 $C$DW$21	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$21, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$21, DW_AT_name("_TSK_create")
 	.dwattr $C$DW$21, DW_AT_TI_call
-           CALL    .S2     B4                ; |316| 
-           ZERO    .L1     A3                ; |316| 
-           MVKL    .S1     _Task,A4          ; |316| 
-           ADDKPC  .S2     $C$RL2,B3,1       ; |316| 
 
-           STW     .D2T1   A3,*+SP(4)        ; |316| 
+           CALLP   .S2     _TSK_create,B3
+||         STW     .D2T1   A3,*+DP(_MPCSXFER_BufferSize) ; |313| 
 ||         MVKH    .S1     _Task,A4          ; |316| 
 
 $C$RL2:    ; CALL OCCURS {_TSK_create} {0}   ; |316| 
 ;** --------------------------------------------------------------------------*
-;          EXCLUSIVE CPU CYCLES: 11
-           LDW     .D2T2   *++SP(24),B3      ; |317| 
-           NOP             4
-	.dwpsn	file "dsp_main.c",line 317,column 1,is_stmt
+;          EXCLUSIVE CPU CYCLES: 7
+           MV      .L2     B11,B3            ; |317| 
 $C$DW$22	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$22, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$22, DW_AT_TI_return
-           RETNOP  .S2     B3,5              ; |317| 
+
+           RET     .S2     B3                ; |317| 
+||         LDW     .D2T2   *+SP(12),B10      ; |317| 
+
+           LDW     .D2T2   *++SP(16),B11     ; |317| 
+	.dwpsn	file "dsp_main.c",line 317,column 1,is_stmt
+           NOP             4
            ; BRANCH OCCURS {B3}              ; |317| 
 	.dwattr $C$DW$16, DW_AT_TI_end_file("dsp_main.c")
 	.dwattr $C$DW$16, DW_AT_TI_end_line(0x13d)
@@ -228,7 +227,7 @@ $C$DW$23	.dwtag  DW_TAG_subprogram, DW_AT_name("Task")
 	.dwattr $C$DW$23, DW_AT_TI_begin_file("dsp_main.c")
 	.dwattr $C$DW$23, DW_AT_TI_begin_line(0x148)
 	.dwattr $C$DW$23, DW_AT_TI_begin_column(0x0c)
-	.dwattr $C$DW$23, DW_AT_frame_base[DW_OP_breg31 16]
+	.dwattr $C$DW$23, DW_AT_frame_base[DW_OP_breg31 8]
 	.dwattr $C$DW$23, DW_AT_TI_skeletal
 	.dwpsn	file "dsp_main.c",line 329,column 1,is_stmt,address _Task
 
@@ -243,77 +242,61 @@ $C$DW$23	.dwtag  DW_TAG_subprogram, DW_AT_name("Task")
 ;*                           B7,B8,B9,SP,A16,A17,A18,A19,A20,A21,A22,A23,A24, *
 ;*                           A25,A26,A27,A28,A29,A30,A31,B16,B17,B18,B19,B20, *
 ;*                           B21,B22,B23,B24,B25,B26,B27,B28,B29,B30,B31      *
-;*   Local Frame Size  : 0 Args + 8 Auto + 4 Save = 12 byte                   *
+;*   Local Frame Size  : 0 Args + 4 Auto + 4 Save = 8 byte                    *
 ;******************************************************************************
 _Task:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 8
-           MVKL    .S2     _Task_create,B5   ; |334| 
-           MVKH    .S2     _Task_create,B5   ; |334| 
+           STW     .D2T2   B3,*SP--(8)       ; |329| 
+           NOP             1
 $C$DW$24	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$24, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$24, DW_AT_name("_Task_create")
 	.dwattr $C$DW$24, DW_AT_TI_call
-           CALL    .S2     B5                ; |334| 
-           STW     .D2T2   B3,*SP--(16)      ; |329| 
-           ZERO    .L2     B4                ; |330| 
-           ADDKPC  .S2     $C$RL3,B3,1       ; |334| 
 
-           ADD     .L1X    8,SP,A4           ; |334| 
-||         STW     .D2T2   B4,*+SP(4)        ; |330| 
+           CALLP   .S2     _Task_create,B3
+||         ADD     .L1X    4,SP,A4           ; |334| 
 
 $C$RL3:    ; CALL OCCURS {_Task_create} {0}  ; |334| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 7
 
-           MV      .L2X    A4,B0             ; |334| 
-||         MVKL    .S1     _Task_execute,A3  ; |339| 
-||         STW     .D2T1   A4,*+SP(4)        ; |334| 
+           MV      .L1     A4,A0             ; |334| 
+||         LDW     .D2T1   *+SP(4),A4        ; |339| 
 
-   [ B0]   B       .S2     $C$L1             ; |337| 
-||         MVKH    .S1     _Task_execute,A3  ; |339| 
-
-   [ B0]   MVKL    .S1     _Task_delete,A3   ; |347| 
+   [ A0]   B       .S1     $C$L1             ; |334| 
 $C$DW$25	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$25, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$25, DW_AT_name("_Task_execute")
 	.dwattr $C$DW$25, DW_AT_TI_call
-
-   [!B0]   CALL    .S2X    A3                ; |339| 
-|| [ B0]   MVKH    .S1     _Task_delete,A3   ; |347| 
-
-           LDW     .D2T1   *+SP(8),A4        ; |339| 
+   [!A0]   CALL    .S1     _Task_execute     ; |339| 
 $C$DW$26	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$26, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$26, DW_AT_name("_Task_delete")
 	.dwattr $C$DW$26, DW_AT_TI_call
-   [ B0]   CALL    .S2X    A3                ; |347| 
-   [ B0]   LDW     .D2T1   *+SP(8),A4        ; |347| 
-           ; BRANCHCC OCCURS {$C$L1}         ; |337| 
-;** --------------------------------------------------------------------------*
-;          EXCLUSIVE CPU CYCLES: 2
-           ADDKPC  .S2     $C$RL4,B3,1       ; |339| 
-$C$RL4:    ; CALL OCCURS {_Task_execute} {0}  ; |339| 
+   [ A0]   CALL    .S1     _Task_delete      ; |347| 
+   [ A0]   LDW     .D2T1   *+SP(4),A4        ; |347| 
+           NOP             2
+           ; BRANCHCC OCCURS {$C$L1}         ; |334| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 5
-           MVKL    .S1     _Task_delete,A3   ; |347| 
-           MVKH    .S1     _Task_delete,A3   ; |347| 
-           STW     .D2T1   A4,*+SP(4)        ; |339| 
+           ADDKPC  .S2     $C$RL4,B3,0       ; |339| 
+$C$RL4:    ; CALL OCCURS {_Task_execute} {0}  ; |339| 
 $C$DW$27	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$27, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$27, DW_AT_name("_Task_delete")
 	.dwattr $C$DW$27, DW_AT_TI_call
-           CALL    .S2X    A3                ; |347| 
-           LDW     .D2T1   *+SP(8),A4        ; |347| 
+           CALL    .S1     _Task_delete      ; |347| 
+           LDW     .D2T1   *+SP(4),A4        ; |347| 
+           NOP             2
 ;** --------------------------------------------------------------------------*
 $C$L1:    
-;          EXCLUSIVE CPU CYCLES: 4
-           ADDKPC  .S2     $C$RL5,B3,3       ; |347| 
+;          EXCLUSIVE CPU CYCLES: 2
+           ADDKPC  .S2     $C$RL5,B3,1       ; |347| 
 $C$RL5:    ; CALL OCCURS {_Task_delete} {0}  ; |347| 
 ;** --------------------------------------------------------------------------*
-;          EXCLUSIVE CPU CYCLES: 12
-           STW     .D2T1   A4,*+SP(4)        ; |347| 
-           LDW     .D2T2   *++SP(16),B3      ; |354| 
+;          EXCLUSIVE CPU CYCLES: 11
+           LDW     .D2T2   *++SP(8),B3       ; |354| 
            NOP             4
 	.dwpsn	file "dsp_main.c",line 354,column 1,is_stmt
 $C$DW$28	.dwtag  DW_TAG_TI_branch
@@ -385,15 +368,15 @@ $C$DW$T$24	.dwtag  DW_TAG_typedef, DW_AT_name("Int")
 	.dwattr $C$DW$T$24, DW_AT_type(*$C$DW$T$10)
 	.dwattr $C$DW$T$24, DW_AT_language(DW_LANG_C)
 
-$C$DW$T$42	.dwtag  DW_TAG_subroutine_type
-	.dwattr $C$DW$T$42, DW_AT_type(*$C$DW$T$24)
-	.dwattr $C$DW$T$42, DW_AT_language(DW_LANG_C)
-$C$DW$T$43	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$43, DW_AT_type(*$C$DW$T$42)
-	.dwattr $C$DW$T$43, DW_AT_address_class(0x20)
-$C$DW$T$44	.dwtag  DW_TAG_typedef, DW_AT_name("Fxn")
-	.dwattr $C$DW$T$44, DW_AT_type(*$C$DW$T$43)
-	.dwattr $C$DW$T$44, DW_AT_language(DW_LANG_C)
+$C$DW$T$45	.dwtag  DW_TAG_subroutine_type
+	.dwattr $C$DW$T$45, DW_AT_type(*$C$DW$T$24)
+	.dwattr $C$DW$T$45, DW_AT_language(DW_LANG_C)
+$C$DW$T$46	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$46, DW_AT_type(*$C$DW$T$45)
+	.dwattr $C$DW$T$46, DW_AT_address_class(0x20)
+$C$DW$T$47	.dwtag  DW_TAG_typedef, DW_AT_name("Fxn")
+	.dwattr $C$DW$T$47, DW_AT_type(*$C$DW$T$46)
+	.dwattr $C$DW$T$47, DW_AT_language(DW_LANG_C)
 $C$DW$T$11	.dwtag  DW_TAG_base_type
 	.dwattr $C$DW$T$11, DW_AT_encoding(DW_ATE_unsigned)
 	.dwattr $C$DW$T$11, DW_AT_name("unsigned int")
@@ -473,11 +456,11 @@ $C$DW$T$39	.dwtag  DW_TAG_pointer_type
 $C$DW$T$40	.dwtag  DW_TAG_pointer_type
 	.dwattr $C$DW$T$40, DW_AT_type(*$C$DW$T$39)
 	.dwattr $C$DW$T$40, DW_AT_address_class(0x20)
-$C$DW$T$52	.dwtag  DW_TAG_const_type
-	.dwattr $C$DW$T$52, DW_AT_type(*$C$DW$T$25)
-$C$DW$T$53	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$53, DW_AT_type(*$C$DW$T$52)
-	.dwattr $C$DW$T$53, DW_AT_address_class(0x20)
+$C$DW$T$53	.dwtag  DW_TAG_const_type
+	.dwattr $C$DW$T$53, DW_AT_type(*$C$DW$T$25)
+$C$DW$T$54	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$54, DW_AT_type(*$C$DW$T$53)
+	.dwattr $C$DW$T$54, DW_AT_address_class(0x20)
 
 $C$DW$T$29	.dwtag  DW_TAG_structure_type
 	.dwattr $C$DW$T$29, DW_AT_name("TSK_Obj")
@@ -532,12 +515,12 @@ $C$DW$36	.dwtag  DW_TAG_member
 	.dwattr $C$DW$36, DW_AT_accessibility(DW_ACCESS_public)
 	.dwendtag $C$DW$T$29
 
-$C$DW$T$56	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$56, DW_AT_type(*$C$DW$T$29)
-	.dwattr $C$DW$T$56, DW_AT_address_class(0x20)
-$C$DW$T$57	.dwtag  DW_TAG_typedef, DW_AT_name("TSK_Handle")
-	.dwattr $C$DW$T$57, DW_AT_type(*$C$DW$T$56)
-	.dwattr $C$DW$T$57, DW_AT_language(DW_LANG_C)
+$C$DW$T$64	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$64, DW_AT_type(*$C$DW$T$29)
+	.dwattr $C$DW$T$64, DW_AT_address_class(0x20)
+$C$DW$T$65	.dwtag  DW_TAG_typedef, DW_AT_name("TSK_Handle")
+	.dwattr $C$DW$T$65, DW_AT_type(*$C$DW$T$64)
+	.dwattr $C$DW$T$65, DW_AT_language(DW_LANG_C)
 
 $C$DW$T$30	.dwtag  DW_TAG_structure_type
 	.dwattr $C$DW$T$30, DW_AT_name("TSK_Attrs")
@@ -592,12 +575,12 @@ $C$DW$44	.dwtag  DW_TAG_member
 	.dwattr $C$DW$44, DW_AT_accessibility(DW_ACCESS_public)
 	.dwendtag $C$DW$T$30
 
-$C$DW$T$58	.dwtag  DW_TAG_typedef, DW_AT_name("TSK_Attrs")
-	.dwattr $C$DW$T$58, DW_AT_type(*$C$DW$T$30)
-	.dwattr $C$DW$T$58, DW_AT_language(DW_LANG_C)
-$C$DW$T$59	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$59, DW_AT_type(*$C$DW$T$58)
-	.dwattr $C$DW$T$59, DW_AT_address_class(0x20)
+$C$DW$T$66	.dwtag  DW_TAG_typedef, DW_AT_name("TSK_Attrs")
+	.dwattr $C$DW$T$66, DW_AT_type(*$C$DW$T$30)
+	.dwattr $C$DW$T$66, DW_AT_language(DW_LANG_C)
+$C$DW$T$67	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$67, DW_AT_type(*$C$DW$T$66)
+	.dwattr $C$DW$T$67, DW_AT_address_class(0x20)
 
 $C$DW$T$35	.dwtag  DW_TAG_structure_type
 	.dwattr $C$DW$T$35, DW_AT_name("Task_TransferInfo_tag")
@@ -622,15 +605,15 @@ $C$DW$47	.dwtag  DW_TAG_member
 	.dwattr $C$DW$47, DW_AT_accessibility(DW_ACCESS_public)
 	.dwendtag $C$DW$T$35
 
-$C$DW$T$45	.dwtag  DW_TAG_typedef, DW_AT_name("Task_TransferInfo")
-	.dwattr $C$DW$T$45, DW_AT_type(*$C$DW$T$35)
-	.dwattr $C$DW$T$45, DW_AT_language(DW_LANG_C)
-$C$DW$T$46	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$46, DW_AT_type(*$C$DW$T$45)
-	.dwattr $C$DW$T$46, DW_AT_address_class(0x20)
-$C$DW$T$47	.dwtag  DW_TAG_pointer_type
-	.dwattr $C$DW$T$47, DW_AT_type(*$C$DW$T$46)
-	.dwattr $C$DW$T$47, DW_AT_address_class(0x20)
+$C$DW$T$48	.dwtag  DW_TAG_typedef, DW_AT_name("Task_TransferInfo")
+	.dwattr $C$DW$T$48, DW_AT_type(*$C$DW$T$35)
+	.dwattr $C$DW$T$48, DW_AT_language(DW_LANG_C)
+$C$DW$T$49	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$49, DW_AT_type(*$C$DW$T$48)
+	.dwattr $C$DW$T$49, DW_AT_address_class(0x20)
+$C$DW$T$50	.dwtag  DW_TAG_pointer_type
+	.dwattr $C$DW$T$50, DW_AT_type(*$C$DW$T$49)
+	.dwattr $C$DW$T$50, DW_AT_address_class(0x20)
 	.dwattr $C$DW$CU, DW_AT_language(DW_LANG_C)
 
 ;***************************************************************

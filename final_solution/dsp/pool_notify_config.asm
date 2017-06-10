@@ -1,21 +1,22 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Sat Jun 10 18:12:07 2017                                *
+;* Date/Time created: Sat Jun 10 19:47:29 2017                                *
 ;******************************************************************************
-	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=far --mem_model:const=data --mem_model:data=far --predefine_memory_model_macros --quiet --silicon_version=6500 --symdebug:skeletal 
+	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=near --mem_model:const=data --mem_model:data=far_aggregates --quiet --silicon_version=6500 --symdebug:skeletal 
 
 ;******************************************************************************
 ;* GLOBAL FILE PARAMETERS                                                     *
 ;*                                                                            *
 ;*   Architecture      : TMS320C64x+                                          *
-;*   Optimization      : Disabled                                             *
-;*   Optimizing for    : Compile time, Ease of Development                    *
-;*                       Based on options: no -o, no -ms                      *
+;*   Optimization      : Enabled at level 3                                   *
+;*   Optimizing for    : Speed                                                *
+;*                       Based on options: -o3, no -ms                        *
 ;*   Endian            : Little                                               *
 ;*   Interrupt Thrshld : Disabled                                             *
-;*   Data Access Model : Far                                                  *
-;*   Pipelining        : Disabled                                             *
-;*   Memory Aliases    : Presume not aliases (optimistic)                     *
+;*   Data Access Model : Far Aggregate Data                                   *
+;*   Pipelining        : Enabled                                              *
+;*   Speculate Loads   : Disabled                                             *
+;*   Memory Aliases    : Presume are aliases (pessimistic)                    *
 ;*   Debug Info        : DWARF Debug for Program Analysis w/Optimization      *
 ;*                                                                            *
 ;******************************************************************************
@@ -30,7 +31,7 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("pool_notify_config.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/neon_handing/dsp")
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/lazaros_final/dsp")
 ;*****************************************************************************
 ;* CINIT RECORDS                                                             *
 ;*****************************************************************************
@@ -91,7 +92,7 @@ $C$DW$5	.dwtag  DW_TAG_variable, DW_AT_name("POOL_config")
 	.dwattr $C$DW$5, DW_AT_location[DW_OP_addr _POOL_config]
 	.dwattr $C$DW$5, DW_AT_type(*$C$DW$T$55)
 	.dwattr $C$DW$5, DW_AT_external
-;	/opt/bbToolChain/usr/local/share/c6000/bin/acp6x -@/tmp/30582ZvzqS8 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/08515kQPjIM /tmp/08515W77wO1 
 ;*****************************************************************************
 ;* UNDEFINED EXTERNAL REFERENCES                                             *
 ;*****************************************************************************

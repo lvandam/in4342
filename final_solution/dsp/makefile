@@ -66,13 +66,13 @@ BFLAGS := -Dconfig.importPath="$(BASE_SABIOS)/packages; \
 #   ----------------------------------------------------------------------------
 #   All common compiler and linker flags
 #   ----------------------------------------------------------------------------
-ALL_CFLAGS := -q -pdr -pdv -pden -ml3 -mv6400+ -mt --opt_for_speed=5 --single_inline --no_warnings --disable:sploop -mw  $(CFLAGS)
+ALL_CFLAGS := -q -pdr -pdv -pden -mv6400+ -o3 --no_warnings --disable:sploop -mw  $(CFLAGS)
 ALL_LDFLAGS := -z -c -q -x $(LDFLAGS)
 
 #   ----------------------------------------------------------------------------
 #   Compiler and Linker options for Debug
 #   ----------------------------------------------------------------------------
-CFLAGS_D := -g -d"_DEBUG" -o3 --no_compress $(DEBUG) $(ALL_CFLAGS)
+CFLAGS_D := -d"_DEBUG" $(DEBUG) $(ALL_CFLAGS)
 OBJDIR_D := Debug
 BINDIR_D := $(OBJDIR_D)
 OBJS_D := $(CSRCS:%.c=$(OBJDIR_D)/%.obj) $(ASRCS:%.s62=$(OBJDIR_D)/%.obj)
