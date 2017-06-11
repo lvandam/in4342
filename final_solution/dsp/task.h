@@ -7,10 +7,19 @@
 /*  ----------------------------------- Sample Headers              */
 #include <pool_notify_config.h>
 
+// The indices of the layer in a pixel of the frame structure.
+
 #define BLUE               0
 #define GREEN              1
 #define RED                2
 
+// DSP status.
+
+#define DSP_BUSY           0
+#define DSP_READY          1
+#define DSP_DONE           2
+
+//Agreed set of GPP to DSP commands.
 
 #define STOP_DSP           0
 #define IDLE               1

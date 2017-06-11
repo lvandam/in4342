@@ -59,30 +59,48 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
     sumEpanechnikov = (double) sumEpanechnikov * (double) 0.0000000001;
 
     target_model = pdf_representation_target(frame, target_Region);
+    
+    //Copy to the pool the region of the target model.
 
     poolRectangle(rect.x, rect.y, rect.width, rect.height);
     
-    poolColor(BLUE, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);    
+    //Copy to the pool the blue layer inside the region of the target model.
+    
+    poolColor(BLUE, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height); 
+    
+    //if the DSP is ready, send a command to compute the pdf representation of the target for the blue layer
+    
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_BLUE);
+        //wait for a notification that it is done
         isDspDone();
     }
     
+    //Copy to the pool the green layer inside the region of the target model
+    
     poolColor(GREEN,(Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
+    
+    //if the DSP is ready, send a command to compute the pdf representation of the target for the greem layer
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_GREEN);
+        //wait for a notification that it is done
         isDspDone();
     }
     
+    //Copy to the pool the red layer inside the region of the target model
+    
     poolColor(RED, (Uint8*) frame.ptr(0,0), rect.x, rect.y, rect.width, rect.height);
+    
+    //if the DSP is ready, send a command to compute the pdf representation of the target for the red layer
     if(isDspReady())
     {
         setDspState(DSP_BUSY);
         dspCommand(INIT_RED);
+        //wait for a notification that it is done
         isDspDone();
     }
 }
@@ -288,10 +306,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 
 cv::Rect MeanShift::track(const cv::Mat &next_frame)
 {
-    // Timer multTimer("Mult Time");
-    // Timer trackTimer("Track Time");
-    // trackTimer.Start();
-
+    
     #ifdef DET_TIMING
     static int trackCalls = 0;
     static Timer timePoolRect("pooling the rectangle");
@@ -321,7 +336,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         #ifdef DET_TIMING
         timePoolRect.Start();
         #endif
-        // Send rectangle to DSP
+        // Copy the new candidate region to the pool.
         poolRectangle(target_Region.x, target_Region.y, target_Region.width, target_Region.height);
         #ifdef DET_TIMING
         timePoolRect.Stop();
@@ -331,6 +346,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         #ifdef DET_TIMING
         timePoolColor.Start();
         #endif
+        // Copy the blue layer of the pixels inside the new candidate region to the pool.
         poolColor(BLUE,(Uint8*) next_frame.ptr(0,0), target_Region.x, target_Region.y, target_Region.width, target_Region.height);
         #ifdef DET_TIMING
         timePoolColor.Stop();
@@ -340,6 +356,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         #ifdef DET_TIMING
         timeDspCommand.Start();
         #endif
+        //Send a command to the DSP to compute the weights for the blue layer and return the result to be combined in the GPP.
         dspCommand(COMBINE_BLUE);
         #ifdef DET_TIMING
         timeDspCommand.Stop();
@@ -350,6 +367,7 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         #ifdef DET_TIMING
         timeWeight.Start();
         #endif
+        //Compute the weights for the remaining layers on the GPP.
         MatrixFloat weight12 = PdfWeight(next_frame);
         #ifdef DET_TIMING
         timeWeight.Stop();
@@ -491,9 +509,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         cout<< "Total time needed for tracking " << tTracking <<" sec" << endl;        
     }
     #endif
-
-    // trackTimer.Pause();
-    // trackTimer.Print();
 
     return next_rect;
 }

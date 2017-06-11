@@ -17,7 +17,6 @@
 
 /*  ----------------------------------- Application Header              */
 #include "dspInter.h"
-//#include <pool_notify_os.h>
 
 
 #if defined (__cplusplus)
@@ -44,53 +43,32 @@ extern "C" {
 
 #define FRAME_SIZE                     640 * 480
 
-/*  ============================================================================
- *  @const   pool_notify_INVALID_ID
- *
- *  @desc   Indicates invalid processor ID within the pool_notify_Ctrl structure.
- *  ============================================================================
- */
+// Indicates invalid processor ID within the pool_notify_Ctrl structure.
+    
 #define pool_notify_INVALID_ID            (Uint32) -1
 
-/** ============================================================================
- *  @const  pool_notify_IPS_ID
- *
- *  @desc   The IPS ID to be used for sending notification events to the DSP.
- *  ============================================================================
- */
+// The IPS ID to be used for sending notification events to the DSP.
+
 #define pool_notify_IPS_ID                0
 
-/** ============================================================================
- *  @const  pool_notify_IPS_EVENTNO
- *
- *  @desc   The IPS event number to be used for sending notification events to
- *          the DSP.
- *  ============================================================================
- */
+// The IPS event number to be used for sending notification events to the DSP.
+
 #define pool_notify_IPS_EVENTNO           5
 
 
-/*  ============================================================================
- *  @name   poolBufferSize
- *
- *  @desc   Size of buffer to be used for data transfer.
- *  ============================================================================
- */
+// Size of buffer to be used for data transfer.
+
 STATIC Uint32  poolBufferSize ;
 
-/** ============================================================================
- *  @name   colorBuf, resultBuf 
- *
- *  @desc   Pointers to the shared data buffers used for the communication with
- *          the DSP
- *  ============================================================================
- */
+//Pointers to the shared data buffers used for the communication with the DSP
 
 Uint8 * colorBuf = NULL ;
 
 Uint8 * resultBuf = NULL ;
 
 float * flres = NULL; //float pointer to resultBuffer
+    
+//DSP state
     
 Uint8 dspReady = 0;
 
@@ -130,8 +108,8 @@ sem_t sem;
 /** ============================================================================
  *  @func   dspComInit
  *
- *  @desc   This function allocates and initializes resources used by
- *          this application.
+ *  @desc   This function allocates and initializes the data structures needed for
+ *          the communication with the DSP and iniates its operation.
  *
  *  @modif  None
  *  ============================================================================
@@ -194,7 +172,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
     }
 
     /*
-     *  Allocate the data buffer to be used for the application.
+     *  Allocate the data buffer to be used to pass the layers to the DSP.
      */
     if (DSP_SUCCEEDED (status))
     {
@@ -224,6 +202,11 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
             printf ("POOL_alloc() for colorBuf failed. Status = [0x%x]\n",(int)status);
         }
     }
+    
+    /*
+     *  Allocate the data buffer to be used to pass the rectangle coordinates
+     *  and to the DSP and the resulting weights from the DSP to the GPP.
+     */
 
     if (DSP_SUCCEEDED (status))
     {
@@ -312,7 +295,7 @@ NORMAL_API DSP_STATUS dspComInit (	IN Char8 * dspExecutable, IN Uint8   procId)
 
     /*
      *  Send notifications to the DSP with information about the address of the
-     *  control structure and data buffer to be used by the application.
+     *  data buffers to be used by the application.
      *
      */
     status = NOTIFY_notify (processorId,
@@ -383,7 +366,7 @@ NORMAL_API Void dspComTerminate ( Void )
     }
 
     /*
-     *  Free the memory allocated for the data buffer.
+     *  Free the memory allocated for the data buffers.
      */
     tmpStatus = POOL_free (POOL_makePoolId(processorId, SAMPLE_POOL_ID),
                            (Void *) colorBuf,
@@ -431,26 +414,35 @@ NORMAL_API Void dspComTerminate ( Void )
     }
 }
 
+/* Inform the functions outside this file whether the DSP is ready. */
+
 Uint8 isDspReady ( Void )
 {
     return dspReady;
 }
 
+/* Wait until the DSP is done. */    
+    
 Void isDspDone ( Void )
 {
     sem_wait(&sem);
 }
+    
+/* Set the state information of the DSP as seen by the GPP. */
 
 Void setDspState (Uint8 state)
 {
     dspReady = state;
 }
+    
+/* Send a command to the DSP. */
 
 Void dspCommand( Uint8 command )
 {
     NOTIFY_notify (processorId, pool_notify_IPS_ID, 6, (Uint32) command);
 }
 
+/* Copy the contents of the defined layer(arg1), from the defined frame(arg2), for the region specified(args 3,4,5,6) to the pool. */
     
 Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight )
 {
@@ -459,29 +451,36 @@ Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Ui
     long long* octColor = (long long*) colorBuf;
     register long long longTemp;
     
+    //Starting from the position (rectX,rectY).
     for(k=rectY;k<rectY + rectHeight;k++)
     {
         startingPixel = rectX + k*640;
         j=startingPixel- startingPixel%8;
         for(i=(startingPixel- startingPixel%8)/8;i<=(startingPixel + rectWidth)/8;i++)
         {
-            if(k==rectY + rectHeight-1 && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 ) break;
+            //stop at the end of the rectangle if bytes out of the frame buffer are going to be read.
+            if((k==rectY + rectHeight-1) && (i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 )) break;
+            //read the contents of the specified layer 8 bytes at a time into double-word.
             longTemp = ((long long) newColor[3*(j+7) + colorIndex])<<(7*8) | ((long long) newColor[3*(j+6) + colorIndex])<<(6*8) | ((long long) newColor[3*(j+5) + colorIndex])<<(5*8) | ((long long) newColor[3*(j+4) + colorIndex]) | ((long long) newColor[3*(j+3) + colorIndex])<<(3*8) | ((long long) newColor[3*(j+2) + colorIndex])<<(2*8) | ((long long) newColor[3*(j+1) + colorIndex])<<(1*8) | ((long long) newColor[3*j + colorIndex]);
-        
+            //store the double-word into the pool.
             octColor[i]=longTemp;
             j+=8;
         }
     }
     
+    //if the above loop stopped because bytes out of the frame buffer were going to be read, write the remaining unwritten pixels per byte.
     if(k==rectY + rectHeight && i==(startingPixel + rectWidth)/8 && rectX+rectWidth+8 >=640 )
     {
         for(i=(rectY+rectHeight-1)*640 +rectX + rectWidth - (rectX+rectWidth)%8;i<(rectY+rectHeight-1)*640 +rectX+rectWidth;i++)
             colorBuf[i]=newColor[i];
     }
     
+    //write back to the pool all the bytes between the starting and the ending address of the rectangle.
     POOL_writeback ( POOL_makePoolId(processorId, SAMPLE_POOL_ID), colorBuf+rectY*640+rectX, rectHeight*640-rectX);
 }
 
+/* Copy the new rectangle to the pool using a double-word. */    
+    
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight)
 {
     long long *rectangle = (long long*) resultBuf;
@@ -490,6 +489,8 @@ Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeig
     POOL_writeback (POOL_makePoolId(processorId, SAMPLE_POOL_ID), resultBuf, 8);
 }
 
+/* Return a pointer to the produced by the DSP result. */    
+    
 Uint8* pointToResult(Void)
 {
     return resultBuf+8;
@@ -499,8 +500,8 @@ Uint8* pointToResult(Void)
  *  @func   gppSideCB
  *
  *  @desc   This function implements the event callback registered with the
- *          NOTIFY component to receive notification indicating that the DSP-
- *          side application has completed its setup phase.
+ *          NOTIFY component to receive notification indicating the state of
+ *          the DSP side and the cycles it executed certain functions.
  *
  *  @modif  None
  *  ----------------------------------------------------------------------------
@@ -515,6 +516,7 @@ STATIC Void gppSideCB (Uint32 eventNo, Pvoid arg, Pvoid info)
     {
         count++;
         dspCycles = (Uint32) info;
+        //Execution time on DSP is calculated by multiplying the execution cycles with the inverse of its clock frequency(520MHz).
         if(count==1) printf("Initialization time on DSP is %f msec\n", dspCycles * (double) 0.000001923);
         if(count==2) printf("Kernel time on DSP is %f msec\n", dspCycles * (double) 0.000001923);
     }

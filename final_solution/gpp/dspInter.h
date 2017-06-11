@@ -4,23 +4,19 @@
 /*  ----------------------------------- DSP/BIOS Link                 */
 #include <dsplink.h>
 
-
-/** ============================================================================
- *  @const  ID_PROCESSOR
- *
- *  @desc   The processor id of the processor being used.
- *  ============================================================================
- */
+// The indices of the layer in a pixel of the frame structure.
 
 #define BLUE               0
 #define GREEN              1
 #define RED                2
 
-// DSP status
+// DSP status.
 
 #define DSP_BUSY           0
 #define DSP_READY          1
 #define DSP_DONE           2
+
+//Agreed set of GPP to DSP commands.
 
 #define STOP_DSP           0
 #define IDLE               1
@@ -33,21 +29,35 @@
 #define WEIGHT_GREEN       9
 #define WEIGHT_RED         10
 
+/* Inform the functions outside this file whether the DSP is ready. */
+
 Uint8 isDspReady ( Void );
+
+/* Wait until the DSP is done. */
 
 Void isDspDone ( Void );
 
+/* Set the state information of the DSP as seen by the GPP. */
+
+Void setDspState (Uint8 state);
+
+/* Send a command to the DSP. */
+
 Void dspCommand( Uint8 command);
 
-Void copyToBuffer (Uint8 *ptr, Uint8 *buffer, Uint8 color, Uint8 length);
+/* Copy the contents of the defined layer(arg1), from the defined frame(arg2), for the region specified(args 3,4,5,6) to the pool. */
 
 Void poolColor(Uint8 colorIndex, Uint8 *newColor, Uint16 rectX, Uint16 rectY, Uint16 rectWidth, Uint16 rectHeight );
 
+/* Copy the new rectangle to the pool using a double-word. */
+
 Void poolRectangle(Uint16 rectX, Uint16 rectY, Uint16 rectHeight, Uint16 rectWidth);
+
+/* Return a pointer to the produced by the DSP result. */
 
 Uint8* pointToResult(Void);
 
-Void setDspState (Uint8 state);
+
 /** ============================================================================
  *  @func   dspComInit
  *

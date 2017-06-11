@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Sat Jun 10 19:47:29 2017                                *
+;* Date/Time created: Sun Jun 11 09:02:20 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=near --mem_model:const=data --mem_model:data=far_aggregates --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -279,7 +279,7 @@ $C$DW$62	.dwtag  DW_TAG_variable, DW_AT_name("function")
 	.dwattr $C$DW$62, DW_AT_type(*$C$DW$T$76)
 	.dwattr $C$DW$62, DW_AT_external
 	.bss	_count$1,4,4
-;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/08498ZuISpn /tmp/084985k9eVN 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/18826Ox9H1C /tmp/188260DMEKy 
 	.sect	".text"
 	.clink
 
@@ -288,11 +288,11 @@ $C$DW$63	.dwtag  DW_TAG_subprogram, DW_AT_name("Get_Color")
 	.dwattr $C$DW$63, DW_AT_high_pc(0x00)
 	.dwattr $C$DW$63, DW_AT_TI_symbol_name("_Get_Color")
 	.dwattr $C$DW$63, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$63, DW_AT_TI_begin_line(0x11c)
+	.dwattr $C$DW$63, DW_AT_TI_begin_line(0x148)
 	.dwattr $C$DW$63, DW_AT_TI_begin_column(0x0d)
 	.dwattr $C$DW$63, DW_AT_frame_base[DW_OP_breg31 8]
 	.dwattr $C$DW$63, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 285,column 1,is_stmt,address _Get_Color
+	.dwpsn	file "task.c",line 329,column 1,is_stmt,address _Get_Color
 
 ;******************************************************************************
 ;* FUNCTION NAME: Get_Color                                                   *
@@ -310,32 +310,32 @@ $C$DW$63	.dwtag  DW_TAG_subprogram, DW_AT_name("Get_Color")
 _Get_Color:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 15
-           LDW     .D2T2   *+DP(_dspRectangle),B4 ; |290| 
-           LDW     .D2T2   *+DP(_dspColor),B8 ; |290| 
-           MVK     .L1     0x1,A6            ; |290| 
+           LDW     .D2T2   *+DP(_dspRectangle),B4 ; |334| 
+           LDW     .D2T2   *+DP(_dspColor),B8 ; |334| 
+           MVK     .L1     0x1,A6            ; |334| 
            NOP             2
-           LDHU    .D2T2   *+B4(2),B5        ; |290| 
-           LDHU    .D2T2   *+B4(4),B7        ; |290| 
-           LDHU    .D2T2   *+B4(6),B6        ; |290| 
-           LDHU    .D2T2   *B4,B9            ; |290| 
+           LDHU    .D2T2   *+B4(2),B5        ; |334| 
+           LDHU    .D2T2   *+B4(4),B7        ; |334| 
+           LDHU    .D2T2   *+B4(6),B6        ; |334| 
+           LDHU    .D2T2   *B4,B9            ; |334| 
 $C$DW$64	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$64, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$64, DW_AT_name("_BCACHE_inv")
 	.dwattr $C$DW$64, DW_AT_TI_call
 	.dwattr $C$DW$64, DW_AT_TI_return
-           CALLRET .S1     _BCACHE_inv       ; |290| 
-           SHL     .S2     B5,9,B4           ; |290| 
-           SHL     .S1X    B5,7,A3           ; |290| 
-           ADD     .L1X    A3,B4,A3          ; |290| 
+           CALLRET .S1     _BCACHE_inv       ; |334| 
+           SHL     .S2     B5,9,B4           ; |334| 
+           SHL     .S1X    B5,7,A3           ; |334| 
+           ADD     .L1X    A3,B4,A3          ; |334| 
 
-           ADD     .L1X    B8,A3,A3          ; |290| 
-||         MPYU    .M2     B7,B6,B4          ; |290| 
+           ADD     .L1X    B8,A3,A3          ; |334| 
+||         MPYU    .M2     B7,B6,B4          ; |334| 
 
-	.dwpsn	file "task.c",line 291,column 1,is_stmt
-           ADD     .L1X    B9,A3,A4          ; |290| 
-$C$RL0:    ; CALL-RETURN OCCURS {_BCACHE_inv} {0}  ; |290| 
+	.dwpsn	file "task.c",line 335,column 1,is_stmt
+           ADD     .L1X    B9,A3,A4          ; |334| 
+$C$RL0:    ; CALL-RETURN OCCURS {_BCACHE_inv} {0}  ; |334| 
 	.dwattr $C$DW$63, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$63, DW_AT_TI_end_line(0x123)
+	.dwattr $C$DW$63, DW_AT_TI_end_line(0x14f)
 	.dwattr $C$DW$63, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$63
 
@@ -350,11 +350,11 @@ $C$DW$65	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_execute")
 	.dwattr $C$DW$65, DW_AT_external
 	.dwattr $C$DW$65, DW_AT_type(*$C$DW$T$22)
 	.dwattr $C$DW$65, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$65, DW_AT_TI_begin_line(0x81)
+	.dwattr $C$DW$65, DW_AT_TI_begin_line(0xa7)
 	.dwattr $C$DW$65, DW_AT_TI_begin_column(0x05)
 	.dwattr $C$DW$65, DW_AT_frame_base[DW_OP_breg31 32]
 	.dwattr $C$DW$65, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 130,column 1,is_stmt,address _Task_execute
+	.dwpsn	file "task.c",line 168,column 1,is_stmt,address _Task_execute
 $C$DW$66	.dwtag  DW_TAG_formal_parameter, DW_AT_name("info")
 	.dwattr $C$DW$66, DW_AT_TI_symbol_name("_info")
 	.dwattr $C$DW$66, DW_AT_type(*$C$DW$T$95)
@@ -378,22 +378,22 @@ $C$DW$66	.dwtag  DW_TAG_formal_parameter, DW_AT_name("info")
 _Task_execute:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 16
-           STW     .D2T1   A14,*SP--(8)      ; |130| 
-           STDW    .D2T2   B13:B12,*SP--     ; |130| 
-           STDW    .D2T2   B11:B10,*SP--     ; |130| 
-           STDW    .D2T1   A11:A10,*SP--     ; |130| 
-           LDW     .D2T1   *+DP(_dspResFrame),A11 ; |133| 
-           ZERO    .L2     B4                ; |136| 
-           MV      .L1     A4,A10            ; |130| 
-           MV      .L1X    B3,A14            ; |130| 
-           MVC     .S2     B4,TSCL           ; |136| 
-           MVC     .S2     TSCL,B11          ; |138| 
+           STW     .D2T1   A14,*SP--(8)      ; |168| 
+           STDW    .D2T2   B13:B12,*SP--     ; |168| 
+           STDW    .D2T2   B11:B10,*SP--     ; |168| 
+           STDW    .D2T1   A11:A10,*SP--     ; |168| 
+           LDW     .D2T1   *+DP(_dspResFrame),A11 ; |171| 
+           ZERO    .L2     B4                ; |174| 
+           MV      .L1     A4,A10            ; |168| 
+           MV      .L1X    B3,A14            ; |168| 
+           MVC     .S2     B4,TSCL           ; |174| 
+           MVC     .S2     TSCL,B11          ; |176| 
 $C$DW$67	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$67, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$67, DW_AT_name("_HC_Epanechnikov_kernel")
 	.dwattr $C$DW$67, DW_AT_TI_call
            CALLP   .S2     _HC_Epanechnikov_kernel,B3
-$C$RL1:    ; CALL OCCURS {_HC_Epanechnikov_kernel} {0}  ; |139| 
+$C$RL1:    ; CALL OCCURS {_HC_Epanechnikov_kernel} {0}  ; |178| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 15
 $C$DW$68	.dwtag  DW_TAG_TI_branch
@@ -402,48 +402,48 @@ $C$DW$68	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$68, DW_AT_TI_call
 
            CALLP   .S2     _initTarget,B3
-||         MVK     .L1     0x1,A4            ; |140| 
+||         MVK     .L1     0x1,A4            ; |179| 
 
-$C$RL2:    ; CALL OCCURS {_initTarget} {0}   ; |140| 
-           MVC     .S2     TSCL,B10          ; |141| 
-           MVK     .L1     0x1,A4            ; |305| 
-           ZERO    .L2     B4                ; |305| 
+$C$RL2:    ; CALL OCCURS {_initTarget} {0}   ; |179| 
+           MVC     .S2     TSCL,B10          ; |180| 
+           MVK     .L1     0x1,A4            ; |355| 
+           ZERO    .L2     B4                ; |355| 
 $C$DW$69	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$69, DW_AT_low_pc(0x04)
 	.dwattr $C$DW$69, DW_AT_name("_NOTIFY_notify")
 	.dwattr $C$DW$69, DW_AT_TI_call
 
-           MVK     .L1     0x5,A6            ; |305| 
+           MVK     .L1     0x5,A6            ; |355| 
 ||         CALLP   .S2     _NOTIFY_notify,B3
-||         MV      .L2X    A4,B6             ; |305| 
+||         MV      .L2X    A4,B6             ; |355| 
 
-$C$RL3:    ; CALL OCCURS {_NOTIFY_notify} {0}  ; |305| 
+$C$RL3:    ; CALL OCCURS {_NOTIFY_notify} {0}  ; |355| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 11
-           LDBU    .D2T2   *+DP(_function),B0 ; |145| 
-           SUB     .L2     B10,B11,B11       ; |142| 
-           ZERO    .L2     B10               ; |135| 
+           LDBU    .D2T2   *+DP(_function),B0 ; |185| 
+           SUB     .L2     B10,B11,B11       ; |181| 
+           ZERO    .L2     B10               ; |173| 
            ADD     .L1     4,A10,A10
            NOP             1
-   [!B0]   BNOP    .S1     $C$L12,5          ; |145| 
-           ; BRANCHCC OCCURS {$C$L12}        ; |145| 
+   [!B0]   BNOP    .S1     $C$L12,5          ; |185| 
+           ; BRANCHCC OCCURS {$C$L12}        ; |185| 
 ;*----------------------------------------------------------------------------*
 ;*   SOFTWARE PIPELINE INFORMATION
 ;*      Disqualified loop: Loop contains control code
 ;*----------------------------------------------------------------------------*
 $C$L1:    
 $C$DW$L$_Task_execute$4$B:
-	.dwpsn	file "task.c",line 146,column 0,is_stmt
+	.dwpsn	file "task.c",line 186,column 0,is_stmt
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B13          ; |147| 
+           MVC     .S2     TSCL,B13          ; |187| 
 $C$DW$70	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$70, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$70, DW_AT_name("_initWeight")
 	.dwattr $C$DW$70, DW_AT_TI_call
-           CALL    .S1     _initWeight       ; |148| 
-           ADDKPC  .S2     $C$RL4,B3,3       ; |148| 
-           MV      .L1     A11,A4            ; |148| 
-$C$RL4:    ; CALL OCCURS {_initWeight} {0}   ; |148| 
+           CALL    .S1     _initWeight       ; |189| 
+           ADDKPC  .S2     $C$RL4,B3,3       ; |189| 
+           MV      .L1     A11,A4            ; |189| 
+$C$RL4:    ; CALL OCCURS {_initWeight} {0}   ; |189| 
 $C$DW$L$_Task_execute$4$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$5$B:
@@ -454,10 +454,10 @@ $C$DW$71	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$71, DW_AT_TI_call
 
            CALLP   .S2     _initTarget,B3
-||         MVK     .L1     0x2,A4            ; |149| 
+||         MVK     .L1     0x2,A4            ; |190| 
 
-$C$RL5:    ; CALL OCCURS {_initTarget} {0}   ; |149| 
-           MVC     .S2     TSCL,B12          ; |150| 
+$C$RL5:    ; CALL OCCURS {_initTarget} {0}   ; |190| 
+           MVC     .S2     TSCL,B12          ; |191| 
 $C$DW$72	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$72, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$72, DW_AT_name("_SEM_pend")
@@ -465,26 +465,26 @@ $C$DW$72	.dwtag  DW_TAG_TI_branch
 
            CALLP   .S2     _SEM_pend,B3
 ||         MVK     .L2     0xffffffff,B4
-||         MV      .L1     A10,A4            ; |152| 
+||         MV      .L1     A10,A4            ; |194| 
 
-$C$RL6:    ; CALL OCCURS {_SEM_pend} {0}     ; |152| 
+$C$RL6:    ; CALL OCCURS {_SEM_pend} {0}     ; |194| 
 $C$DW$L$_Task_execute$5$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$6$B:
 ;          EXCLUSIVE CPU CYCLES: 13
-           LDBU    .D2T2   *+DP(_function),B5 ; |154| 
-           SUB     .L2     B12,B13,B6        ; |151| 
-           ADD     .L2     B10,B6,B10        ; |151| 
+           LDBU    .D2T2   *+DP(_function),B5 ; |196| 
+           SUB     .L2     B12,B13,B6        ; |192| 
+           ADD     .L2     B10,B6,B10        ; |192| 
            NOP             2
 
-           SUB     .L2     B5,2,B4           ; |154| 
-||         SHL     .S2     B5,2,B5           ; |154| 
+           SUB     .L2     B5,2,B4           ; |196| 
+||         SHL     .S2     B5,2,B5           ; |196| 
 
-           CMPGTU  .L2     B4,8,B0           ; |154| 
-||         SUB     .S2     B5,8,B5           ; |154| 
-||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |154| 
+           CMPGTU  .L2     B4,8,B0           ; |196| 
+||         SUB     .S2     B5,8,B5           ; |196| 
+||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |196| 
 
-   [ B0]   B       .S2     $C$L11            ; |154| 
+   [ B0]   B       .S2     $C$L11            ; |196| 
 || [!B0]   MVKL    .S1     $C$SW1,A3
 
    [!B0]   MVKH    .S1     $C$SW1,A3
@@ -493,19 +493,19 @@ $C$DW$73	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$73, DW_AT_name("_NOTIFY_notify")
 	.dwattr $C$DW$73, DW_AT_TI_call
 
-   [ B0]   CALL    .S1     _NOTIFY_notify    ; |145| 
-||         ADD     .L1X    A3,B5,A3          ; |154| 
+   [ B0]   CALL    .S1     _NOTIFY_notify    ; |185| 
+||         ADD     .L1X    A3,B5,A3          ; |196| 
 
-   [!B0]   LDW     .D1T1   *A3,A3            ; |154| 
+   [!B0]   LDW     .D1T1   *A3,A3            ; |196| 
            NOP             2
-           ; BRANCHCC OCCURS {$C$L11} {-9}   ; |154| 
+           ; BRANCHCC OCCURS {$C$L11} {-9}   ; |196| 
 $C$DW$L$_Task_execute$6$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$7$B:
 ;          EXCLUSIVE CPU CYCLES: 8
            NOP             2
-           BNOP    .S2X    A3,5              ; |154| 
-           ; BRANCH OCCURS {A3}              ; |154| 
+           BNOP    .S2X    A3,5              ; |196| 
+           ; BRANCH OCCURS {A3}              ; |196| 
 	.sect	".switch"
 	.clink
 $C$SW1:	.word	$C$L9	; 2
@@ -529,11 +529,11 @@ $C$DW$74	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$74, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL7:    ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL7:    ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$8$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$9$B:
@@ -543,55 +543,55 @@ $C$DW$75	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$75, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$75, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL8:    ; CALL OCCURS {_Get_Color} {0}    ; |236| 
-           MVC     .S2     TSCL,B13          ; |237| 
-           LDW     .D2T1   *+DP(_dspColor),A4 ; |238| 
+$C$RL8:    ; CALL OCCURS {_Get_Color} {0}    ; |276| 
+           MVC     .S2     TSCL,B13          ; |277| 
+           LDW     .D2T1   *+DP(_dspColor),A4 ; |278| 
 $C$DW$76	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$76, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$76, DW_AT_name("_pdf_representation")
 	.dwattr $C$DW$76, DW_AT_TI_call
 
            CALLP   .S2     _pdf_representation,B3
-||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |238| 
+||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |278| 
 
-$C$RL9:    ; CALL OCCURS {_pdf_representation} {0}  ; |238| 
-           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |239| 
+$C$RL9:    ; CALL OCCURS {_pdf_representation} {0}  ; |278| 
+           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |279| 
 $C$DW$77	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$77, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$77, DW_AT_name("_CalcWeight")
 	.dwattr $C$DW$77, DW_AT_TI_call
 
            CALLP   .S2     _CalcWeight,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |239| 
-||         MV      .L2X    A11,B6            ; |239| 
-||         MVK     .L1     0x2,A4            ; |239| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |279| 
+||         MV      .L2X    A11,B6            ; |279| 
+||         MVK     .L1     0x2,A4            ; |279| 
 
-$C$RL10:   ; CALL OCCURS {_CalcWeight} {0}   ; |239| 
-           MVC     .S2     TSCL,B12          ; |240| 
-           MVK     .S2     0x4df0,B4         ; |300| 
+$C$RL10:   ; CALL OCCURS {_CalcWeight} {0}   ; |279| 
+           MVC     .S2     TSCL,B12          ; |280| 
+           MVK     .S2     0x4df0,B4         ; |348| 
 $C$DW$78	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$78, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$78, DW_AT_name("_BCACHE_wb")
 	.dwattr $C$DW$78, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_wb,B3
-||         LDW     .D2T1   *+DP(_dspResFrame),A4 ; |300| 
-||         MVK     .L1     0x1,A6            ; |300| 
+||         LDW     .D2T1   *+DP(_dspResFrame),A4 ; |348| 
+||         MVK     .L1     0x1,A6            ; |348| 
 
-$C$RL11:   ; CALL OCCURS {_BCACHE_wb} {0}    ; |300| 
+$C$RL11:   ; CALL OCCURS {_BCACHE_wb} {0}    ; |348| 
 $C$DW$L$_Task_execute$9$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$10$B:
 ;          EXCLUSIVE CPU CYCLES: 6
-           BNOP    .S1     $C$L10,3          ; |244| 
+           BNOP    .S1     $C$L10,3          ; |284| 
 
-           SUB     .L2     B12,B13,B4        ; |242| 
-||         MVK     .L1     1,A3              ; |243| 
+           SUB     .L2     B12,B13,B4        ; |282| 
+||         MVK     .L1     1,A3              ; |283| 
 
-           ADD     .L2     B10,B4,B10        ; |242| 
-||         STB     .D2T1   A3,*+DP(_function) ; |243| 
+           ADD     .L2     B10,B4,B10        ; |282| 
+||         STB     .D2T1   A3,*+DP(_function) ; |283| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |244| 
+           ; BRANCH OCCURS {$C$L10}          ; |284| 
 $C$DW$L$_Task_execute$10$E:
 ;** --------------------------------------------------------------------------*
 $C$L3:    
@@ -603,11 +603,11 @@ $C$DW$79	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$79, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL12:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL12:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$11$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$12$B:
@@ -617,44 +617,44 @@ $C$DW$80	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$80, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$80, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL13:   ; CALL OCCURS {_Get_Color} {0}    ; |224| 
-           MVC     .S2     TSCL,B12          ; |225| 
-           LDW     .D2T1   *+DP(_dspColor),A4 ; |226| 
+$C$RL13:   ; CALL OCCURS {_Get_Color} {0}    ; |265| 
+           MVC     .S2     TSCL,B12          ; |266| 
+           LDW     .D2T1   *+DP(_dspColor),A4 ; |267| 
 $C$DW$81	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$81, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$81, DW_AT_name("_pdf_representation")
 	.dwattr $C$DW$81, DW_AT_TI_call
 
            CALLP   .S2     _pdf_representation,B3
-||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |226| 
+||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |267| 
 
-$C$RL14:   ; CALL OCCURS {_pdf_representation} {0}  ; |226| 
-           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |227| 
+$C$RL14:   ; CALL OCCURS {_pdf_representation} {0}  ; |267| 
+           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |268| 
 $C$DW$82	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$82, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$82, DW_AT_name("_CalcWeight")
 	.dwattr $C$DW$82, DW_AT_TI_call
 
            CALLP   .S2     _CalcWeight,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |227| 
-||         MV      .L2X    A11,B6            ; |227| 
-||         MVK     .L1     0x1,A4            ; |227| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |268| 
+||         MV      .L2X    A11,B6            ; |268| 
+||         MVK     .L1     0x1,A4            ; |268| 
 
-$C$RL15:   ; CALL OCCURS {_CalcWeight} {0}   ; |227| 
+$C$RL15:   ; CALL OCCURS {_CalcWeight} {0}   ; |268| 
 $C$DW$L$_Task_execute$12$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$13$B:
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B4           ; |228| 
-           BNOP    .S1     $C$L10,3          ; |232| 
+           MVC     .S2     TSCL,B4           ; |269| 
+           BNOP    .S1     $C$L10,3          ; |272| 
 
-           MVK     .L1     1,A3              ; |231| 
-||         SUB     .L2     B4,B12,B4         ; |230| 
+           MVK     .L1     1,A3              ; |271| 
+||         SUB     .L2     B4,B12,B4         ; |270| 
 
-           ADD     .L2     B10,B4,B10        ; |230| 
-||         STB     .D2T1   A3,*+DP(_function) ; |231| 
+           ADD     .L2     B10,B4,B10        ; |270| 
+||         STB     .D2T1   A3,*+DP(_function) ; |271| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |232| 
+           ; BRANCH OCCURS {$C$L10}          ; |272| 
 $C$DW$L$_Task_execute$13$E:
 ;** --------------------------------------------------------------------------*
 $C$L4:    
@@ -666,9 +666,9 @@ $C$DW$83	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$83, DW_AT_TI_call
 
            CALLP   .S2     _initWeight,B3
-||         MV      .L1     A11,A4            ; |210| 
+||         MV      .L1     A11,A4            ; |252| 
 
-$C$RL16:   ; CALL OCCURS {_initWeight} {0}   ; |210| 
+$C$RL16:   ; CALL OCCURS {_initWeight} {0}   ; |252| 
 $C$DW$L$_Task_execute$14$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$15$B:
@@ -679,54 +679,54 @@ $C$DW$84	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$84, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         LDW     .D2T1   *+DP(_dspRectangle),A4 ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .L1     0x1,A6            ; |295| 
+||         LDW     .D2T1   *+DP(_dspRectangle),A4 ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .L1     0x1,A6            ; |341| 
 
-$C$RL17:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL17:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$85	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$85, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$85, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$85, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL18:   ; CALL OCCURS {_Get_Color} {0}    ; |212| 
-           MVC     .S2     TSCL,B12          ; |213| 
-           LDW     .D2T1   *+DP(_dspColor),A4 ; |214| 
+$C$RL18:   ; CALL OCCURS {_Get_Color} {0}    ; |254| 
+           MVC     .S2     TSCL,B12          ; |255| 
+           LDW     .D2T1   *+DP(_dspColor),A4 ; |256| 
 $C$DW$86	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$86, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$86, DW_AT_name("_pdf_representation")
 	.dwattr $C$DW$86, DW_AT_TI_call
 
            CALLP   .S2     _pdf_representation,B3
-||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |214| 
+||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |256| 
 
-$C$RL19:   ; CALL OCCURS {_pdf_representation} {0}  ; |214| 
-           LDW     .D2T2   *+DP(_dspColor),B4 ; |215| 
+$C$RL19:   ; CALL OCCURS {_pdf_representation} {0}  ; |256| 
+           LDW     .D2T2   *+DP(_dspColor),B4 ; |257| 
 $C$DW$87	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$87, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$87, DW_AT_name("_CalcWeight")
 	.dwattr $C$DW$87, DW_AT_TI_call
 
            CALLP   .S2     _CalcWeight,B3
-||         LDW     .D2T1   *+DP(_dspRectangle),A6 ; |215| 
-||         MV      .L2X    A11,B6            ; |215| 
-||         ZERO    .L1     A4                ; |215| 
+||         LDW     .D2T1   *+DP(_dspRectangle),A6 ; |257| 
+||         MV      .L2X    A11,B6            ; |257| 
+||         ZERO    .L1     A4                ; |257| 
 
-$C$RL20:   ; CALL OCCURS {_CalcWeight} {0}   ; |215| 
+$C$RL20:   ; CALL OCCURS {_CalcWeight} {0}   ; |257| 
 $C$DW$L$_Task_execute$15$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$16$B:
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B4           ; |216| 
-           BNOP    .S1     $C$L10,3          ; |220| 
+           MVC     .S2     TSCL,B4           ; |258| 
+           BNOP    .S1     $C$L10,3          ; |261| 
 
-           MVK     .L1     1,A3              ; |219| 
-||         SUB     .L2     B4,B12,B4         ; |218| 
+           MVK     .L1     1,A3              ; |260| 
+||         SUB     .L2     B4,B12,B4         ; |259| 
 
-           ADD     .L2     B10,B4,B10        ; |218| 
-||         STB     .D2T1   A3,*+DP(_function) ; |219| 
+           ADD     .L2     B10,B4,B10        ; |259| 
+||         STB     .D2T1   A3,*+DP(_function) ; |260| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |220| 
+           ; BRANCH OCCURS {$C$L10}          ; |261| 
 $C$DW$L$_Task_execute$16$E:
 ;** --------------------------------------------------------------------------*
 $C$L5:    
@@ -738,11 +738,11 @@ $C$DW$88	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$88, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL21:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL21:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$17$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$18$B:
@@ -752,32 +752,32 @@ $C$DW$89	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$89, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$89, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL22:   ; CALL OCCURS {_Get_Color} {0}    ; |189| 
-           MVC     .S2     TSCL,B12          ; |190| 
+$C$RL22:   ; CALL OCCURS {_Get_Color} {0}    ; |231| 
+           MVC     .S2     TSCL,B12          ; |232| 
 $C$DW$90	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$90, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$90, DW_AT_name("_HC_pdf_representation_target")
 	.dwattr $C$DW$90, DW_AT_TI_call
 
            CALLP   .S2     _HC_pdf_representation_target,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |191| 
-||         MVK     .L1     0x2,A4            ; |191| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |233| 
+||         MVK     .L1     0x2,A4            ; |233| 
 
-$C$RL23:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |191| 
+$C$RL23:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |233| 
 $C$DW$L$_Task_execute$18$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$19$B:
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B4           ; |192| 
-           BNOP    .S1     $C$L10,3          ; |195| 
+           MVC     .S2     TSCL,B4           ; |234| 
+           BNOP    .S1     $C$L10,3          ; |237| 
 
-           MVK     .L2     1,B5              ; |194| 
-||         SUB     .S2     B4,B12,B4         ; |193| 
+           MVK     .L2     1,B5              ; |236| 
+||         SUB     .S2     B4,B12,B4         ; |235| 
 
-           ADD     .L2     B11,B4,B11        ; |193| 
-||         STB     .D2T2   B5,*+DP(_function) ; |194| 
+           ADD     .L2     B11,B4,B11        ; |235| 
+||         STB     .D2T2   B5,*+DP(_function) ; |236| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |195| 
+           ; BRANCH OCCURS {$C$L10}          ; |237| 
 $C$DW$L$_Task_execute$19$E:
 ;** --------------------------------------------------------------------------*
 $C$L6:    
@@ -789,63 +789,63 @@ $C$DW$91	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$91, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL24:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL24:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$20$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$21$B:
 ;          EXCLUSIVE CPU CYCLES: 27
-           LDW     .D2T2   *+DP(_dspRectangle),B7 ; |290| 
-           LDW     .D2T2   *+DP(_dspColor),B8 ; |290| 
-           MVK     .L1     0x1,A6            ; |290| 
+           LDW     .D2T2   *+DP(_dspRectangle),B7 ; |334| 
+           LDW     .D2T2   *+DP(_dspColor),B8 ; |334| 
+           MVK     .L1     0x1,A6            ; |334| 
            NOP             2
-           LDHU    .D2T2   *+B7(2),B6        ; |290| 
-           LDHU    .D2T2   *+B7(4),B5        ; |290| 
-           LDHU    .D2T2   *+B7(6),B4        ; |290| 
-           LDHU    .D2T2   *B7,B7            ; |290| 
+           LDHU    .D2T2   *+B7(2),B6        ; |334| 
+           LDHU    .D2T2   *+B7(4),B5        ; |334| 
+           LDHU    .D2T2   *+B7(6),B4        ; |334| 
+           LDHU    .D2T2   *B7,B7            ; |334| 
            NOP             1
-           SHL     .S2     B6,9,B9           ; |290| 
-           SHL     .S1X    B6,7,A3           ; |290| 
-           ADD     .L1X    A3,B9,A3          ; |290| 
-           ADD     .L1X    B8,A3,A3          ; |290| 
+           SHL     .S2     B6,9,B9           ; |334| 
+           SHL     .S1X    B6,7,A3           ; |334| 
+           ADD     .L1X    A3,B9,A3          ; |334| 
+           ADD     .L1X    B8,A3,A3          ; |334| 
 $C$DW$92	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$92, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$92, DW_AT_name("_BCACHE_inv")
 	.dwattr $C$DW$92, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MPYU    .M2     B5,B4,B4          ; |290| 
-||         ADD     .L1X    B7,A3,A4          ; |290| 
+||         MPYU    .M2     B5,B4,B4          ; |334| 
+||         ADD     .L1X    B7,A3,A4          ; |334| 
 
-$C$RL25:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |290| 
-           MVC     .S2     TSCL,B12          ; |180| 
+$C$RL25:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |334| 
+           MVC     .S2     TSCL,B12          ; |222| 
 $C$DW$93	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$93, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$93, DW_AT_name("_HC_pdf_representation_target")
 	.dwattr $C$DW$93, DW_AT_TI_call
 
            CALLP   .S2     _HC_pdf_representation_target,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |181| 
-||         MVK     .L1     0x1,A4            ; |181| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |223| 
+||         MVK     .L1     0x1,A4            ; |223| 
 
-$C$RL26:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |181| 
+$C$RL26:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |223| 
 $C$DW$L$_Task_execute$21$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$22$B:
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B4           ; |182| 
-           BNOP    .S1     $C$L10,3          ; |185| 
+           MVC     .S2     TSCL,B4           ; |224| 
+           BNOP    .S1     $C$L10,3          ; |227| 
 
-           MVK     .L2     1,B5              ; |184| 
-||         SUB     .S2     B4,B12,B4         ; |183| 
+           MVK     .L2     1,B5              ; |226| 
+||         SUB     .S2     B4,B12,B4         ; |225| 
 
-           ADD     .L2     B11,B4,B11        ; |183| 
-||         STB     .D2T2   B5,*+DP(_function) ; |184| 
+           ADD     .L2     B11,B4,B11        ; |225| 
+||         STB     .D2T2   B5,*+DP(_function) ; |226| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |185| 
+           ; BRANCH OCCURS {$C$L10}          ; |227| 
 $C$DW$L$_Task_execute$22$E:
 ;** --------------------------------------------------------------------------*
 $C$L7:    
@@ -857,63 +857,63 @@ $C$DW$94	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$94, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL27:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL27:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$23$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$24$B:
 ;          EXCLUSIVE CPU CYCLES: 27
-           LDW     .D2T2   *+DP(_dspRectangle),B7 ; |290| 
-           LDW     .D2T2   *+DP(_dspColor),B8 ; |290| 
-           MVK     .L1     0x1,A6            ; |290| 
+           LDW     .D2T2   *+DP(_dspRectangle),B7 ; |334| 
+           LDW     .D2T2   *+DP(_dspColor),B8 ; |334| 
+           MVK     .L1     0x1,A6            ; |334| 
            NOP             2
-           LDHU    .D2T2   *+B7(2),B4        ; |290| 
-           LDHU    .D2T2   *+B7(4),B6        ; |290| 
-           LDHU    .D2T2   *+B7(6),B5        ; |290| 
-           LDHU    .D2T2   *B7,B9            ; |290| 
+           LDHU    .D2T2   *+B7(2),B4        ; |334| 
+           LDHU    .D2T2   *+B7(4),B6        ; |334| 
+           LDHU    .D2T2   *+B7(6),B5        ; |334| 
+           LDHU    .D2T2   *B7,B9            ; |334| 
            NOP             1
-           SHL     .S2     B4,9,B7           ; |290| 
-           SHL     .S1X    B4,7,A3           ; |290| 
-           ADD     .L1X    A3,B7,A3          ; |290| 
-           ADD     .L1X    B8,A3,A3          ; |290| 
+           SHL     .S2     B4,9,B7           ; |334| 
+           SHL     .S1X    B4,7,A3           ; |334| 
+           ADD     .L1X    A3,B7,A3          ; |334| 
+           ADD     .L1X    B8,A3,A3          ; |334| 
 $C$DW$95	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$95, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$95, DW_AT_name("_BCACHE_inv")
 	.dwattr $C$DW$95, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MPYU    .M2     B6,B5,B4          ; |290| 
-||         ADD     .L1X    B9,A3,A4          ; |290| 
+||         MPYU    .M2     B6,B5,B4          ; |334| 
+||         ADD     .L1X    B9,A3,A4          ; |334| 
 
-$C$RL28:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |290| 
-           MVC     .S2     TSCL,B12          ; |170| 
+$C$RL28:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |334| 
+           MVC     .S2     TSCL,B12          ; |212| 
 $C$DW$96	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$96, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$96, DW_AT_name("_HC_pdf_representation_target")
 	.dwattr $C$DW$96, DW_AT_TI_call
 
            CALLP   .S2     _HC_pdf_representation_target,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |171| 
-||         ZERO    .L1     A4                ; |171| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |213| 
+||         ZERO    .L1     A4                ; |213| 
 
-$C$RL29:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |171| 
+$C$RL29:   ; CALL OCCURS {_HC_pdf_representation_target} {0}  ; |213| 
 $C$DW$L$_Task_execute$24$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$25$B:
 ;          EXCLUSIVE CPU CYCLES: 7
-           MVC     .S2     TSCL,B4           ; |172| 
-           BNOP    .S1     $C$L10,3          ; |175| 
+           MVC     .S2     TSCL,B4           ; |214| 
+           BNOP    .S1     $C$L10,3          ; |217| 
 
-           MVK     .L2     1,B5              ; |174| 
-||         SUB     .S2     B4,B12,B4         ; |173| 
+           MVK     .L2     1,B5              ; |216| 
+||         SUB     .S2     B4,B12,B4         ; |215| 
 
-           ADD     .L2     B11,B4,B11        ; |173| 
-||         STB     .D2T2   B5,*+DP(_function) ; |174| 
+           ADD     .L2     B11,B4,B11        ; |215| 
+||         STB     .D2T2   B5,*+DP(_function) ; |216| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |175| 
+           ; BRANCH OCCURS {$C$L10}          ; |217| 
 $C$DW$L$_Task_execute$25$E:
 ;** --------------------------------------------------------------------------*
 $C$L8:    
@@ -925,11 +925,11 @@ $C$DW$97	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$97, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_inv,B3
-||         MV      .L1X    B4,A4             ; |295| 
-||         MVK     .L2     0x8,B4            ; |295| 
-||         MVK     .S1     0x1,A6            ; |295| 
+||         MV      .L1X    B4,A4             ; |341| 
+||         MVK     .L2     0x8,B4            ; |341| 
+||         MVK     .S1     0x1,A6            ; |341| 
 
-$C$RL30:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |295| 
+$C$RL30:   ; CALL OCCURS {_BCACHE_inv} {0}   ; |341| 
 $C$DW$L$_Task_execute$26$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$27$B:
@@ -939,55 +939,55 @@ $C$DW$98	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$98, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$98, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL31:   ; CALL OCCURS {_Get_Color} {0}    ; |199| 
-           MVC     .S2     TSCL,B13          ; |200| 
-           LDW     .D2T1   *+DP(_dspColor),A4 ; |201| 
+$C$RL31:   ; CALL OCCURS {_Get_Color} {0}    ; |241| 
+           MVC     .S2     TSCL,B13          ; |242| 
+           LDW     .D2T1   *+DP(_dspColor),A4 ; |243| 
 $C$DW$99	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$99, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$99, DW_AT_name("_pdf_representation")
 	.dwattr $C$DW$99, DW_AT_TI_call
 
            CALLP   .S2     _pdf_representation,B3
-||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |201| 
+||         LDW     .D2T2   *+DP(_dspRectangle),B4 ; |243| 
 
-$C$RL32:   ; CALL OCCURS {_pdf_representation} {0}  ; |201| 
-           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |202| 
+$C$RL32:   ; CALL OCCURS {_pdf_representation} {0}  ; |243| 
+           LDW     .D2T1   *+DP(_dspRectangle),A6 ; |244| 
 $C$DW$100	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$100, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$100, DW_AT_name("_CalcWeight")
 	.dwattr $C$DW$100, DW_AT_TI_call
 
            CALLP   .S2     _CalcWeight,B3
-||         LDW     .D2T2   *+DP(_dspColor),B4 ; |202| 
-||         MV      .L2X    A11,B6            ; |202| 
-||         ZERO    .L1     A4                ; |202| 
+||         LDW     .D2T2   *+DP(_dspColor),B4 ; |244| 
+||         MV      .L2X    A11,B6            ; |244| 
+||         ZERO    .L1     A4                ; |244| 
 
-$C$RL33:   ; CALL OCCURS {_CalcWeight} {0}   ; |202| 
-           MVC     .S2     TSCL,B12          ; |203| 
-           MVK     .S2     0x4df0,B4         ; |300| 
+$C$RL33:   ; CALL OCCURS {_CalcWeight} {0}   ; |244| 
+           MVC     .S2     TSCL,B12          ; |245| 
+           MVK     .S2     0x4df0,B4         ; |348| 
 $C$DW$101	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$101, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$101, DW_AT_name("_BCACHE_wb")
 	.dwattr $C$DW$101, DW_AT_TI_call
 
            CALLP   .S2     _BCACHE_wb,B3
-||         LDW     .D2T1   *+DP(_dspResFrame),A4 ; |300| 
-||         MVK     .L1     0x1,A6            ; |300| 
+||         LDW     .D2T1   *+DP(_dspResFrame),A4 ; |348| 
+||         MVK     .L1     0x1,A6            ; |348| 
 
-$C$RL34:   ; CALL OCCURS {_BCACHE_wb} {0}    ; |300| 
+$C$RL34:   ; CALL OCCURS {_BCACHE_wb} {0}    ; |348| 
 $C$DW$L$_Task_execute$27$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$28$B:
 ;          EXCLUSIVE CPU CYCLES: 6
-           BNOP    .S1     $C$L10,3          ; |207| 
+           BNOP    .S1     $C$L10,3          ; |249| 
 
-           SUB     .L2     B12,B13,B4        ; |205| 
-||         MVK     .L1     1,A3              ; |206| 
+           SUB     .L2     B12,B13,B4        ; |247| 
+||         MVK     .L1     1,A3              ; |248| 
 
-           ADD     .L2     B10,B4,B10        ; |205| 
-||         STB     .D2T1   A3,*+DP(_function) ; |206| 
+           ADD     .L2     B10,B4,B10        ; |247| 
+||         STB     .D2T1   A3,*+DP(_function) ; |248| 
 
-           ; BRANCH OCCURS {$C$L10}          ; |207| 
+           ; BRANCH OCCURS {$C$L10}          ; |249| 
 $C$DW$L$_Task_execute$28$E:
 ;** --------------------------------------------------------------------------*
 $C$L9:    
@@ -998,13 +998,13 @@ $C$DW$102	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$102, DW_AT_name("_Get_Color")
 	.dwattr $C$DW$102, DW_AT_TI_call
            CALLP   .S2     _Get_Color,B3
-$C$RL35:   ; CALL OCCURS {_Get_Color} {0}    ; |163| 
+$C$RL35:   ; CALL OCCURS {_Get_Color} {0}    ; |205| 
 $C$DW$L$_Task_execute$29$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$30$B:
 ;          EXCLUSIVE CPU CYCLES: 2
-           MVK     .L2     1,B4              ; |164| 
-           STB     .D2T2   B4,*+DP(_function) ; |164| 
+           MVK     .L2     1,B4              ; |206| 
+           STB     .D2T2   B4,*+DP(_function) ; |206| 
 $C$DW$L$_Task_execute$30$E:
 ;** --------------------------------------------------------------------------*
 $C$L10:    
@@ -1014,30 +1014,30 @@ $C$DW$103	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$103, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$103, DW_AT_name("_NOTIFY_notify")
 	.dwattr $C$DW$103, DW_AT_TI_call
-           CALL    .S1     _NOTIFY_notify    ; |145| 
+           CALL    .S1     _NOTIFY_notify    ; |185| 
            NOP             3
 $C$DW$L$_Task_execute$31$E:
 ;** --------------------------------------------------------------------------*
 $C$L11:    
 $C$DW$L$_Task_execute$32$B:
 ;          EXCLUSIVE CPU CYCLES: 2
-           ZERO    .L2     B4                ; |145| 
+           ZERO    .L2     B4                ; |185| 
 
-           MVK     .L1     0x5,A6            ; |145| 
-||         MVK     .L2     0x2,B6            ; |145| 
-||         MVK     .S1     0x1,A4            ; |145| 
-||         ADDKPC  .S2     $C$RL36,B3,0      ; |145| 
+           MVK     .L1     0x5,A6            ; |185| 
+||         MVK     .L2     0x2,B6            ; |185| 
+||         MVK     .S1     0x1,A4            ; |185| 
+||         ADDKPC  .S2     $C$RL36,B3,0      ; |185| 
 
-$C$RL36:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |145| 
+$C$RL36:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |185| 
 $C$DW$L$_Task_execute$32$E:
 ;** --------------------------------------------------------------------------*
 $C$DW$L$_Task_execute$33$B:
 ;          EXCLUSIVE CPU CYCLES: 11
-           LDBU    .D2T2   *+DP(_function),B0 ; |145| 
+           LDBU    .D2T2   *+DP(_function),B0 ; |185| 
            NOP             4
-	.dwpsn	file "task.c",line 247,column 0,is_stmt
-   [ B0]   BNOP    .S1     $C$L1,5           ; |145| 
-           ; BRANCHCC OCCURS {$C$L1}         ; |145| 
+	.dwpsn	file "task.c",line 288,column 0,is_stmt
+   [ B0]   BNOP    .S1     $C$L1,5           ; |185| 
+           ; BRANCHCC OCCURS {$C$L1}         ; |185| 
 $C$DW$L$_Task_execute$33$E:
 ;** --------------------------------------------------------------------------*
 $C$L12:    
@@ -1048,12 +1048,12 @@ $C$DW$104	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$104, DW_AT_TI_call
 
            CALLP   .S2     _NOTIFY_notify,B3
-||         MVK     .L1     0x1,A4            ; |305| 
-||         ZERO    .L2     B4                ; |305| 
-||         MVK     .S1     0x5,A6            ; |305| 
-||         MV      .D2     B11,B6            ; |305| 
+||         MVK     .L1     0x1,A4            ; |355| 
+||         ZERO    .L2     B4                ; |355| 
+||         MVK     .S1     0x5,A6            ; |355| 
+||         MV      .D2     B11,B6            ; |355| 
 
-$C$RL37:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |305| 
+$C$RL37:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |355| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 6
 $C$DW$105	.dwtag  DW_TAG_TI_branch
@@ -1062,37 +1062,37 @@ $C$DW$105	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$105, DW_AT_TI_call
 
            CALLP   .S2     _NOTIFY_notify,B3
-||         MVK     .L1     0x1,A4            ; |305| 
-||         ZERO    .L2     B4                ; |305| 
-||         MVK     .S1     0x5,A6            ; |305| 
-||         MV      .D2     B10,B6            ; |305| 
+||         MVK     .L1     0x1,A4            ; |355| 
+||         ZERO    .L2     B4                ; |355| 
+||         MVK     .S1     0x5,A6            ; |355| 
+||         MV      .D2     B10,B6            ; |355| 
 
-$C$RL38:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |305| 
+$C$RL38:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |355| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 8
-           LDDW    .D2T1   *++SP,A11:A10     ; |253| 
+           LDDW    .D2T1   *++SP,A11:A10     ; |294| 
 
-           LDDW    .D2T2   *++SP,B11:B10     ; |253| 
-||         MV      .L2X    A14,B3            ; |253| 
+           LDDW    .D2T2   *++SP,B11:B10     ; |294| 
+||         MV      .L2X    A14,B3            ; |294| 
 
 $C$DW$106	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$106, DW_AT_low_pc(0x04)
 	.dwattr $C$DW$106, DW_AT_TI_return
 
-           LDDW    .D2T2   *++SP,B13:B12     ; |253| 
-||         RET     .S2     B3                ; |253| 
+           LDDW    .D2T2   *++SP,B13:B12     ; |294| 
+||         RET     .S2     B3                ; |294| 
 
-           LDW     .D2T1   *++SP(8),A14      ; |253| 
-           ZERO    .L1     A4                ; |252| 
-	.dwpsn	file "task.c",line 253,column 1,is_stmt
+           LDW     .D2T1   *++SP(8),A14      ; |294| 
+           ZERO    .L1     A4                ; |293| 
+	.dwpsn	file "task.c",line 294,column 1,is_stmt
            NOP             3
-           ; BRANCH OCCURS {B3}              ; |253| 
+           ; BRANCH OCCURS {B3}              ; |294| 
 
 $C$DW$107	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$107, DW_AT_name("/home/constantinos/embLab/lazaros_final/dsp/task.asm:$C$L1:1:1497116849")
+	.dwattr $C$DW$107, DW_AT_name("/home/constantinos/embLab/lazaros_final/dsp/task.asm:$C$L1:1:1497164540")
 	.dwattr $C$DW$107, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$107, DW_AT_TI_begin_line(0x91)
-	.dwattr $C$DW$107, DW_AT_TI_end_line(0xf7)
+	.dwattr $C$DW$107, DW_AT_TI_begin_line(0xb9)
+	.dwattr $C$DW$107, DW_AT_TI_end_line(0x120)
 $C$DW$108	.dwtag  DW_TAG_TI_loop_range
 	.dwattr $C$DW$108, DW_AT_low_pc($C$DW$L$_Task_execute$4$B)
 	.dwattr $C$DW$108, DW_AT_high_pc($C$DW$L$_Task_execute$4$E)
@@ -1186,7 +1186,7 @@ $C$DW$137	.dwtag  DW_TAG_TI_loop_range
 	.dwendtag $C$DW$107
 
 	.dwattr $C$DW$65, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$65, DW_AT_TI_end_line(0xfd)
+	.dwattr $C$DW$65, DW_AT_TI_end_line(0x126)
 	.dwattr $C$DW$65, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$65
 
@@ -1201,11 +1201,11 @@ $C$DW$138	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_delete")
 	.dwattr $C$DW$138, DW_AT_external
 	.dwattr $C$DW$138, DW_AT_type(*$C$DW$T$22)
 	.dwattr $C$DW$138, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$138, DW_AT_TI_begin_line(0xff)
+	.dwattr $C$DW$138, DW_AT_TI_begin_line(0x12a)
 	.dwattr $C$DW$138, DW_AT_TI_begin_column(0x05)
 	.dwattr $C$DW$138, DW_AT_frame_base[DW_OP_breg31 8]
 	.dwattr $C$DW$138, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 256,column 1,is_stmt,address _Task_delete
+	.dwpsn	file "task.c",line 299,column 1,is_stmt,address _Task_delete
 $C$DW$139	.dwtag  DW_TAG_formal_parameter, DW_AT_name("info")
 	.dwattr $C$DW$139, DW_AT_TI_symbol_name("_info")
 	.dwattr $C$DW$139, DW_AT_type(*$C$DW$T$95)
@@ -1229,71 +1229,71 @@ $C$DW$139	.dwtag  DW_TAG_formal_parameter, DW_AT_name("info")
 _Task_delete:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 8
-           MVKL    .S2     _Init_notify,B6   ; |262| 
+           MVKL    .S2     _Init_notify,B6   ; |305| 
 
-           STW     .D2T1   A11,*SP--(8)      ; |256| 
-||         MVKH    .S2     _Init_notify,B6   ; |262| 
-||         MV      .L1     A4,A8             ; |256| 
-||         MVK     .S1     0x5,A6            ; |262| 
+           STW     .D2T1   A11,*SP--(8)      ; |299| 
+||         MVKH    .S2     _Init_notify,B6   ; |305| 
+||         MV      .L1     A4,A8             ; |299| 
+||         MVK     .S1     0x5,A6            ; |305| 
 
 $C$DW$140	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$140, DW_AT_low_pc(0x04)
 	.dwattr $C$DW$140, DW_AT_name("_NOTIFY_unregister")
 	.dwattr $C$DW$140, DW_AT_TI_call
 
-           MV      .L1X    B3,A11            ; |256| 
+           MV      .L1X    B3,A11            ; |299| 
 ||         CALLP   .S2     _NOTIFY_unregister,B3
-||         STW     .D2T1   A10,*+SP(4)       ; |256| 
-||         MV      .S1     A4,A10            ; |256| 
-||         ZERO    .L2     B4                ; |262| 
-||         MVK     .D1     0x1,A4            ; |262| 
+||         STW     .D2T1   A10,*+SP(4)       ; |299| 
+||         MV      .S1     A4,A10            ; |299| 
+||         ZERO    .L2     B4                ; |305| 
+||         MVK     .D1     0x1,A4            ; |305| 
 
-$C$RL39:   ; CALL OCCURS {_NOTIFY_unregister} {0}  ; |262| 
+$C$RL39:   ; CALL OCCURS {_NOTIFY_unregister} {0}  ; |305| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 14
-           MVKL    .S2     _Command_notify,B6 ; |268| 
-           MVKH    .S2     _Command_notify,B6 ; |268| 
+           MVKL    .S2     _Command_notify,B6 ; |311| 
+           MVKH    .S2     _Command_notify,B6 ; |311| 
 $C$DW$141	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$141, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$141, DW_AT_name("_NOTIFY_unregister")
 	.dwattr $C$DW$141, DW_AT_TI_call
 
            CALLP   .S2     _NOTIFY_unregister,B3
-||         MVK     .L1     0x1,A4            ; |268| 
-||         ZERO    .L2     B4                ; |268| 
-||         MVK     .S1     0x6,A6            ; |268| 
-||         MV      .D1     A10,A8            ; |268| 
+||         MVK     .L1     0x1,A4            ; |311| 
+||         ZERO    .L2     B4                ; |311| 
+||         MVK     .S1     0x6,A6            ; |311| 
+||         MV      .D1     A10,A8            ; |311| 
 
-$C$RL40:   ; CALL OCCURS {_NOTIFY_unregister} {0}  ; |268| 
+$C$RL40:   ; CALL OCCURS {_NOTIFY_unregister} {0}  ; |311| 
 $C$DW$142	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$142, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$142, DW_AT_name("_MEM_free")
 	.dwattr $C$DW$142, DW_AT_TI_call
 
            CALLP   .S2     _MEM_free,B3
-||         MV      .L2X    A10,B4            ; |275| 
-||         MV      .L1     A4,A10            ; |268| 
-||         LDW     .D2T1   *+DP(_DDR2),A4    ; |275| 
-||         MVK     .S1     0x28,A6           ; |275| 
+||         MV      .L2X    A10,B4            ; |318| 
+||         MV      .L1     A4,A10            ; |311| 
+||         LDW     .D2T1   *+DP(_DDR2),A4    ; |318| 
+||         MVK     .S1     0x28,A6           ; |318| 
 
-$C$RL41:   ; CALL OCCURS {_MEM_free} {0}     ; |275| 
+$C$RL41:   ; CALL OCCURS {_MEM_free} {0}     ; |318| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 7
-           MV      .L2X    A11,B3            ; |281| 
+           MV      .L2X    A11,B3            ; |324| 
 $C$DW$143	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$143, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$143, DW_AT_TI_return
 
-           RET     .S2     B3                ; |281| 
-||         MV      .L1     A10,A4            ; |280| 
-||         LDW     .D2T1   *+SP(4),A10       ; |281| 
+           RET     .S2     B3                ; |324| 
+||         MV      .L1     A10,A4            ; |323| 
+||         LDW     .D2T1   *+SP(4),A10       ; |324| 
 
-           LDW     .D2T1   *++SP(8),A11      ; |281| 
-	.dwpsn	file "task.c",line 281,column 1,is_stmt
+           LDW     .D2T1   *++SP(8),A11      ; |324| 
+	.dwpsn	file "task.c",line 324,column 1,is_stmt
            NOP             4
-           ; BRANCH OCCURS {B3}              ; |281| 
+           ; BRANCH OCCURS {B3}              ; |324| 
 	.dwattr $C$DW$138, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$138, DW_AT_TI_end_line(0x119)
+	.dwattr $C$DW$138, DW_AT_TI_end_line(0x144)
 	.dwattr $C$DW$138, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$138
 
@@ -1308,11 +1308,11 @@ $C$DW$144	.dwtag  DW_TAG_subprogram, DW_AT_name("Task_create")
 	.dwattr $C$DW$144, DW_AT_external
 	.dwattr $C$DW$144, DW_AT_type(*$C$DW$T$22)
 	.dwattr $C$DW$144, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$144, DW_AT_TI_begin_line(0x2f)
+	.dwattr $C$DW$144, DW_AT_TI_begin_line(0x50)
 	.dwattr $C$DW$144, DW_AT_TI_begin_column(0x05)
 	.dwattr $C$DW$144, DW_AT_frame_base[DW_OP_breg31 16]
 	.dwattr $C$DW$144, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 48,column 1,is_stmt,address _Task_create
+	.dwpsn	file "task.c",line 81,column 1,is_stmt,address _Task_create
 $C$DW$145	.dwtag  DW_TAG_formal_parameter, DW_AT_name("infoPtr")
 	.dwattr $C$DW$145, DW_AT_TI_symbol_name("_infoPtr")
 	.dwattr $C$DW$145, DW_AT_type(*$C$DW$T$96)
@@ -1336,68 +1336,68 @@ $C$DW$145	.dwtag  DW_TAG_formal_parameter, DW_AT_name("infoPtr")
 _Task_create:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 8
-           STW     .D2T2   B13,*SP--(8)      ; |48| 
+           STW     .D2T2   B13,*SP--(8)      ; |81| 
 
-           STDW    .D2T1   A11:A10,*SP--     ; |48| 
-||         ZERO    .L2     B6                ; |56| 
-||         MVK     .S2     0x28,B4           ; |56| 
+           STDW    .D2T1   A11:A10,*SP--     ; |81| 
+||         ZERO    .L2     B6                ; |89| 
+||         MVK     .S2     0x28,B4           ; |89| 
 
 $C$DW$146	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$146, DW_AT_low_pc(0x04)
 	.dwattr $C$DW$146, DW_AT_name("_MEM_valloc")
 	.dwattr $C$DW$146, DW_AT_TI_call
 
-           MV      .L2     B3,B13            ; |48| 
+           MV      .L2     B3,B13            ; |81| 
 ||         CALLP   .S2     _MEM_valloc,B3
-||         MV      .L1     A4,A11            ; |48| 
-||         LDW     .D2T1   *+DP(_DDR2),A4    ; |56| 
-||         ZERO    .S1     A6                ; |56| 
+||         MV      .L1     A4,A11            ; |81| 
+||         LDW     .D2T1   *+DP(_DDR2),A4    ; |89| 
+||         ZERO    .S1     A6                ; |89| 
 
-$C$RL42:   ; CALL OCCURS {_MEM_valloc} {0}   ; |56| 
+$C$RL42:   ; CALL OCCURS {_MEM_valloc} {0}   ; |89| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 12
 
-           MVK     .L2     0x1,B4            ; |59| 
-||         STW     .D1T1   A4,*A11           ; |56| 
-||         MV      .L1     A4,A0             ; |57| 
-||         ZERO    .S1     A10               ; |50| 
-||         MVKL    .S2     _Init_notify,B6   ; |82| 
-||         ZERO    .D2     B5                ; |82| 
+           MVK     .L2     0x1,B4            ; |92| 
+||         STW     .D1T1   A4,*A11           ; |89| 
+||         MV      .L1     A4,A0             ; |90| 
+||         ZERO    .S1     A10               ; |83| 
+||         MVKL    .S2     _Init_notify,B6   ; |115| 
+||         ZERO    .D2     B5                ; |115| 
 
-   [ A0]   MV      .L1     A0,A10            ; |63| 
-||         MVKH    .S2     _Init_notify,B6   ; |82| 
-||         MVK     .D1     0x1,A4            ; |82| 
-||         ZERO    .L2     B7                ; |82| 
+   [ A0]   MV      .L1     A0,A10            ; |96| 
+||         MVKH    .S2     _Init_notify,B6   ; |115| 
+||         MVK     .D1     0x1,A4            ; |115| 
+||         ZERO    .L2     B7                ; |115| 
 ||         MVKL    .S1     __SEM_dopost,A3
 
-           MV      .L1X    B4,A11            ; |56| 
-||         ZERO    .L2     B4                ; |82| 
-||         MVK     .S1     0x5,A6            ; |82| 
+           MV      .L1X    B4,A11            ; |89| 
+||         ZERO    .L2     B4                ; |115| 
+||         MVK     .S1     0x5,A6            ; |115| 
 ||         ADD     .D1     A10,24,A5         ; |87| 
 
-   [ A0]   ZERO    .L1     A11               ; |49| 
-||         MV      .D1     A10,A8            ; |82| 
+   [ A0]   ZERO    .L1     A11               ; |82| 
+||         MV      .D1     A10,A8            ; |115| 
 ||         MVKH    .S1     __SEM_dopost,A3
 
-           MV      .L1     A11,A0            ; |82| 
+           MV      .L1     A11,A0            ; |115| 
 
-   [ A0]   MVK     .L1     0x5,A6            ; |109| 
-|| [ A0]   MVK     .S1     0x1,A4            ; |109| 
-|| [!A0]   STW     .D1T2   B5,*+A10(36)      ; |72| 
-|| [ A0]   ZERO    .L2     B4                ; |109| 
-|| [ A0]   MVK     .S2     0x2,B6            ; |109| 
+   [ A0]   MVK     .L1     0x5,A6            ; |147| 
+|| [ A0]   MVK     .S1     0x1,A4            ; |147| 
+|| [!A0]   STW     .D1T2   B5,*+A10(36)      ; |105| 
+|| [ A0]   ZERO    .L2     B4                ; |147| 
+|| [ A0]   MVK     .S2     0x2,B6            ; |147| 
 
-   [ A0]   B       .S1     $C$L13            ; |68| 
-   [ A0]   BNOP    .S1     $C$L15,3          ; |107| 
+   [ A0]   B       .S1     $C$L13            ; |101| 
+   [ A0]   BNOP    .S1     $C$L15,3          ; |145| 
 $C$DW$147	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$147, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$147, DW_AT_name("_NOTIFY_register")
 	.dwattr $C$DW$147, DW_AT_TI_call
 
-   [!A0]   CALL    .S1     _NOTIFY_register  ; |82| 
-|| [!A0]   STW     .D1T2   B7,*A10           ; |70| 
+   [!A0]   CALL    .S1     _NOTIFY_register  ; |115| 
+|| [!A0]   STW     .D1T2   B7,*A10           ; |103| 
 
-           ; BRANCHCC OCCURS {$C$L13}        ; |68| 
+           ; BRANCHCC OCCURS {$C$L13}        ; |101| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 5
            STW     .D1T1   A3,*+A10(16)      ; |89| 
@@ -1406,48 +1406,48 @@ $C$DW$147	.dwtag  DW_TAG_TI_branch
            STW     .D1T1   A5,*+A10(28)      ; |87| 
 
            STW     .D1T2   B5,*+A10(20)      ; |86| 
-||         ADDKPC  .S2     $C$RL43,B3,0      ; |82| 
+||         ADDKPC  .S2     $C$RL43,B3,0      ; |115| 
 
-$C$RL43:   ; CALL OCCURS {_NOTIFY_register} {0}  ; |82| 
+$C$RL43:   ; CALL OCCURS {_NOTIFY_register} {0}  ; |115| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 7
 
-           MV      .L1     A10,A8            ; |92| 
-||         MVK     .S1     0x6,A6            ; |92| 
-||         ZERO    .L2     B4                ; |92| 
-||         MV      .D1     A4,A0             ; |82| 
+           MV      .L1     A10,A8            ; |130| 
+||         MVK     .S1     0x6,A6            ; |130| 
+||         ZERO    .L2     B4                ; |130| 
+||         MV      .D1     A4,A0             ; |115| 
 
-   [ A0]   B       .S1     $C$L17            ; |89| 
+   [ A0]   B       .S1     $C$L17            ; |122| 
 $C$DW$148	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$148, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$148, DW_AT_name("_NOTIFY_register")
 	.dwattr $C$DW$148, DW_AT_TI_call
-   [!A0]   CALL    .S1     _NOTIFY_register  ; |92| 
-           MVKL    .S2     _Command_notify,B6 ; |92| 
-           MV      .L1     A4,A11            ; |82| 
-           MVK     .L1     0x1,A4            ; |92| 
-           MVKH    .S2     _Command_notify,B6 ; |92| 
-           ; BRANCHCC OCCURS {$C$L17}        ; |89| 
+   [!A0]   CALL    .S1     _NOTIFY_register  ; |130| 
+           MVKL    .S2     _Command_notify,B6 ; |130| 
+           MV      .L1     A4,A11            ; |115| 
+           MVK     .L1     0x1,A4            ; |130| 
+           MVKH    .S2     _Command_notify,B6 ; |130| 
+           ; BRANCHCC OCCURS {$C$L17}        ; |122| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 1
-           ADDKPC  .S2     $C$RL44,B3,0      ; |92| 
-$C$RL44:   ; CALL OCCURS {_NOTIFY_register} {0}  ; |92| 
+           ADDKPC  .S2     $C$RL44,B3,0      ; |130| 
+$C$RL44:   ; CALL OCCURS {_NOTIFY_register} {0}  ; |130| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 7
 
-           MV      .L1     A4,A0             ; |92| 
-||         MV      .S1     A4,A11            ; |92| 
+           MV      .L1     A4,A0             ; |130| 
+||         MV      .S1     A4,A11            ; |130| 
 
-   [ A0]   BNOP    .S1     $C$L14,5          ; |92| 
-|| [!A0]   MVK     .L1     0x1,A4            ; |109| 
-|| [!A0]   MVK     .L2     0x2,B6            ; |109| 
-|| [!A0]   MVK     .D1     0x5,A6            ; |109| 
-|| [!A0]   ZERO    .S2     B4                ; |109| 
+   [ A0]   BNOP    .S1     $C$L14,5          ; |130| 
+|| [!A0]   MVK     .L1     0x1,A4            ; |147| 
+|| [!A0]   MVK     .L2     0x2,B6            ; |147| 
+|| [!A0]   MVK     .D1     0x5,A6            ; |147| 
+|| [!A0]   ZERO    .S2     B4                ; |147| 
 
-           ; BRANCHCC OCCURS {$C$L14}        ; |92| 
+           ; BRANCHCC OCCURS {$C$L14}        ; |130| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 5
-   [ A0]   BNOP    .S1     $C$L15,4          ; |107| 
+   [ A0]   BNOP    .S1     $C$L15,4          ; |145| 
 ;** --------------------------------------------------------------------------*
 $C$L13:    
 ;          EXCLUSIVE CPU CYCLES: 1
@@ -1455,38 +1455,38 @@ $C$DW$149	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$149, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$149, DW_AT_name("_NOTIFY_notify")
 	.dwattr $C$DW$149, DW_AT_TI_call
-   [!A0]   CALL    .S1     _NOTIFY_notify    ; |109| 
-           ; BRANCHCC OCCURS {$C$L15}        ; |107| 
+   [!A0]   CALL    .S1     _NOTIFY_notify    ; |147| 
+           ; BRANCHCC OCCURS {$C$L15}        ; |145| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 5
-           ADDKPC  .S2     $C$RL45,B3,4      ; |109| 
-$C$RL45:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |109| 
+           ADDKPC  .S2     $C$RL45,B3,4      ; |147| 
+$C$RL45:   ; CALL OCCURS {_NOTIFY_notify} {0}  ; |147| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 7
-           MV      .L1     A4,A0             ; |109| 
-   [!A0]   B       .S1     $C$L16            ; |109| 
+           MV      .L1     A4,A0             ; |147| 
+   [!A0]   B       .S1     $C$L16            ; |147| 
 $C$DW$150	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$150, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$150, DW_AT_name("_SEM_pend")
 	.dwattr $C$DW$150, DW_AT_TI_call
-   [!A0]   CALL    .S1     _SEM_pend         ; |123| 
-           MV      .L1     A4,A11            ; |109| 
+   [!A0]   CALL    .S1     _SEM_pend         ; |161| 
+           MV      .L1     A4,A11            ; |147| 
            NOP             3
-           ; BRANCHCC OCCURS {$C$L16}        ; |109| 
+           ; BRANCHCC OCCURS {$C$L16}        ; |147| 
 ;** --------------------------------------------------------------------------*
 $C$L14:    
 ;          EXCLUSIVE CPU CYCLES: 7
-           MV      .L2     B13,B3            ; |127| 
+           MV      .L2     B13,B3            ; |165| 
 $C$DW$151	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$151, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$151, DW_AT_TI_return
 
-           RET     .S2     B3                ; |127| 
-||         LDDW    .D2T1   *++SP,A11:A10     ; |127| 
+           RET     .S2     B3                ; |165| 
+||         LDDW    .D2T1   *++SP,A11:A10     ; |165| 
 
-           LDW     .D2T2   *++SP(8),B13      ; |127| 
+           LDW     .D2T2   *++SP(8),B13      ; |165| 
            NOP             4
-           ; BRANCH OCCURS {B3}              ; |127| 
+           ; BRANCH OCCURS {B3}              ; |165| 
 ;** --------------------------------------------------------------------------*
 $C$L15:    
 ;          EXCLUSIVE CPU CYCLES: 5
@@ -1494,18 +1494,18 @@ $C$DW$152	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$152, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$152, DW_AT_name("_SEM_pend")
 	.dwattr $C$DW$152, DW_AT_TI_call
-           CALL    .S1     _SEM_pend         ; |123| 
+           CALL    .S1     _SEM_pend         ; |161| 
            NOP             4
 ;** --------------------------------------------------------------------------*
 $C$L16:    
 ;          EXCLUSIVE CPU CYCLES: 1
 
-           ADD     .L1     4,A10,A4          ; |123| 
-||         ADD     .S1     4,A10,A10         ; |123| 
-||         MVK     .L2     0xffffffff,B4     ; |123| 
-||         ADDKPC  .S2     $C$RL46,B3,0      ; |123| 
+           ADD     .L1     4,A10,A4          ; |161| 
+||         ADD     .S1     4,A10,A10         ; |161| 
+||         MVK     .L2     0xffffffff,B4     ; |161| 
+||         ADDKPC  .S2     $C$RL46,B3,0      ; |161| 
 
-$C$RL46:   ; CALL OCCURS {_SEM_pend} {0}     ; |123| 
+$C$RL46:   ; CALL OCCURS {_SEM_pend} {0}     ; |161| 
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 6
 $C$DW$153	.dwtag  DW_TAG_TI_branch
@@ -1514,28 +1514,28 @@ $C$DW$153	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$153, DW_AT_TI_call
 
            CALLP   .S2     _SEM_pend,B3
-||         MV      .L1     A10,A4            ; |124| 
-||         MVK     .L2     0xffffffff,B4     ; |124| 
+||         MV      .L1     A10,A4            ; |162| 
+||         MVK     .L2     0xffffffff,B4     ; |162| 
 
-$C$RL47:   ; CALL OCCURS {_SEM_pend} {0}     ; |124| 
+$C$RL47:   ; CALL OCCURS {_SEM_pend} {0}     ; |162| 
 ;** --------------------------------------------------------------------------*
 $C$L17:    
 ;          EXCLUSIVE CPU CYCLES: 7
-           MV      .L2     B13,B3            ; |127| 
+           MV      .L2     B13,B3            ; |165| 
 $C$DW$154	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$154, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$154, DW_AT_TI_return
 
-           RET     .S2     B3                ; |127| 
-||         MV      .L1     A11,A4            ; |126| 
-||         LDDW    .D2T1   *++SP,A11:A10     ; |127| 
+           RET     .S2     B3                ; |165| 
+||         MV      .L1     A11,A4            ; |164| 
+||         LDDW    .D2T1   *++SP,A11:A10     ; |165| 
 
-           LDW     .D2T2   *++SP(8),B13      ; |127| 
-	.dwpsn	file "task.c",line 127,column 1,is_stmt
+           LDW     .D2T2   *++SP(8),B13      ; |165| 
+	.dwpsn	file "task.c",line 165,column 1,is_stmt
            NOP             4
-           ; BRANCH OCCURS {B3}              ; |127| 
+           ; BRANCH OCCURS {B3}              ; |165| 
 	.dwattr $C$DW$144, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$144, DW_AT_TI_end_line(0x7f)
+	.dwattr $C$DW$144, DW_AT_TI_end_line(0xa5)
 	.dwattr $C$DW$144, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$144
 
@@ -1547,11 +1547,11 @@ $C$DW$155	.dwtag  DW_TAG_subprogram, DW_AT_name("Init_notify")
 	.dwattr $C$DW$155, DW_AT_high_pc(0x00)
 	.dwattr $C$DW$155, DW_AT_TI_symbol_name("_Init_notify")
 	.dwattr $C$DW$155, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$155, DW_AT_TI_begin_line(0x134)
+	.dwattr $C$DW$155, DW_AT_TI_begin_line(0x169)
 	.dwattr $C$DW$155, DW_AT_TI_begin_column(0x0d)
 	.dwattr $C$DW$155, DW_AT_frame_base[DW_OP_breg31 8]
 	.dwattr $C$DW$155, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 309,column 1,is_stmt,address _Init_notify
+	.dwpsn	file "task.c",line 362,column 1,is_stmt,address _Init_notify
 $C$DW$156	.dwtag  DW_TAG_formal_parameter, DW_AT_name("eventNo")
 	.dwattr $C$DW$156, DW_AT_TI_symbol_name("_eventNo")
 	.dwattr $C$DW$156, DW_AT_type(*$C$DW$T$37)
@@ -1581,34 +1581,34 @@ $C$DW$158	.dwtag  DW_TAG_formal_parameter, DW_AT_name("info")
 _Init_notify:
 ;** --------------------------------------------------------------------------*
 ;          EXCLUSIVE CPU CYCLES: 10
-           LDW     .D2T2   *+DP(_count$1),B5 ; |315| 
-           ADD     .L1     8,A6,A4           ; |321| 
-           MV      .L1     A6,A3             ; |309| 
+           LDW     .D2T2   *+DP(_count$1),B5 ; |368| 
+           ADD     .L1     8,A6,A4           ; |374| 
+           MV      .L1     A6,A3             ; |362| 
            NOP             1
 $C$DW$159	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$159, DW_AT_low_pc(0x00)
 	.dwattr $C$DW$159, DW_AT_name("_SEM_post")
 	.dwattr $C$DW$159, DW_AT_TI_call
 	.dwattr $C$DW$159, DW_AT_TI_return
-           CALLRET .S1     _SEM_post         ; |324| 
-           ADD     .L2     1,B5,B5           ; |315| 
+           CALLRET .S1     _SEM_post         ; |377| 
+           ADD     .L2     1,B5,B5           ; |368| 
 
-           STW     .D2T2   B5,*+DP(_count$1) ; |315| 
-||         CMPEQ   .L2     B5,2,B0           ; |319| 
+           STW     .D2T2   B5,*+DP(_count$1) ; |368| 
+||         CMPEQ   .L2     B5,2,B0           ; |372| 
 
-   [ B0]   STW     .D2T1   A4,*+DP(_dspResFrame) ; |321| 
+   [ B0]   STW     .D2T1   A4,*+DP(_dspResFrame) ; |374| 
 
-           CMPEQ   .L1X    B5,1,A0           ; |316| 
-|| [ B0]   STW     .D2T1   A3,*+DP(_dspRectangle) ; |320| 
+           CMPEQ   .L1X    B5,1,A0           ; |369| 
+|| [ B0]   STW     .D2T1   A3,*+DP(_dspRectangle) ; |373| 
 
-	.dwpsn	file "task.c",line 325,column 1,is_stmt
+	.dwpsn	file "task.c",line 378,column 1,is_stmt
 
-   [ A0]   STW     .D2T1   A3,*+DP(_dspColor) ; |317| 
-||         ADD     .L1X    4,B4,A4           ; |324| 
+   [ A0]   STW     .D2T1   A3,*+DP(_dspColor) ; |370| 
+||         ADD     .L1X    4,B4,A4           ; |377| 
 
-$C$RL48:   ; CALL-RETURN OCCURS {_SEM_post} {0}  ; |324| 
+$C$RL48:   ; CALL-RETURN OCCURS {_SEM_post} {0}  ; |377| 
 	.dwattr $C$DW$155, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$155, DW_AT_TI_end_line(0x145)
+	.dwattr $C$DW$155, DW_AT_TI_end_line(0x17a)
 	.dwattr $C$DW$155, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$155
 
@@ -1620,11 +1620,11 @@ $C$DW$160	.dwtag  DW_TAG_subprogram, DW_AT_name("Command_notify")
 	.dwattr $C$DW$160, DW_AT_high_pc(0x00)
 	.dwattr $C$DW$160, DW_AT_TI_symbol_name("_Command_notify")
 	.dwattr $C$DW$160, DW_AT_TI_begin_file("task.c")
-	.dwattr $C$DW$160, DW_AT_TI_begin_line(0x147)
+	.dwattr $C$DW$160, DW_AT_TI_begin_line(0x17f)
 	.dwattr $C$DW$160, DW_AT_TI_begin_column(0x0d)
 	.dwattr $C$DW$160, DW_AT_frame_base[DW_OP_breg31 8]
 	.dwattr $C$DW$160, DW_AT_TI_skeletal
-	.dwpsn	file "task.c",line 328,column 1,is_stmt,address _Command_notify
+	.dwpsn	file "task.c",line 384,column 1,is_stmt,address _Command_notify
 $C$DW$161	.dwtag  DW_TAG_formal_parameter, DW_AT_name("eventNo")
 	.dwattr $C$DW$161, DW_AT_TI_symbol_name("_eventNo")
 	.dwattr $C$DW$161, DW_AT_type(*$C$DW$T$37)
@@ -1659,14 +1659,14 @@ $C$DW$164	.dwtag  DW_TAG_TI_branch
 	.dwattr $C$DW$164, DW_AT_name("_SEM_post")
 	.dwattr $C$DW$164, DW_AT_TI_call
 	.dwattr $C$DW$164, DW_AT_TI_return
-           CALLRET .S1     _SEM_post         ; |333| 
-           ADD     .L1X    4,B4,A4           ; |333| 
-           STB     .D2T1   A6,*+DP(_function) ; |331| 
-	.dwpsn	file "task.c",line 335,column 1,is_stmt
+           CALLRET .S1     _SEM_post         ; |389| 
+           ADD     .L1X    4,B4,A4           ; |389| 
+           STB     .D2T1   A6,*+DP(_function) ; |387| 
+	.dwpsn	file "task.c",line 391,column 1,is_stmt
            NOP             3
-$C$RL49:   ; CALL-RETURN OCCURS {_SEM_post} {0}  ; |333| 
+$C$RL49:   ; CALL-RETURN OCCURS {_SEM_post} {0}  ; |389| 
 	.dwattr $C$DW$160, DW_AT_TI_end_file("task.c")
-	.dwattr $C$DW$160, DW_AT_TI_end_line(0x14f)
+	.dwattr $C$DW$160, DW_AT_TI_end_line(0x187)
 	.dwattr $C$DW$160, DW_AT_TI_end_column(0x01)
 	.dwendtag $C$DW$160
 

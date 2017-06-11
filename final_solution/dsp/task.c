@@ -20,29 +20,62 @@
 #include <IQmath_inline.h>
 #include <dspMeanshift.h>
 
-#define DSP_BUSY                        0
-#define DSP_READY                       1
-#define DSP_DONE                        2
+// size of the buffers used for the communication with the GPP.
 
 extern Uint32 MPCSXFER_BufferSize ;
 
+
+//pointer to the layer starting position on the pool translated to the DSP address space.
+
 Uint8* dspColor;
+
+
+//pointer to the result starting position on the pool translated to the DSP address space.
+
 Uint8* dspResFrame;
+
+
+//pointer to the rectangle starting position on the pool translated to the DSP address space.
+
 Uint16* dspRectangle;
+
+
+//DSP starting function for the main loop of Task_execute.
 
 volatile Uint8 function = IDLE;
 
+
+//Callback function for the notification received during the initialization phase.
+
 static Void Init_notify (Uint32 eventNo, Ptr arg, Ptr info) ;
+
+
+//Callback function to update the 'function' variable of the DSP with the new received GPP command and post the semaphore for the execution to continue.
 
 static Void Command_notify (Uint32 eventNo, Ptr arg, Ptr info);
 
+
+//Invalidate the corresponding to the layer received cache addresses.
+
 static Void Get_Color( Void );
+
+
+//Invalidate the rectangle cache addresses.
 
 static Void Get_Rectangle(Void);
 
+
+//Writeback the result from the cache to the pool.
+
 static Void Return_Result( Void );
 
+
+//Notify GPP about the new state of the DSP.
+
 static Void Update_State( Uint32 state);
+
+
+//Initialize the callback functions for the initilization and the commands and receive the pool buffer addresses.
 
 Int Task_create (Task_TransferInfo ** infoPtr)
 {
@@ -74,8 +107,8 @@ Int Task_create (Task_TransferInfo ** infoPtr)
     }
 
     /*
-     *  Register notification for the event callback to get control and data
-     *  buffer pointers from the GPP-side.
+     *  Register notification for the event callback to get data
+     *  buffers pointers from the GPP.
      */
     if (status == SYS_OK)
 	{
@@ -88,6 +121,11 @@ Int Task_create (Task_TransferInfo ** infoPtr)
 		{
             return status;
         }
+        
+        /*
+        *  Register notification for the event callback to get commands
+        *  from the GPP.
+        */
 
         status = NOTIFY_register (ID_GPP,
                                   MPCSXFER_IPS_ID,
@@ -109,7 +147,7 @@ Int Task_create (Task_TransferInfo ** infoPtr)
         status = NOTIFY_notify (ID_GPP,
                                 MPCSXFER_IPS_ID,
                                 MPCSXFER_IPS_EVENTNO,
-                                (Uint32) DSP_DONE) ; /* No payload to be sent. */
+                                (Uint32) DSP_DONE) ;
         if (status != SYS_OK)
 		{
             return status;
@@ -118,7 +156,7 @@ Int Task_create (Task_TransferInfo ** infoPtr)
 
     /*
      *  Wait for the event callback from the GPP-side to post the semaphore
-     *  indicating receipt of the data buffer pointer and image width and height.
+     *  indicating receipt of the data buffer pointers.
      */
     SEM_pend (&(info->notifySemObj), SYS_FOREVER) ;
     SEM_pend (&(info->notifySemObj), SYS_FOREVER) ;
@@ -136,21 +174,25 @@ Int Task_execute (Task_TransferInfo * info)
     TSCL = 0;
 
     start = TSCL;
+    //execute the independent of the layer functions.
 	HC_Epanechnikov_kernel();
     initTarget(MODEL);
     stop = TSCL;
     tinit += stop - start;
+    //notify that the DSP is ready.
     Update_State(DSP_READY);
 
     while(function != STOP_DSP)
     {
         start = TSCL;
+        //initialization of the weigth and the target_candidate arrays should be performed in every loop when the weights of only one layer are calculated on the DSP.
         initWeight(flres);
         initTarget(CANDIDATE);
         stop = TSCL;
         tkernel += stop - start;
+        //wait until a new command is received.
         SEM_pend (&(info->notifySemObj), SYS_FOREVER);
-        
+        //execute the path determined by the command.
         switch (function)
         {
             case STOP_DSP:
@@ -214,7 +256,6 @@ Int Task_execute (Task_TransferInfo * info)
                 pdf_representation(dspColor, dspRectangle);
                 CalcWeight(BLUE, dspColor, dspRectangle, flres);
                 stop = TSCL;
-                //Return_Result();
                 tkernel += stop - start;
                 function = IDLE;
                 break;
@@ -226,7 +267,6 @@ Int Task_execute (Task_TransferInfo * info)
                 pdf_representation(dspColor, dspRectangle);
                 CalcWeight(GREEN, dspColor, dspRectangle, flres);
                 stop = TSCL;
-                //Return_Result();
                 tkernel += stop - start;
                 function = IDLE;
                 break;
@@ -243,6 +283,7 @@ Int Task_execute (Task_TransferInfo * info)
                 function = IDLE;
                 break;
         }
+        //notify GPP about the completion of the issued command.
         Update_State(DSP_DONE);
     }
 
@@ -251,6 +292,8 @@ Int Task_execute (Task_TransferInfo * info)
 
     return SYS_OK;
 }
+
+//Deregister the callback functions and free the allocated memory.
 
 Int Task_delete (Task_TransferInfo * info)
 {
@@ -280,6 +323,7 @@ Int Task_delete (Task_TransferInfo * info)
     return status ;
 }
 
+//Invalidate the corresponding to the layer received cache addresses.
 
 static Void Get_Color(Void)
 {
@@ -290,20 +334,29 @@ static Void Get_Color(Void)
     BCACHE_inv ((Ptr)(dspColor+rectY*640+rectX), rectWidth*rectHeight, TRUE) ;
 }
 
+//Invalidate the rectangle cache addresses.
+
 static Void Get_Rectangle(Void)
 {
     BCACHE_inv ((Ptr)dspRectangle, 8, TRUE) ;
 }
+
+//Writeback the result from the cache to the pool.
 
 static Void Return_Result(Void)
 {
     BCACHE_wb ((Ptr)dspResFrame, 4*58*86, TRUE) ;
 }
 
+//Notify GPP about the new state of the DSP.
+
 static Void Update_State(Uint32 state)
 {
     NOTIFY_notify(ID_GPP,MPCSXFER_IPS_ID,MPCSXFER_IPS_EVENTNO,(Uint32)state);
 }
+
+
+//Callback function for the notification received during the initialization phase.
 
 static Void Init_notify (Uint32 eventNo, Ptr arg, Ptr info)
 {
@@ -323,6 +376,9 @@ static Void Init_notify (Uint32 eventNo, Ptr arg, Ptr info)
 
     SEM_post(&(mpcsInfo->notifySemObj));
 }
+
+
+//Callback function to update the 'function' variable of the DSP with the new received GPP command and post the semaphore for the execution to continue.
 
 static Void Command_notify (Uint32 eventNo, Ptr arg, Ptr info)
 {
