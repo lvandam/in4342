@@ -58,7 +58,7 @@ C_DEFS=        -DOS_LINUX            \
                -DCHNL_ZCPY_LINK      \
                -DZCPY_LINK           \
                -DKFILE_DEFAULT       \
-			   -DDET_TIMING          \
+			   #-DDET_TIMING          \
                -DDA8XXGEM            \
                -DDA8XXGEM_PHYINTERFACE=SHMEM_INTERFACE
 
@@ -88,7 +88,7 @@ DEFS=    	   -DARMCC \
                -DCHNL_ZCPY_LINK      \
                -DZCPY_LINK           \
                -DKFILE_DEFAULT       \
-			   -DDET_TIMING          \
+			   #-DDET_TIMING          \
                -DDA8XXGEM            \
                -DDA8XXGEM_PHYINTERFACE=SHMEM_INTERFACE
 

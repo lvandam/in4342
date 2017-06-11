@@ -35,6 +35,7 @@ float32x4_t vectordivide (float32x4_t value_a, float32x4_t value_b) {
 
 void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
 {
+	
     target_Region = rect;
     
     //cout << "Init target"<< endl;
@@ -104,10 +105,12 @@ void MeanShift::Init_target_frame(const cv::Mat &frame,const cv::Rect &rect)
         //wait for a notification that it is done
         isDspDone();
     }
+	
 }
 
 float MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
 {
+	
     int h = kernel.size();
     int w = kernel[0].size();
     float sum = 0;
@@ -128,14 +131,14 @@ float MeanShift::Epanechnikov_kernel(MatrixFloat &kernel)
             sum+= result;
         }
     }
-    
+   
     return sum;
 }
 
 
 MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv::Rect &rect)
 {
-
+	
     MatrixFloat pdf_model(3, RowFloat(16, sumEpanechnikov));
 
     cv::Vec3b curr_pixel_value;
@@ -163,6 +166,7 @@ MatrixFloat MeanShift::pdf_representation_target(const cv::Mat &frame, const cv:
         }
         row_index++;
     }
+	
     return pdf_model;
 }
 
@@ -205,6 +209,7 @@ static inline float32x4_t vectorsqrt(float32x4_t x) {
 
 MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
 {
+	
 	MatrixFloat pdf_model(3, RowFloat(16, sumEpanechnikov));
 
 	uint8x16_t curr_pixel_value_neon, bin_value_neon;
@@ -252,6 +257,7 @@ MatrixFloat MeanShift::PdfWeight(const cv::Mat &next_frame)
       clo_index += 16;
 	}
 
+	
 	// Calculate weight (CalWeight)
 	col_index = target_Region.x;
 	for(int j = 0; j < cols; j+=16)
@@ -326,7 +332,6 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
     
     cv::Rect next_rect;
     
-
     for(int iter = 0; iter < cfg.MaxIter; iter++)
     {
         #ifdef DET_TIMING
@@ -426,12 +431,13 @@ cv::Rect MeanShift::track(const cv::Mat &next_frame)
         
         #ifdef DET_TIMING
         timeTracking.Start();
-        #endif
-
+        #endif		
+		
         next_rect.x = target_Region.x;
         next_rect.y = target_Region.y;
         next_rect.width = target_Region.width;
         next_rect.height = target_Region.height;
+
 
         float32_t delta_x = 0.0;
         float32_t delta_y = 0.0;

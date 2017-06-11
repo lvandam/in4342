@@ -1,6 +1,6 @@
 ;******************************************************************************
 ;* TMS320C6x C/C++ Codegen                                       Unix v6.1.17 *
-;* Date/Time created: Sun Jun 11 09:02:20 2017                                *
+;* Date/Time created: Sun Jun 11 14:10:57 2017                                *
 ;******************************************************************************
 	.compiler_opts --c64p_l1d_workaround=default --disable:=sploop --endian=little --hll_source=on --mem_model:code=near --mem_model:const=data --mem_model:data=far_aggregates --quiet --silicon_version=6500 --symdebug:skeletal 
 
@@ -31,7 +31,7 @@ $C$DW$CU	.dwtag  DW_TAG_compile_unit
 	.dwattr $C$DW$CU, DW_AT_name("task.c")
 	.dwattr $C$DW$CU, DW_AT_producer("TMS320C6x C/C++ Codegen Unix v6.1.17 Copyright (c) 1996-2010 Texas Instruments Incorporated")
 	.dwattr $C$DW$CU, DW_AT_TI_version(0x01)
-	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/lazaros_final/dsp")
+	.dwattr $C$DW$CU, DW_AT_comp_dir("/home/constantinos/embLab/danielle/dsp")
 ;*****************************************************************************
 ;* CINIT RECORDS                                                             *
 ;*****************************************************************************
@@ -279,7 +279,7 @@ $C$DW$62	.dwtag  DW_TAG_variable, DW_AT_name("function")
 	.dwattr $C$DW$62, DW_AT_type(*$C$DW$T$76)
 	.dwattr $C$DW$62, DW_AT_external
 	.bss	_count$1,4,4
-;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/18826Ox9H1C /tmp/188260DMEKy 
+;	/opt/bbToolChain/usr/local/share/c6000/bin/opt6x /tmp/02670NigMS0 /tmp/02670pZt7OH 
 	.sect	".text"
 	.clink
 
@@ -1089,7 +1089,7 @@ $C$DW$106	.dwtag  DW_TAG_TI_branch
            ; BRANCH OCCURS {B3}              ; |294| 
 
 $C$DW$107	.dwtag  DW_TAG_TI_loop
-	.dwattr $C$DW$107, DW_AT_name("/home/constantinos/embLab/lazaros_final/dsp/task.asm:$C$L1:1:1497164540")
+	.dwattr $C$DW$107, DW_AT_name("/home/constantinos/embLab/danielle/dsp/task.asm:$C$L1:1:1497183058")
 	.dwattr $C$DW$107, DW_AT_TI_begin_file("task.c")
 	.dwattr $C$DW$107, DW_AT_TI_begin_line(0xb9)
 	.dwattr $C$DW$107, DW_AT_TI_end_line(0x120)
